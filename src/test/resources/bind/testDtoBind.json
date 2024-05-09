@@ -1,0 +1,6 @@
+{
+  "name": "name",
+  "dtoAge": "age",
+  "parent": "parent",
+  "childClassList": "childList"
+}

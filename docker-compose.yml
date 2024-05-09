@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  client-db:
+    container_name: tm_test_db
+    build:
+      context: docker/tm
+    ports:
+      - "5438:5432"
