@@ -2,13 +2,10 @@ package com.tm.core.config.cp;
 
 import com.tm.core.properties.ConfigurationFileProvider;
 import com.tm.core.properties.IConfigurationFileProvider;
-import com.tm.core.util.setting.HikariSetting;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.cfg.Environment;
-import org.hibernate.hikaricp.internal.HikariCPConnectionProvider;
 import org.hibernate.service.ServiceRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,9 +40,15 @@ public abstract class AbstractConnectionPullConfiguration implements IConnection
                 sessionFactory = metadata.getSessionFactoryBuilder().build();
 
             } catch (Exception e) {
+                if (sessionFactory != null) {
+                    sessionFactory.close();
+                    sessionFactory = null;
+                }
                 if (serviceRegistry != null) {
                     StandardServiceRegistryBuilder.destroy(serviceRegistry);
+                    serviceRegistry = null;
                 }
+                LOG.warn("properties error {}", e.getMessage());
                 throw new RuntimeException(e);
             }
         }
@@ -66,8 +69,13 @@ public abstract class AbstractConnectionPullConfiguration implements IConnection
 
                 sessionFactory = metadata.getSessionFactoryBuilder().build();
             } catch (Exception e) {
+                if (sessionFactory != null) {
+                    sessionFactory.close();
+                    sessionFactory = null;
+                }
                 if (serviceRegistry != null) {
                     StandardServiceRegistryBuilder.destroy(serviceRegistry);
+                    serviceRegistry = null;
                 }
                 LOG.warn("properties error {}", e.getMessage());
                 throw new RuntimeException(e);
