@@ -2,6 +2,9 @@ package com.tm.core.dao;
 
 import com.tm.core.util.converter.ISqlParamsConverter;
 import com.tm.core.util.converter.SqlParamsConverter;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -235,6 +238,25 @@ public abstract class AbstractDao {
             return Optional.ofNullable(nativeQuery.getSingleResult());
         } catch (Exception e) {
             LOG.warn("get entity error {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void updateEntityBySQLQueryWithParams(String sqlQuery, Object... params) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            Query query = session.createNamedQuery(sqlQuery, Void.class);
+            for (int i = 0; i < params.length; i++) {
+                query.setParameter(i + 1, params[i]);
+            }
+            query.executeUpdate();
+            transaction.commit();
+        } catch (Exception e) {
+            LOG.warn("transaction error {}", e.getMessage());
+            if (transaction != null) {
+                transaction.rollback();
+            }
             throw new RuntimeException(e);
         }
     }

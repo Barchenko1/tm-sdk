@@ -21,4 +21,5 @@ public interface IEntityDao {
     <E> List<E> getEntityBySQLQueryWithNumberParam(String sqlQuery, Number param);
     <E> Optional<E> getOptionalEntityBySQLQueryWithNumberParam(String sqlQuery, Number param);
 
+    void updateEntityBySQLQueryWithParams(String sqlQuery, Object... params);
 }
