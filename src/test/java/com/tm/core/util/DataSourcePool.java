@@ -13,7 +13,7 @@ import static com.tm.core.constant.Constant.POSTGRES_USERNAME;
 
 public final class DataSourcePool {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DataSourcePool.class);
+    private static final Logger log = LoggerFactory.getLogger(DataSourcePool.class);
 
     public static HikariDataSource getHikariDataSource() {
         HikariDataSource dataSource = new HikariDataSource();

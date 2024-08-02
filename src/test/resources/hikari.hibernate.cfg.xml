@@ -8,9 +8,9 @@
 
         <!-- database connection properties -->
         <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
-        <property name="hibernate.connection.url">jdbc:postgresql://127.0.0.1:5438/tm_test_db</property>
-        <property name="hibernate.connection.username">sa</property>
-        <property name="hibernate.connection.password">sa</property>
+        <property name="hibernate.connection.url">jdbc:postgresql://127.0.0.1:5438/tm_sdk_db</property>
+        <property name="hibernate.connection.username">admin</property>
+        <property name="hibernate.connection.password">secret</property>
         <property name="hibernate.show_sql">true</property>
         <property name="hibernate.format_sql">true</property>
         <property name="hibernate.hbm2ddl.auto">update</property>
@@ -25,11 +25,5 @@
         <property name="hibernate.connection.isolation">2</property>
         <!-- add annotated resources here -->
         <mapping class="com.tm.core.modal.TestEntity" />
-        <mapping class="com.tm.core.modal.TestEmployee" />
-        <mapping class="com.tm.core.modal.TestDependent" />
-
-        <mapping class="com.tm.core.dto.TestClass" />
-        <mapping class="com.tm.core.dto.ParentClass" />
-        <mapping class="com.tm.core.dto.ChildClass" />
     </session-factory>
 </hibernate-configuration>

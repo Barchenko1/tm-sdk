@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 
 public class FileFormatter implements IFileFormatter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FileFormatter.class);
+    private static final Logger log = LoggerFactory.getLogger(FileFormatter.class);
 
 
     @Override
@@ -17,7 +17,7 @@ public class FileFormatter implements IFileFormatter {
         String fileNameWithExtension = path.getFileName().toString();
         String fileExtension = fileNameWithExtension.substring(fileNameWithExtension.lastIndexOf(".") + 1);
 
-        LOG.info("File format is {}", fileExtension);
+        log.info("File format is {}", fileExtension);
         if (FileFormat.XML.getValue().equals(fileExtension)) {
             return FileFormat.XML;
         }

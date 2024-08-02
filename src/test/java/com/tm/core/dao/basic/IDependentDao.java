@@ -1,6 +1,6 @@
 package com.tm.core.dao.basic;
 
-import com.tm.core.dao.IEntityDao;
+import com.tm.core.dao.single.ISingleEntityDao;
 
-public interface IDependentDao extends IEntityDao {
+public interface IDependentDao extends ISingleEntityDao {
 }

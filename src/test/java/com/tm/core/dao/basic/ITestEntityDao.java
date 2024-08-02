@@ -1,11 +1,11 @@
 package com.tm.core.dao.basic;
 
-import com.tm.core.dao.IEntityDao;
+import com.tm.core.dao.single.ISingleEntityDao;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface ITestEntityDao extends IEntityDao {
+public interface ITestEntityDao extends ISingleEntityDao {
 
     <E> List<E> getAllTestEntities();
 
