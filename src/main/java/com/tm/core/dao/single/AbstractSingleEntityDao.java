@@ -24,7 +24,6 @@ public abstract class AbstractSingleEntityDao extends AbstractEntityDao implemen
         super(clazz);
         this.sessionFactory = sessionFactory;
         this.sessionManager = new ThreadLocalSessionManager(sessionFactory);
-//        this.sessionManager = sessionManager;
     }
 
     @Override
@@ -114,34 +113,6 @@ public abstract class AbstractSingleEntityDao extends AbstractEntityDao implemen
 
     @Override
     @SuppressWarnings("unchecked")
-    public <E> E getEntityBySQLQuery(String sqlQuery) {
-        try (Session session = sessionFactory.openSession()) {
-            return (E) session
-                    .createNativeQuery(sqlQuery, clazz)
-                    .getSingleResult();
-        } catch (Exception e) {
-            log.warn("get entity error {}", e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <E> Optional<E> getOptionEntityBySQLQuery(String sqlQuery) {
-        try (Session session = sessionFactory.openSession()) {
-            return (Optional<E>) session
-                    .createNativeQuery(sqlQuery, clazz)
-                    .uniqueResultOptional();
-        } catch (NoResultException e) {
-            return Optional.empty();
-        } catch (Exception e) {
-            log.warn("get entity error {}", e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
     public <E> List<E> getEntityListBySQLQueryWithParams(String sqlQuery, Object... params) {
         try (Session session = sessionFactory.openSession()) {
             NativeQuery<E> query = (NativeQuery<E>) session.createNativeQuery(sqlQuery, clazz);
@@ -155,22 +126,21 @@ public abstract class AbstractSingleEntityDao extends AbstractEntityDao implemen
         }
     }
 
-//    @Override
-//    @SuppressWarnings("unchecked")
-//    public <E> Optional<E> getOptionalEntityBySQLQueryWithParams(String sqlQuery, Object... params) {
-//        try (Session session = sessionFactory.getCurrentSession()) {
-//            NativeQuery<E> query = (NativeQuery<E>) session.createNativeQuery(sqlQuery, clazz);
-//            for (int i = 0; i < params.length; i++) {
-//                query.setParameter(i + 1, params[i]);
-//            }
-//            return query.uniqueResultOptional();
-//        } catch (NoResultException e) {
-//            return Optional.empty();
-//        } catch (Exception e) {
-//            log.warn("get entity error {}", e.getMessage());
-//            throw new RuntimeException(e);
-//        }
-//    }
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E> E getEntityBySQLQueryWithParams(String sqlQuery, Object... params) {
+        try {
+            Session session = sessionManager.getSession();
+            NativeQuery<E> query = (NativeQuery<E>) session.createNativeQuery(sqlQuery, clazz);
+            for (int i = 0; i < params.length; i++) {
+                query.setParameter(i + 1, params[i]);
+            }
+            return query.getSingleResult();
+        } catch (Exception e) {
+            log.warn("get entity error {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     @SuppressWarnings("unchecked")

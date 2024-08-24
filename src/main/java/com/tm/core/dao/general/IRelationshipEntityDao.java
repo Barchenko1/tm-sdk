@@ -1,8 +1,10 @@
 package com.tm.core.dao.general;
 
+import com.tm.core.modal.RelationshipEntity;
+
 public interface IRelationshipEntityDao {
-    <E> void saveEntity(E entity);
-    <E> void updateEntity(E entity);
-    <E> void deleteEntity(E entity);
+    void saveRelationshipEntity(RelationshipEntity relationshipEntity);
+    void updateRelationshipEntity(RelationshipEntity relationshipEntity);
+    void deleteRelationshipEntity(RelationshipEntity relationshipEntity);
 
 }

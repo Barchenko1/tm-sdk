@@ -10,8 +10,7 @@ public interface ISingleEntityDao {
     <E> void deleteEntity(E entity);
     void mutateEntityBySQLQueryWithParams(String sqlQuery, Object... params);
 
-    <E> E getEntityBySQLQuery(String sqlQuery);
-    <E> Optional<E> getOptionEntityBySQLQuery(String sqlQuery);
+    <E> E getEntityBySQLQueryWithParams(String sqlQuery, Object... params);
     <E> Optional<E> getOptionalEntityBySQLQueryWithParams(String sqlQuery, Object... params);
 
     <E> List<E> getEntityListBySQLQuery(String sqlQuery);
