@@ -1,6 +1,0 @@
-<dataset>
-    <TestEmployee name="Robert">
-        <TestDependent name="Liza" status="GirlFriend" />
-        <TestDependent name="Bread" status="Child" />
-    </TestEmployee>
-</dataset>

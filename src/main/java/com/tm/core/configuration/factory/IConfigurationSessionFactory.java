@@ -4,6 +4,5 @@ import org.hibernate.SessionFactory;
 
 public interface IConfigurationSessionFactory {
 
-    public SessionFactory getSessionFactory();
-
+    SessionFactory configureSessionFactory();
 }

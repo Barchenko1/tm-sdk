@@ -1,7 +1,7 @@
 package com.tm.core.configuration.cp;
 
-import com.tm.core.properties.ConfigurationFileProvider;
-import com.tm.core.properties.IConfigurationFileProvider;
+import com.tm.core.util.properties.ConfigurationFileProvider;
+import com.tm.core.util.properties.IConfigurationFileProvider;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -13,11 +13,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Properties;
 
 public abstract class AbstractConnectionPullConfiguration implements IConnectionPullConfiguration {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractConnectionPullConfiguration.class);
 
-    private static final Logger log = LoggerFactory.getLogger(AbstractConnectionPullConfiguration.class);
-
-    protected ServiceRegistry serviceRegistry;
-    protected SessionFactory sessionFactory;
     protected IConfigurationFileProvider configurationFileProvider = new ConfigurationFileProvider();
     protected Class<?>[] annotatedClasses;
 
@@ -27,9 +24,9 @@ public abstract class AbstractConnectionPullConfiguration implements IConnection
     }
 
     protected SessionFactory createSessionFactoryWithXMLConfiguration(String fileName) {
-        if (sessionFactory == null) {
+        synchronized (AbstractConnectionPullConfiguration.class) {
             try {
-                serviceRegistry = new StandardServiceRegistryBuilder()
+                ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
                         .configure(fileName)
                         .build();
 
@@ -37,51 +34,32 @@ public abstract class AbstractConnectionPullConfiguration implements IConnection
                         .getMetadataBuilder()
                         .build();
 
-                sessionFactory = metadata.getSessionFactoryBuilder().build();
-
+                return metadata.getSessionFactoryBuilder().build();
             } catch (Exception e) {
-                if (sessionFactory != null) {
-                    sessionFactory.close();
-                    sessionFactory = null;
-                }
-                if (serviceRegistry != null) {
-                    StandardServiceRegistryBuilder.destroy(serviceRegistry);
-                    serviceRegistry = null;
-                }
-                log.warn("properties error {}", e.getMessage());
+                LOGGER.warn("SessionFactory creation failed: {}", e.getMessage());
                 throw new RuntimeException(e);
             }
         }
-        return sessionFactory;
     }
 
     protected SessionFactory createSessionFactoryWithPropertiesConfiguration(Properties properties) {
-        if (sessionFactory == null) {
-            try {
-                serviceRegistry = new StandardServiceRegistryBuilder()
-                        .applySettings(properties)
-                        .build();
+        synchronized (AbstractConnectionPullConfiguration.class) {
+            try (ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+                    .applySettings(properties)
+                    .build()){
 
                 Metadata metadata = new MetadataSources(serviceRegistry)
                         .addAnnotatedClasses(annotatedClasses)
                         .getMetadataBuilder()
                         .build();
 
-                sessionFactory = metadata.getSessionFactoryBuilder().build();
+                return metadata.getSessionFactoryBuilder().build();
+
             } catch (Exception e) {
-                if (sessionFactory != null) {
-                    sessionFactory.close();
-                    sessionFactory = null;
-                }
-                if (serviceRegistry != null) {
-                    StandardServiceRegistryBuilder.destroy(serviceRegistry);
-                    serviceRegistry = null;
-                }
-                log.warn("properties error {}", e.getMessage());
+                LOGGER.warn("SessionFactory creation failed: {}", e.getMessage());
                 throw new RuntimeException(e);
             }
         }
-        return sessionFactory;
     }
 
 }

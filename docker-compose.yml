@@ -1,5 +1,5 @@
 services:
-  tm-sdk-db:
+  db:
     image: 'postgres:latest'
     environment:
       - 'POSTGRES_DB=tm_sdk_db'
@@ -7,3 +7,5 @@ services:
       - 'POSTGRES_USER=admin'
     ports:
       - '5438:5432'
+    volumes:
+      - ./data/sql/initTestDb.sql:/docker-entrypoint-initdb.d/initTestDb.sql

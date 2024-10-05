@@ -1,0 +1,17 @@
+singleDependentTestEntity:
+  - id: 1
+    name: "Single Dependent Entity"
+dependentTestEntity:
+  - id: 1
+    name: "Dependent Entity"
+  - id: 2
+    name: "Dependent Entity"
+relationshipRootTestEntity:
+  - id: 1
+    name: "Relationship Root Entity"
+    singledependenttestentity_id: 1
+relationshiproottestentity_dependenttestentity:
+  - relationshiproottestentity_id: 1
+    dependenttestentitylist_id: 1
+  - relationshiproottestentity_id: 1
+    dependenttestentitylist_id: 2

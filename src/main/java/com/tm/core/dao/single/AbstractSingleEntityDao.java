@@ -1,13 +1,17 @@
 package com.tm.core.dao.single;
 
 import com.tm.core.dao.AbstractEntityDao;
-import com.tm.core.processor.ThreadLocalSessionManager;
+import com.tm.core.dao.identifier.IEntityIdentifierDao;
+import com.tm.core.processor.finder.parameter.Parameter;
+import com.tm.core.processor.thread.IThreadLocalSessionManager;
+import com.tm.core.processor.thread.ThreadLocalSessionManager;
+import com.tm.core.util.helper.EntityFieldHelper;
+import com.tm.core.util.helper.IEntityFieldHelper;
 import jakarta.persistence.NoResultException;
-import jakarta.persistence.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.query.NativeQuery;
+import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,15 +19,21 @@ import java.util.List;
 import java.util.Optional;
 
 public abstract class AbstractSingleEntityDao extends AbstractEntityDao implements ISingleEntityDao {
-    private static final Logger log = LoggerFactory.getLogger(AbstractSingleEntityDao.class);
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSingleEntityDao.class);
     protected final SessionFactory sessionFactory;
-    protected final ThreadLocalSessionManager sessionManager;
+    protected final IThreadLocalSessionManager sessionManager;
+    protected final IEntityIdentifierDao entityIdentifierDao;
+    protected final IEntityFieldHelper entityFieldHelper;
 
     public AbstractSingleEntityDao(SessionFactory sessionFactory,
+                                   IEntityIdentifierDao entityIdentifierDao,
                                    Class<?> clazz) {
         super(clazz);
         this.sessionFactory = sessionFactory;
         this.sessionManager = new ThreadLocalSessionManager(sessionFactory);
+        this.entityFieldHelper = new EntityFieldHelper();
+        this.entityIdentifierDao = entityIdentifierDao;
     }
 
     @Override
@@ -35,28 +45,37 @@ public abstract class AbstractSingleEntityDao extends AbstractEntityDao implemen
             session.persist(entity);
             transaction.commit();
         } catch (Exception e) {
-            log.warn("transaction error {}", e.getMessage());
+            LOGGER.warn("transaction error {}", e.getMessage());
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw new RuntimeException(e);
+            throw e;
         }
     }
+// identify id code to do
+    //            Class<?> entityClass = entity.getClass();
+//            Object entityId = session.getIdentifier(entity);
+//
+//            E existingEntity = (E) session.get(entityClass, entityId);
+//            if (existingEntity == null) {
+//                throw new RuntimeException("Entity with ID " + entityId + " does not exist.");
+//            }
+
 
     @Override
-    public <E> void updateEntity(E newEntity) {
-        classTypeChecker(newEntity);
+    public <E> void updateEntity(E entity) {
+        classTypeChecker(entity);
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            session.merge(newEntity);
+            session.merge(entity);
             transaction.commit();
         } catch (Exception e) {
-            log.warn("transaction error {}", e.getMessage());
+            LOGGER.warn("transaction error {}", e.getMessage());
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 
@@ -69,94 +88,150 @@ public abstract class AbstractSingleEntityDao extends AbstractEntityDao implemen
             session.remove(entity);
             transaction.commit();
         } catch (Exception e) {
-            log.warn("transaction error {}", e.getMessage());
+            LOGGER.warn("transaction error {}", e.getMessage());
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public void mutateEntityBySQLQueryWithParams(String sqlQuery, Object... params) {
+    public <E> void findEntityAndUpdate(E entity, Parameter... parameters) {
+        classTypeChecker(entity);
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try {
+            Session session = sessionManager.getSession();
             transaction = session.beginTransaction();
-            Query query = session.createNativeQuery(sqlQuery, Void.class);
-            for (int i = 0; i < params.length; i++) {
-                query.setParameter(i + 1, params[i]);
-            }
-            query.executeUpdate();
+            E oldEntity = entityIdentifierDao.getEntity(this.clazz, parameters);
+            entityFieldHelper.setId(entity, entityFieldHelper.findId(oldEntity));
+            session.merge(entity);
             transaction.commit();
         } catch (Exception e) {
-            log.warn("transaction error {}", e.getMessage());
+            LOGGER.warn("transaction error {}", e.getMessage());
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <E> List<E> getEntityListBySQLQuery(String sqlQuery) {
-        try (Session session = sessionFactory.openSession()) {
-            return (List<E>) session
-                    .createNativeQuery(sqlQuery, clazz)
-                    .list();
-        } catch (Exception e) {
-            log.warn("get entity error {}", e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <E> List<E> getEntityListBySQLQueryWithParams(String sqlQuery, Object... params) {
-        try (Session session = sessionFactory.openSession()) {
-            NativeQuery<E> query = (NativeQuery<E>) session.createNativeQuery(sqlQuery, clazz);
-            for (int i = 0; i < params.length; i++) {
-                query.setParameter(i + 1, params[i]);
-            }
-            return query.list();
-        } catch (Exception e) {
-            log.warn("get entity error {}", e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <E> E getEntityBySQLQueryWithParams(String sqlQuery, Object... params) {
+    public <E> void findEntityAndDelete(Parameter... parameters) {
+        Transaction transaction = null;
         try {
             Session session = sessionManager.getSession();
-            NativeQuery<E> query = (NativeQuery<E>) session.createNativeQuery(sqlQuery, clazz);
-            for (int i = 0; i < params.length; i++) {
-                query.setParameter(i + 1, params[i]);
-            }
-            return query.getSingleResult();
+            transaction = session.beginTransaction();
+            E entity = entityIdentifierDao.getEntity(this.clazz, parameters);
+            session.remove(entity);
+            transaction.commit();
         } catch (Exception e) {
-            log.warn("get entity error {}", e.getMessage());
-            throw new RuntimeException(e);
+            LOGGER.warn("transaction error {}", e.getMessage());
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
         }
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <E> Optional<E> getOptionalEntityBySQLQueryWithParams(String sqlQuery, Object... params) {
+    public void mutateEntity(String sqlQuery, Parameter... params) {
+        Transaction transaction = null;
         try {
             Session session = sessionManager.getSession();
-            NativeQuery<E> query = (NativeQuery<E>) session.createNativeQuery(sqlQuery, clazz);
+            transaction = session.beginTransaction();
+            Query<?> query = session.createNativeQuery(sqlQuery, this.clazz);
             for (int i = 0; i < params.length; i++) {
-                query.setParameter(i + 1, params[i]);
+                query.setParameter(i + 1, params[i].getValue());
             }
-            return query.uniqueResultOptional();
+            int affectedRows = query.executeUpdate();
+            if (affectedRows == 0) {
+                throw new RuntimeException("No rows affected, possibly invalid id or condition.");
+            }
+            transaction.commit();
+        } catch (Exception e) {
+            LOGGER.warn("transaction error {}", e.getMessage());
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
+        }
+    }
+
+//    @Override
+//    @SuppressWarnings("unchecked")
+//    public <E> List<E> getEntityListBySQLQuery(String sqlQuery) {
+//        try (Session session = sessionFactory.openSession()) {
+//            return (List<E>) session
+//                    .createNativeQuery(sqlQuery, clazz)
+//                    .list();
+//        } catch (Exception e) {
+//            LOGGER.warn("get entity error {}", e.getMessage());
+//            throw new RuntimeException(e);
+//        }
+//    }
+
+    @Override
+    public <E> List<E> getEntityList(Parameter... parameters) {
+        try {
+            return entityIdentifierDao.getEntityList(this.clazz, parameters);
+        } catch (Exception e) {
+            LOGGER.warn("get entity list error {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @Override
+    public <E> E getEntity(Parameter... parameters) {
+        try {
+            return entityIdentifierDao.getEntity(this.clazz, parameters);
+        } catch (Exception e) {
+            LOGGER.warn("get entity error {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @Override
+    public <E> Optional<E> getOptionalEntity(Parameter... parameters) {
+        try {
+            return entityIdentifierDao.getOptionalEntity(this.clazz, parameters);
         } catch (NoResultException e) {
             return Optional.empty();
         } catch (Exception e) {
-            log.warn("get entity error {}", e.getMessage());
-            throw new RuntimeException(e);
+            LOGGER.warn("get optional entity error {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @Override
+    public <E> List<E> getEntityList(Class<?> clazz, Parameter... parameters) {
+        try {
+            return entityIdentifierDao.getEntityList(clazz, parameters);
+        } catch (Exception e) {
+            LOGGER.warn("get entity list error {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @Override
+    public <E> E getEntity(Class<?> clazz, Parameter... parameters) {
+        try {
+            return entityIdentifierDao.getEntity(clazz, parameters);
+        } catch (Exception e) {
+            LOGGER.warn("get entity error {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @Override
+    public <E> Optional<E> getOptionalEntity(Class<?> clazz, Parameter... parameters) {
+        try {
+            return entityIdentifierDao.getOptionalEntity(clazz, parameters);
+        } catch (NoResultException e) {
+            return Optional.empty();
+        } catch (Exception e) {
+            LOGGER.warn("get entity error {}", e.getMessage());
+            throw e;
         }
     }
 

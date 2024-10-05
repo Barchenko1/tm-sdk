@@ -1,6 +1,5 @@
 package com.tm.core.configuration.cp;
 
-import com.tm.core.util.CoreConstants;
 import com.tm.core.util.setting.HikariSetting;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Environment;
@@ -11,12 +10,13 @@ import org.slf4j.LoggerFactory;
 import java.util.Properties;
 
 public class ConnectionPullHikariConfiguration extends AbstractConnectionPullConfiguration {
-    private static final Logger log = LoggerFactory.getLogger(ConnectionPullHikariConfiguration.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionPullHikariConfiguration.class);
 
     @Override
-    public SessionFactory createSessionFactoryByProperties() {
-        log.info("Hikari createSessionFactoryWithProperties");
-        Properties properties = configurationFileProvider.loadHibernateConfigurationFile(CoreConstants.HIKARI_PROPERTIES_FILE_NAME);
+    public SessionFactory createSessionFactoryByProperties(String filename) {
+        LOGGER.info("call createSessionFactoryWithProperties, filename: {}", filename);
+        Properties properties =
+                configurationFileProvider.loadHibernateConfigurationFile(filename);
         Properties settings = new Properties();
         settings.put(Environment.DRIVER, properties.getProperty(Environment.DRIVER));
         settings.put(Environment.URL, properties.getProperty(Environment.URL));
@@ -24,7 +24,6 @@ public class ConnectionPullHikariConfiguration extends AbstractConnectionPullCon
         settings.put(Environment.PASS, properties.getProperty(Environment.PASS));
         settings.put(Environment.DIALECT, properties.getProperty(Environment.DIALECT));
 
-        settings.put(Environment.SHOW_SQL, properties.getProperty(Environment.SHOW_SQL));
         settings.put(Environment.HBM2DDL_AUTO, properties.getProperty(Environment.HBM2DDL_AUTO));
         settings.put(Environment.AUTOCOMMIT, properties.getOrDefault(Environment.AUTOCOMMIT, "false"));
 
@@ -48,9 +47,9 @@ public class ConnectionPullHikariConfiguration extends AbstractConnectionPullCon
     }
 
     @Override
-    public SessionFactory createSessionFactoryByHibernateXML() {
-        log.info("Hikari createSessionFactoryWithHibernateXML");
-        return super.createSessionFactoryWithXMLConfiguration(CoreConstants.HIKARI_HIBERNATE_XML_FILE_NAME);
+    public SessionFactory createSessionFactoryByHibernateXML(String filename) {
+        LOGGER.info("call createSessionFactoryWithHibernateXML, file name = {}", filename);
+        return super.createSessionFactoryWithXMLConfiguration(filename);
     }
 
 }

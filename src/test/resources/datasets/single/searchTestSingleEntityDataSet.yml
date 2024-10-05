@@ -1,0 +1,7 @@
+singleTestEntity:
+  - id: 1
+    name: "Test Entity 1"
+  - id: 2
+    name: "Test Entity 2"
+  - id: 3
+    name: "Test Entity 3"

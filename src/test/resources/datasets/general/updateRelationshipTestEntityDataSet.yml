@@ -1,0 +1,7 @@
+singleDependentTestEntity:
+  - name: "Updated Single Dependent Entity"
+dependentTestEntity:
+  - name: "Updated Dependent Entity"
+  - name: "Updated Dependent Entity"
+relationshipRootTestEntity:
+  - name: "Updated Relationship Root Entity"

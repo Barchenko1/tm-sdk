@@ -3,52 +3,51 @@ package com.tm.core.configuration.factory;
 import com.tm.core.configuration.ConfigDbType;
 import com.tm.core.configuration.cp.ConnectionPullHikariConfiguration;
 import com.tm.core.configuration.cp.IConnectionPullConfiguration;
-import com.tm.core.util.format.FileFormatter;
-import com.tm.core.util.format.IFileFormatter;
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ConfigurationSessionFactory implements IConfigurationSessionFactory {
 
-    private static final Logger log = LoggerFactory.getLogger(ConfigurationSessionFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationSessionFactory.class);
 
-    private final IFileFormatter fileFormatter = new FileFormatter();
-    private final ConfigDbType configDbType;
-    private SessionFactory sessionFactory;
-    private Class<?>[] annotationClasses;
-    private String fileName;
-
-    public ConfigurationSessionFactory(ConfigDbType configDbType) {
-        this.configDbType = configDbType;
-    }
+    private final IConnectionPullConfiguration connectionPullConfiguration = new ConnectionPullHikariConfiguration();
+    private final String fileName;
+    private final Class<?>[] annotationClasses;
 
     public ConfigurationSessionFactory(String fileName) {
-        this.configDbType = getFileType(fileName);
         this.fileName = fileName;
-    }
-
-    public ConfigurationSessionFactory(ConfigDbType configDbType, Class<?>[] annotationClasses) {
-        this.configDbType = configDbType;
-        this.annotationClasses = annotationClasses;
+        this.annotationClasses = null;
     }
 
     public ConfigurationSessionFactory(String fileName, Class<?>[] annotationClasses) {
-        this.configDbType = getFileType(fileName);
         this.fileName = fileName;
         this.annotationClasses = annotationClasses;
     }
 
-    public SessionFactory getSessionFactory() {
-        if (sessionFactory == null) {
-            this.sessionFactory = configureSessionFactory();
-        }
-        return configureSessionFactory();
-    }
+//    public SessionFactory getSessionFactory() {
+//        if (sessionFactory == null) {
+//            this.sessionFactory = configureSessionFactory();
+//        }
+//        return sessionFactory;
+//        return configureSessionFactory();
+//    }
 
-    private SessionFactory configureSessionFactory() {
-        IConnectionPullConfiguration connectionPullConfiguration = new ConnectionPullHikariConfiguration();
-        return configDbSessionFactory(connectionPullConfiguration);
+    @Override
+    public SessionFactory configureSessionFactory() {
+        SessionFactory sessionFactory = null;
+        ConfigDbType configDbType = getFileType(fileName);
+        if (ConfigDbType.XML.equals(configDbType)) {
+            sessionFactory =
+                    connectionPullConfiguration.createSessionFactoryByHibernateXML(fileName);
+        }
+        if (ConfigDbType.PROPERTIES.equals(configDbType)) {
+            connectionPullConfiguration.setAnnotatedClasses(annotationClasses);
+            sessionFactory =
+                    connectionPullConfiguration.createSessionFactoryByProperties(fileName);
+        }
+
+        return sessionFactory;
     }
 
     private ConfigDbType getFileType(String fileName) {
@@ -61,27 +60,8 @@ public class ConfigurationSessionFactory implements IConfigurationSessionFactory
         } else if (fileName.endsWith(".properties")) {
             return ConfigDbType.PROPERTIES;
         }
-        throw new RuntimeException();
+        LOGGER.warn("no configuration selected");
+        throw new IllegalArgumentException("no configuration selected");
     }
 
-    private SessionFactory configDbSessionFactory(IConnectionPullConfiguration connectionPullConfiguration) {
-        SessionFactory sessionFactory = null;
-        if (ConfigDbType.XML.equals(configDbType)) {
-            sessionFactory =
-                    connectionPullConfiguration.createSessionFactoryByHibernateXML();
-        }
-        if (ConfigDbType.PROPERTIES.equals(configDbType)) {
-            connectionPullConfiguration.setAnnotatedClasses(annotationClasses);
-            sessionFactory =
-                    connectionPullConfiguration.createSessionFactoryByProperties();
-        }
-
-
-        if (sessionFactory == null) {
-            log.warn("no configuration selected");
-            throw new RuntimeException();
-        }
-
-        return sessionFactory;
-    }
 }
