@@ -1,4 +1,4 @@
-ALTER SYSTEM SET max_connections = 250;  -- Adjust this value as needed
+ALTER SYSTEM SET max_connections = 350;  -- Adjust this value as needed
 
 
 create table dependentTestEntity (

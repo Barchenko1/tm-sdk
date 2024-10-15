@@ -1,0 +1,4 @@
+transitiveSelfTestEntity:
+  - name: "Update Parent"
+  - name: "Update Root"
+  - name: "Child"

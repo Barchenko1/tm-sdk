@@ -6,7 +6,7 @@ import java.lang.reflect.Field;
 
 public final class EntityFieldHelper implements IEntityFieldHelper {
 
-    public <E> long findId(E entity) {
+    public <E> Long findId(E entity) {
         try {
             Field idField = entity.getClass().getDeclaredField("id");
             idField.setAccessible(true); // In case the field is private

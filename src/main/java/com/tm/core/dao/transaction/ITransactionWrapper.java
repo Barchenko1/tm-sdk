@@ -11,4 +11,5 @@ public interface ITransactionWrapper {
     <E> void updateEntity(Supplier<E> supplier);
     void updateEntity(Consumer<Session> consumer);
     <E> void deleteEntity(Supplier<E> supplier);
+    void deleteEntity(Consumer<Session> consumer);
 }

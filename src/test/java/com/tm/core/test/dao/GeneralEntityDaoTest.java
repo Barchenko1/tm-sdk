@@ -5,12 +5,13 @@ import com.github.database.rider.core.api.configuration.Orthography;
 import com.github.database.rider.core.api.connection.ConnectionHolder;
 import com.github.database.rider.core.api.dataset.DataSet;
 import com.github.database.rider.core.api.dataset.ExpectedDataSet;
-import com.github.database.rider.core.dsl.RiderDSL;
 import com.github.database.rider.junit5.api.DBRider;
 import com.tm.core.dao.basic.TestGeneralEntityDao;
 import com.tm.core.dao.general.AbstractGeneralEntityDao;
 import com.tm.core.dao.general.IGeneralEntityDao;
+import com.tm.core.dao.identifier.EntityIdentifierDao;
 import com.tm.core.dao.identifier.IEntityIdentifierDao;
+import com.tm.core.dao.single.AbstractSingleEntityDao;
 import com.tm.core.modal.GeneralEntity;
 import com.tm.core.modal.relationship.DependentTestEntity;
 import com.tm.core.modal.relationship.RelationshipRootTestEntity;
@@ -19,6 +20,8 @@ import com.tm.core.processor.finder.parameter.Parameter;
 import com.tm.core.processor.finder.manager.EntityMappingManager;
 import com.tm.core.processor.finder.manager.IEntityMappingManager;
 import com.tm.core.processor.finder.table.EntityTable;
+import com.tm.core.processor.thread.IThreadLocalSessionManager;
+import com.tm.core.processor.thread.ThreadLocalSessionManager;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -26,13 +29,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.sql.DataSource;
 import java.lang.reflect.Field;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -45,7 +45,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -55,10 +54,9 @@ import static org.mockito.Mockito.when;
 @DBUnit(caseInsensitiveStrategy = Orthography.LOWERCASE)
 class GeneralEntityDaoTest {
 
-    @Mock
-    private static IEntityIdentifierDao entityIdentifierDao;
+    private static IThreadLocalSessionManager sessionManager;
+    private static SessionFactory sessionFactory;
 
-    @InjectMocks
     private static TestGeneralEntityDao testRelationshipEntityDao;
 
     private static ConnectionHolder connectionHolder;
@@ -67,23 +65,25 @@ class GeneralEntityDaoTest {
     public static void setUpAll() {
         DataSource dataSource = getHikariDataSource();
         connectionHolder = dataSource::getConnection;
-        try {
-            RiderDSL.withConnection(connectionHolder.getConnection());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
 
-        SessionFactory sessionFactory = getSessionFactory();
+        sessionFactory = getSessionFactory();
+        sessionManager = new ThreadLocalSessionManager(sessionFactory);
+
         IEntityMappingManager entityMappingManager = getEntityMappingManager();
+        IEntityIdentifierDao entityIdentifierDao = new EntityIdentifierDao(sessionManager, entityMappingManager);
         testRelationshipEntityDao = new TestGeneralEntityDao(sessionFactory, entityIdentifierDao);
     }
 
     @BeforeEach
     public void setUp() {
         try {
-            Field sessionManagerField = AbstractGeneralEntityDao.class.getDeclaredField("entityIdentifierDao");
+            Field sessionFactoryField = AbstractGeneralEntityDao.class.getDeclaredField("sessionFactory");
+            sessionFactoryField.setAccessible(true);
+            sessionFactoryField.set(testRelationshipEntityDao, sessionFactory);
+
+            Field sessionManagerField = AbstractGeneralEntityDao.class.getDeclaredField("sessionManager");
             sessionManagerField.setAccessible(true);
-            sessionManagerField.set(testRelationshipEntityDao, entityIdentifierDao);
+            sessionManagerField.set(testRelationshipEntityDao, sessionManager);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -167,12 +167,9 @@ class GeneralEntityDaoTest {
     }
 
     @Test
+    @DataSet("datasets/general/testRelationshipTestEntityDataSet.yml")
     void getEntityList_success() {
         Parameter parameter = new Parameter("id", 1L);
-
-        RelationshipRootTestEntity relationshipRootTestEntity = prepareRelationshipRootTestEntityDbMock();
-
-        when(entityIdentifierDao.getEntityList(eq(RelationshipRootTestEntity.class), eq(parameter))).thenReturn(List.of(relationshipRootTestEntity));
 
         List<RelationshipRootTestEntity> result =
                 testRelationshipEntityDao.getGeneralEntityList(parameter);
@@ -189,12 +186,9 @@ class GeneralEntityDaoTest {
     }
 
     @Test
+    @DataSet("datasets/general/testRelationshipTestEntityDataSet.yml")
     void getEntityListWithClass_success() {
         Parameter parameter = new Parameter("id", 1L);
-
-        RelationshipRootTestEntity relationshipRootTestEntity = prepareRelationshipRootTestEntityDbMock();
-
-        when(entityIdentifierDao.getEntityList(eq(RelationshipRootTestEntity.class), eq(parameter))).thenReturn(List.of(relationshipRootTestEntity));
 
         List<RelationshipRootTestEntity> result =
                 testRelationshipEntityDao.getGeneralEntityList(RelationshipRootTestEntity.class, parameter);
@@ -212,9 +206,7 @@ class GeneralEntityDaoTest {
 
     @Test
     void getEntityList_Failure() {
-        Parameter parameter = new Parameter("id", 100L);
-
-        doThrow(new RuntimeException()).when(entityIdentifierDao).getEntityList(RelationshipRootTestEntity.class, parameter);
+        Parameter parameter = new Parameter("id1", 1L);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             testRelationshipEntityDao.getGeneralEntityList(parameter);
@@ -223,9 +215,7 @@ class GeneralEntityDaoTest {
 
     @Test
     void getEntityListWithClass_Failure() {
-        Parameter parameter = new Parameter("id", 100L);
-
-        doThrow(new RuntimeException()).when(entityIdentifierDao).getEntityList(RelationshipRootTestEntity.class, parameter);
+        Parameter parameter = new Parameter("id1", 1L);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             testRelationshipEntityDao.getGeneralEntityList(Object.class, parameter);
@@ -258,7 +248,7 @@ class GeneralEntityDaoTest {
     @Test
     void saveRelationshipEntity_transactionFailure() {
         RelationshipRootTestEntity relationshipRootTestEntity = new RelationshipRootTestEntity();
-        relationshipRootTestEntity.setId(100L);
+        relationshipRootTestEntity.setId(1L);
         relationshipRootTestEntity.setName("New RelationshipRootTestEntity");
 
         GeneralEntity generalEntity = new GeneralEntity();
@@ -268,13 +258,10 @@ class GeneralEntityDaoTest {
         Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
 
-        IGeneralEntityDao testRelationshipEntityDao =
-                new TestGeneralEntityDao(sessionFactory, entityIdentifierDao);
-
         try {
-            Field sessionManagerField = AbstractGeneralEntityDao.class.getDeclaredField("entityIdentifierDao");
+            Field sessionManagerField = AbstractGeneralEntityDao.class.getDeclaredField("sessionFactory");
             sessionManagerField.setAccessible(true);
-            sessionManagerField.set(testRelationshipEntityDao, entityIdentifierDao);
+            sessionManagerField.set(testRelationshipEntityDao, sessionFactory);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -304,38 +291,20 @@ class GeneralEntityDaoTest {
     }
 
     @Test
+    @DataSet("datasets/general/emptyRelationshipTestEntityDataSet.yml")
     void saveRelationshipEntityConsumer_transactionFailure() {
-        SessionFactory sessionFactory = mock(SessionFactory.class);
-        Session session = mock(Session.class);
-        Transaction transaction = mock(Transaction.class);
-
-        IGeneralEntityDao testRelationshipEntityDao =
-                new TestGeneralEntityDao(sessionFactory, entityIdentifierDao);
-
-        try {
-            Field sessionManagerField = AbstractGeneralEntityDao.class.getDeclaredField("entityIdentifierDao");
-            sessionManagerField.setAccessible(true);
-            sessionManagerField.set(testRelationshipEntityDao, entityIdentifierDao);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        when(sessionFactory.openSession()).thenReturn(session);
-        when(session.beginTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(transaction).commit();
-
         Consumer<Session> consumer = (Session s) -> {
             RelationshipRootTestEntity relationshipRootTestEntity = new RelationshipRootTestEntity();
-            relationshipRootTestEntity.setId(100L);
             relationshipRootTestEntity.setName("New RelationshipRootTestEntity");
             s.persist(relationshipRootTestEntity);
+            throw new RuntimeException();
         };
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             testRelationshipEntityDao.saveGeneralEntity(consumer);
         });
 
-        assertEquals(RuntimeException.class, exception.getClass());
+        assertEquals(IllegalStateException.class, exception.getClass());
     }
 
     @Test
@@ -362,32 +331,15 @@ class GeneralEntityDaoTest {
         RelationshipRootTestEntity relationshipRootTestEntity = prepareToSaveRelationshipRootTestEntity();
         relationshipRootTestEntity.setId(1L);
 
-        SessionFactory sessionFactory = mock(SessionFactory.class);
-        Session session = mock(Session.class);
-        Transaction transaction = mock(Transaction.class);
-
-        IGeneralEntityDao testRelationshipEntityDao =
-                new TestGeneralEntityDao(sessionFactory, entityIdentifierDao);
-
-        try {
-            Field sessionManagerField = AbstractGeneralEntityDao.class.getDeclaredField("entityIdentifierDao");
-            sessionManagerField.setAccessible(true);
-            sessionManagerField.set(testRelationshipEntityDao, entityIdentifierDao);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        when(sessionFactory.openSession()).thenReturn(session);
-        when(session.beginTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(session).merge(any());
-
         Supplier<RelationshipRootTestEntity> relationshipRootTestEntitySupplier = () -> {
-            return null;
+            throw new RuntimeException();
         };
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        Exception exception = assertThrows(RuntimeException.class, () -> {
             testRelationshipEntityDao.updateGeneralEntity(relationshipRootTestEntitySupplier);
         });
+
+        assertEquals(IllegalStateException.class, exception.getClass());
     }
 
     @Test
@@ -410,26 +362,8 @@ class GeneralEntityDaoTest {
     }
 
     @Test
+    @DataSet("datasets/general/testRelationshipTestEntityDataSet.yml")
     void updateRelationshipEntityConsumer_transactionFailure() {
-        SessionFactory sessionFactory = mock(SessionFactory.class);
-        Session session = mock(Session.class);
-        Transaction transaction = mock(Transaction.class);
-
-        IGeneralEntityDao testRelationshipEntityDao =
-                new TestGeneralEntityDao(sessionFactory, entityIdentifierDao);
-
-        try {
-            Field sessionManagerField = AbstractGeneralEntityDao.class.getDeclaredField("entityIdentifierDao");
-            sessionManagerField.setAccessible(true);
-            sessionManagerField.set(testRelationshipEntityDao, entityIdentifierDao);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        when(sessionFactory.openSession()).thenReturn(session);
-        when(session.beginTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(session).merge(any());
-
         Consumer<Session> relationshipRootTestEntitySupplier = (Session s) -> {
             RelationshipRootTestEntity relationshipRootTestEntity = prepareToSaveRelationshipRootTestEntity();
             relationshipRootTestEntity.setId(1L);
@@ -439,6 +373,8 @@ class GeneralEntityDaoTest {
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             testRelationshipEntityDao.updateGeneralEntity(relationshipRootTestEntitySupplier);
         });
+
+        assertEquals(IllegalStateException.class, exception.getClass());
     }
 
     @Test
@@ -446,10 +382,6 @@ class GeneralEntityDaoTest {
     @ExpectedDataSet("datasets/general/emptyRelationshipTestEntityDataSet.yml")
     void deleteRelationshipEntity_success() {
         Parameter parameter = new Parameter("id", 1);
-        RelationshipRootTestEntity relationshipRootTestEntity = prepareRelationshipRootTestEntityDbMock();
-
-        when(entityIdentifierDao.getEntityList(RelationshipRootTestEntity.class, parameter))
-                .thenReturn(List.of(relationshipRootTestEntity));
 
         testRelationshipEntityDao.deleteGeneralEntity(parameter);
     }
@@ -457,12 +389,82 @@ class GeneralEntityDaoTest {
     @Test
     @DataSet("datasets/general/testRelationshipTestEntityDataSet.yml")
     @ExpectedDataSet("datasets/general/emptyRelationshipTestEntityDataSet.yml")
-    void deleteRelationshipEntityWithClass_success() {
-        Parameter parameter = new Parameter("id", 1);
+    void deleteRelationshipEntityByConsumer_success() {
+        Consumer<Session> consumer = (Session s) -> {
+            RelationshipRootTestEntity relationshipRootTestEntity = prepareRelationshipRootTestEntityDbMock();
+            s.remove(relationshipRootTestEntity.getSingleDependentTestEntity());
+            relationshipRootTestEntity.getDependentTestEntityList().forEach(s::remove);
+            s.remove(relationshipRootTestEntity);
+        };
+
+        testRelationshipEntityDao.deleteGeneralEntity(consumer);
+    }
+
+    @Test
+    @DataSet("datasets/general/testRelationshipTestEntityDataSet.yml")
+    void deleteRelationshipEntityByConsumer_transactionFailure() {
+        Consumer<Session> consumer = (Session s) -> {
+            throw new RuntimeException();
+        };
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            testRelationshipEntityDao.deleteGeneralEntity(consumer);
+        });
+
+        assertEquals(IllegalStateException.class, exception.getClass());
+    }
+
+    @Test
+    @DataSet("datasets/general/testRelationshipTestEntityDataSet.yml")
+    @ExpectedDataSet("datasets/general/emptyRelationshipTestEntityDataSet.yml")
+    void deleteRelationshipEntityByGeneralEntity_success() {
         RelationshipRootTestEntity relationshipRootTestEntity = prepareRelationshipRootTestEntityDbMock();
 
-        when(entityIdentifierDao.getEntityList(RelationshipRootTestEntity.class, parameter))
-                .thenReturn(List.of(relationshipRootTestEntity));
+        GeneralEntity generalEntity = new GeneralEntity();
+        generalEntity.addEntityPriority(1, relationshipRootTestEntity.getDependentTestEntityList().get(0));
+        generalEntity.addEntityPriority(1, relationshipRootTestEntity.getDependentTestEntityList().get(1));
+        generalEntity.addEntityPriority(1, relationshipRootTestEntity.getSingleDependentTestEntity());
+        generalEntity.addEntityPriority(2, relationshipRootTestEntity);
+
+        testRelationshipEntityDao.deleteGeneralEntity(generalEntity);
+    }
+
+    @Test
+    @DataSet("datasets/general/testRelationshipTestEntityDataSet.yml")
+    void deleteRelationshipEntityByGeneralEntity_transactionFailure() {
+        SessionFactory sessionFactory = mock(SessionFactory.class);
+        Session session = mock(Session.class);
+        Transaction transaction = mock(Transaction.class);
+
+        try {
+            Field sessionManagerField = AbstractGeneralEntityDao.class.getDeclaredField("sessionFactory");
+            sessionManagerField.setAccessible(true);
+            sessionManagerField.set(testRelationshipEntityDao, sessionFactory);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        when(sessionFactory.openSession()).thenReturn(session);
+        when(session.beginTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(session).remove(any(Object.class));
+
+        RelationshipRootTestEntity relationshipRootTestEntity = prepareRelationshipRootTestEntityDbMock();
+
+        GeneralEntity generalEntity = new GeneralEntity();
+        generalEntity.addEntityPriority(2, relationshipRootTestEntity);
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            testRelationshipEntityDao.deleteGeneralEntity(generalEntity);
+        });
+
+        assertEquals(RuntimeException.class, exception.getClass());
+    }
+
+    @Test
+    @DataSet("datasets/general/testRelationshipTestEntityDataSet.yml")
+    @ExpectedDataSet("datasets/general/emptyRelationshipTestEntityDataSet.yml")
+    void deleteRelationshipEntityWithClass_success() {
+        Parameter parameter = new Parameter("id", 1);
 
         testRelationshipEntityDao.deleteGeneralEntity(RelationshipRootTestEntity.class, parameter);
     }
@@ -472,26 +474,22 @@ class GeneralEntityDaoTest {
         RelationshipRootTestEntity relationshipRootTestEntity = new RelationshipRootTestEntity();
         relationshipRootTestEntity.setName("New RelationshipRootTestEntity");
 
-        Parameter parameter = new Parameter("id", 100L);
+        Parameter parameter = new Parameter("id", 1L);
 
-        SessionFactory sessionFactory = mock(SessionFactory.class);
+        IThreadLocalSessionManager sessionManager = mock(IThreadLocalSessionManager.class);
         Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
 
-        IGeneralEntityDao testRelationshipEntityDao =
-                new TestGeneralEntityDao(sessionFactory, entityIdentifierDao);
-
         try {
-            Field sessionManagerField = AbstractGeneralEntityDao.class.getDeclaredField("entityIdentifierDao");
+            Field sessionManagerField = AbstractGeneralEntityDao.class.getDeclaredField("sessionManager");
             sessionManagerField.setAccessible(true);
-            sessionManagerField.set(testRelationshipEntityDao, entityIdentifierDao);
+            sessionManagerField.set(testRelationshipEntityDao, sessionManager);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        when(sessionFactory.openSession()).thenReturn(session);
+        when(sessionManager.getSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
-        when(entityIdentifierDao.getEntityList(any(), eq(parameter))).thenReturn(List.of(relationshipRootTestEntity));
         doThrow(new RuntimeException()).when(session).remove(any(Object.class));
 
         GeneralEntity generalEntity = new GeneralEntity();
@@ -505,30 +503,27 @@ class GeneralEntityDaoTest {
     }
 
     @Test
+    @DataSet("datasets/general/testRelationshipTestEntityDataSet.yml")
     void deleteRelationshipEntityWithClass_transactionFailure() {
         RelationshipRootTestEntity relationshipRootTestEntity = new RelationshipRootTestEntity();
         relationshipRootTestEntity.setName("New RelationshipRootTestEntity");
 
-        Parameter parameter = new Parameter("id", 100L);
+        Parameter parameter = new Parameter("id", 1L);
 
-        SessionFactory sessionFactory = mock(SessionFactory.class);
+        IThreadLocalSessionManager sessionManager = mock(IThreadLocalSessionManager.class);
         Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
 
-        IGeneralEntityDao testRelationshipEntityDao =
-                new TestGeneralEntityDao(sessionFactory, entityIdentifierDao);
-
         try {
-            Field sessionManagerField = AbstractGeneralEntityDao.class.getDeclaredField("entityIdentifierDao");
+            Field sessionManagerField = AbstractGeneralEntityDao.class.getDeclaredField("sessionManager");
             sessionManagerField.setAccessible(true);
-            sessionManagerField.set(testRelationshipEntityDao, entityIdentifierDao);
+            sessionManagerField.set(testRelationshipEntityDao, sessionManager);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        when(sessionFactory.openSession()).thenReturn(session);
+        when(sessionManager.getSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
-        when(entityIdentifierDao.getEntityList(any(), eq(parameter))).thenReturn(List.of(relationshipRootTestEntity));
         doThrow(new RuntimeException()).when(session).remove(any(Object.class));
 
         GeneralEntity generalEntity = new GeneralEntity();
@@ -542,11 +537,9 @@ class GeneralEntityDaoTest {
     }
 
     @Test
+    @DataSet("datasets/general/testRelationshipTestEntityDataSet.yml")
     void getOptionalEntityWithDependencies_success() {
         Parameter parameter = new Parameter("id", 1L);
-
-        RelationshipRootTestEntity relationshipRootTestEntity = prepareRelationshipRootTestEntityDbMock();
-        when(entityIdentifierDao.getOptionalEntity(eq(RelationshipRootTestEntity.class), eq(parameter))).thenReturn(Optional.of(relationshipRootTestEntity));
 
         Optional<RelationshipRootTestEntity> result =
                 testRelationshipEntityDao.getOptionalGeneralEntity(parameter);
@@ -555,26 +548,25 @@ class GeneralEntityDaoTest {
         RelationshipRootTestEntity resultEntity = result.get();
         assertEquals(1L, resultEntity.getId());
         assertEquals("Relationship Root Entity", resultEntity.getName());
+
     }
 
     @Test
-    @DataSet("datasets/general/testRelationshipTestEntityDataSet.yml")
     void getOptionalEntityWithDependencies_Failure() {
-        Parameter parameter = new Parameter("id", 100L);
-
-        doThrow(new RuntimeException()).when(entityIdentifierDao).getOptionalEntity(RelationshipRootTestEntity.class, parameter);
+        Parameter parameter = new Parameter("id1", 1L);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             testRelationshipEntityDao.getOptionalGeneralEntity(parameter);
         });
+
     }
 
     @Test
+    @DataSet("datasets/general/testRelationshipTestEntityDataSet.yml")
     void getOptionalEntityWithDependenciesWithClass_success() {
         Parameter parameter = new Parameter("id", 1L);
 
         RelationshipRootTestEntity relationshipRootTestEntity = prepareRelationshipRootTestEntityDbMock();
-        when(entityIdentifierDao.getOptionalEntity(eq(RelationshipRootTestEntity.class), eq(parameter))).thenReturn(Optional.of(relationshipRootTestEntity));
 
         Optional<RelationshipRootTestEntity> result =
                 testRelationshipEntityDao.getOptionalGeneralEntity(RelationshipRootTestEntity.class, parameter);
@@ -588,9 +580,7 @@ class GeneralEntityDaoTest {
     @Test
     @DataSet("datasets/general/testRelationshipTestEntityDataSet.yml")
     void getOptionalEntityWithDependenciesWithClass_Failure() {
-        Parameter parameter = new Parameter("id", 100L);
-
-        doThrow(new RuntimeException()).when(entityIdentifierDao).getOptionalEntity(RelationshipRootTestEntity.class, parameter);
+        Parameter parameter = new Parameter("id1", 1L);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             testRelationshipEntityDao.getOptionalGeneralEntity(RelationshipRootTestEntity.class, parameter);
@@ -613,7 +603,6 @@ class GeneralEntityDaoTest {
         Parameter parameter = new Parameter("id", 1L);
 
         RelationshipRootTestEntity relationshipRootTestEntity = prepareRelationshipRootTestEntityDbMock();
-        when(entityIdentifierDao.getEntity(eq(RelationshipRootTestEntity.class), eq(parameter))).thenReturn(relationshipRootTestEntity);
 
         RelationshipRootTestEntity result =
                 testRelationshipEntityDao.getGeneralEntity(parameter);
@@ -624,15 +613,12 @@ class GeneralEntityDaoTest {
 
     @Test
     void getEntityWithDependencies_Failure() {
-        Parameter parameter = new Parameter("id", 100L);
-
-        doThrow(new RuntimeException()).when(entityIdentifierDao).getEntity(RelationshipRootTestEntity.class, parameter);
+        Parameter parameter = new Parameter("id1", 1L);
 
         assertThrows(RuntimeException.class, () -> {
             testRelationshipEntityDao.getGeneralEntity(parameter);
         });
     }
-
 
     @Test
     @DataSet("datasets/general/testRelationshipTestEntityDataSet.yml")
@@ -640,7 +626,6 @@ class GeneralEntityDaoTest {
         Parameter parameter = new Parameter("id", 1L);
 
         RelationshipRootTestEntity relationshipRootTestEntity = prepareRelationshipRootTestEntityDbMock();
-        when(entityIdentifierDao.getEntity(eq(RelationshipRootTestEntity.class), eq(parameter))).thenReturn(relationshipRootTestEntity);
 
         RelationshipRootTestEntity result =
                 testRelationshipEntityDao.getGeneralEntity(RelationshipRootTestEntity.class, parameter);
@@ -651,9 +636,7 @@ class GeneralEntityDaoTest {
 
     @Test
     void getEntityWithDependenciesWithClass_Failure() {
-        Parameter parameter = new Parameter("id", 100L);
-
-        doThrow(new RuntimeException()).when(entityIdentifierDao).getEntity(RelationshipRootTestEntity.class, parameter);
+        Parameter parameter = new Parameter("id1", 1L);
 
         assertThrows(RuntimeException.class, () -> {
             testRelationshipEntityDao.getGeneralEntity(RelationshipRootTestEntity.class, parameter);

@@ -1,11 +1,7 @@
 package com.tm.core.dao.query;
 
-import com.tm.core.dao.identifier.EntityIdentifierDao;
 import com.tm.core.dao.identifier.IEntityIdentifierDao;
-import com.tm.core.processor.finder.manager.IEntityMappingManager;
 import com.tm.core.processor.finder.parameter.Parameter;
-import com.tm.core.processor.finder.scanner.EntityScanner;
-import com.tm.core.processor.finder.scanner.IEntityScanner;
 import com.tm.core.processor.thread.IThreadLocalSessionManager;
 import com.tm.core.processor.thread.ThreadLocalSessionManager;
 import org.hibernate.SessionFactory;
@@ -22,28 +18,37 @@ public class SearchWrapper implements ISearchWrapper {
     IThreadLocalSessionManager sessionManager;
     private final IEntityIdentifierDao entityIdentifierDao;
 
-    public SearchWrapper(SessionFactory sessionFactory,
+    public SearchWrapper(IThreadLocalSessionManager sessionManager,
                          IEntityIdentifierDao entityIdentifierDao) {
-        this.sessionManager = new ThreadLocalSessionManager(sessionFactory);
+        this.sessionManager = sessionManager;
         this.entityIdentifierDao = entityIdentifierDao;
     }
 
     @Override
     public <E> Supplier<List<E>> getEntityListSupplier(Class<?> clazz, Parameter... parameters) {
-        return () ->
-                entityIdentifierDao.getEntityList(clazz, parameters);
+        try {
+            return () -> entityIdentifierDao.getEntityList(clazz, parameters);
+        } finally {
+            sessionManager.closeSession();
+        }
     }
 
     @Override
     public <E> Supplier<E> getEntitySupplier(Class<?> clazz, Parameter... parameters) {
-        return () ->
-                entityIdentifierDao.getEntity(clazz, parameters);
+        try {
+            return () -> entityIdentifierDao.getEntity(clazz, parameters);
+        } finally {
+            sessionManager.closeSession();
+        }
     }
 
     @Override
     public <E> Supplier<Optional<E>> getOptionalEntitySupplier(Class<?> clazz, Parameter... parameters) {
-        return () ->
-                entityIdentifierDao.getOptionalEntity(clazz, parameters);
+        try {
+            return () -> entityIdentifierDao.getOptionalEntity(clazz, parameters);
+        } finally {
+            sessionManager.closeSession();
+        }
     }
 
 }

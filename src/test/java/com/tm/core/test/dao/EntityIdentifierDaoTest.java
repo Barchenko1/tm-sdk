@@ -4,7 +4,6 @@ import com.github.database.rider.core.api.configuration.DBUnit;
 import com.github.database.rider.core.api.configuration.Orthography;
 import com.github.database.rider.core.api.connection.ConnectionHolder;
 import com.github.database.rider.core.api.dataset.DataSet;
-import com.github.database.rider.core.dsl.RiderDSL;
 import com.github.database.rider.junit5.api.DBRider;
 import com.tm.core.dao.identifier.EntityIdentifierDao;
 import com.tm.core.dao.identifier.IEntityIdentifierDao;
@@ -17,14 +16,11 @@ import com.tm.core.processor.thread.IThreadLocalSessionManager;
 import com.tm.core.processor.thread.ThreadLocalSessionManager;
 import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.sql.DataSource;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,7 +36,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DBUnit(caseInsensitiveStrategy = Orthography.LOWERCASE)
 public class EntityIdentifierDaoTest {
 
-//    @InjectMocks
     private static IEntityIdentifierDao entityIdentifierDao;
 
     private static ConnectionHolder connectionHolder;
@@ -49,11 +44,6 @@ public class EntityIdentifierDaoTest {
     public static void setUpAll() {
         DataSource dataSource = getHikariDataSource();
         connectionHolder = dataSource::getConnection;
-        try {
-            RiderDSL.withConnection(connectionHolder.getConnection());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
 
         SessionFactory sessionFactory = getSessionFactory();
         IThreadLocalSessionManager sessionManager = new ThreadLocalSessionManager(sessionFactory);
@@ -62,6 +52,8 @@ public class EntityIdentifierDaoTest {
         entityMappingManager.addEntityTable(entityTable);
         entityIdentifierDao = new EntityIdentifierDao(sessionManager, entityMappingManager);
     }
+
+
 
     @Test
     @DataSet("/datasets/single/searchTestSingleEntityDataSet.yml")

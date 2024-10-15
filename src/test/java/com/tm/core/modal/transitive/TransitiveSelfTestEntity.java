@@ -37,6 +37,11 @@ public class TransitiveSelfTestEntity extends TransitiveSelfEntity {
     }
 
     @Override
+    public void setParent(TransitiveSelfEntity parent) {
+        this.parent = (TransitiveSelfTestEntity) parent;
+    }
+
+    @Override
     public String getRootField() {
         return name;
     }
@@ -62,4 +67,15 @@ public class TransitiveSelfTestEntity extends TransitiveSelfEntity {
         this.name = name;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+//    public void setParent(TransitiveSelfEntity parent) {
+//        this.parent = parent;
+//    }
+
+    public void setChildNodeList(List<TransitiveSelfTestEntity> childNodeList) {
+        this.childNodeList = childNodeList;
+    }
 }

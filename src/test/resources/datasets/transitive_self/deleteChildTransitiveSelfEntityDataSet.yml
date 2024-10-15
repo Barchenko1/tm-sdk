@@ -1,0 +1,5 @@
+transitiveSelfTestEntity:
+  - id: 1
+    name: "Parent"
+  - id: 2
+    name: "Root"

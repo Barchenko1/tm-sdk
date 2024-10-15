@@ -4,12 +4,17 @@ import com.github.database.rider.core.api.configuration.DBUnit;
 import com.github.database.rider.core.api.configuration.Orthography;
 import com.github.database.rider.core.api.connection.ConnectionHolder;
 import com.github.database.rider.core.api.dataset.DataSet;
-import com.github.database.rider.core.dsl.RiderDSL;
 import com.github.database.rider.junit5.api.DBRider;
+import com.tm.core.dao.identifier.EntityIdentifierDao;
 import com.tm.core.dao.query.SearchWrapper;
 import com.tm.core.dao.identifier.IEntityIdentifierDao;
 import com.tm.core.modal.single.SingleTestEntity;
+import com.tm.core.processor.finder.manager.EntityMappingManager;
+import com.tm.core.processor.finder.manager.IEntityMappingManager;
 import com.tm.core.processor.finder.parameter.Parameter;
+import com.tm.core.processor.finder.table.EntityTable;
+import com.tm.core.processor.thread.IThreadLocalSessionManager;
+import com.tm.core.processor.thread.ThreadLocalSessionManager;
 import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,18 +35,14 @@ import static com.tm.core.configuration.ConfigureSessionFactoryTest.getSessionFa
 import static com.tm.core.configuration.DataSourcePool.getHikariDataSource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DBRider
 @DBUnit(caseInsensitiveStrategy = Orthography.LOWERCASE)
 public class SearchWrapperTest {
 
-    @Mock
     private static IEntityIdentifierDao entityIdentifierDao;
 
-    @InjectMocks
     private static SearchWrapper searchWrapper;
 
     private static ConnectionHolder connectionHolder;
@@ -50,14 +51,14 @@ public class SearchWrapperTest {
     public static void setUpAll() {
         DataSource dataSource = getHikariDataSource();
         connectionHolder = dataSource::getConnection;
-        try {
-            RiderDSL.withConnection(connectionHolder.getConnection());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
 
         SessionFactory sessionFactory = getSessionFactory();
-        searchWrapper = new SearchWrapper(sessionFactory, entityIdentifierDao);
+
+        IThreadLocalSessionManager sessionManager = new ThreadLocalSessionManager(sessionFactory);
+        IEntityMappingManager entityMappingManager = new EntityMappingManager();
+        entityMappingManager.addEntityTable(new EntityTable(SingleTestEntity.class, "singletestentity"));
+        entityIdentifierDao = new EntityIdentifierDao(sessionManager, entityMappingManager);
+        searchWrapper = new SearchWrapper(sessionManager, entityIdentifierDao);
     }
 
     @BeforeEach
@@ -76,17 +77,13 @@ public class SearchWrapperTest {
     void getEntityListSupplier_success() {
         Parameter parameter = new Parameter("id", 1L);
 
-        SingleTestEntity singleTestEntity = new SingleTestEntity();
-        singleTestEntity.setId(1L);
-        singleTestEntity.setName("Simple Entity");
-
-        when(entityIdentifierDao.getEntityList(eq(SingleTestEntity.class), eq(parameter))).thenReturn(List.of(singleTestEntity));
-        Supplier<List<SingleTestEntity>> singleTestEntityResult = searchWrapper.getEntityListSupplier(SingleTestEntity.class, parameter);
+        Supplier<List<SingleTestEntity>> singleTestEntityResult =
+                searchWrapper.getEntityListSupplier(SingleTestEntity.class, parameter);
 
         List<SingleTestEntity> result = singleTestEntityResult.get();
         assertEquals(1, result.size());
         assertEquals(1L, result.get(0).getId());
-        assertEquals("Simple Entity", result.get(0).getName());
+        assertEquals("Test Entity 1", result.get(0).getName());
     }
 
     @Test
@@ -94,19 +91,15 @@ public class SearchWrapperTest {
     void getOptionalEntity_success() {
         Parameter parameter = new Parameter("id", 1L);
 
-        SingleTestEntity singleTestEntity = new SingleTestEntity();
-        singleTestEntity.setId(1L);
-        singleTestEntity.setName("Simple Entity");
-        when(entityIdentifierDao.getOptionalEntity(eq(SingleTestEntity.class), eq(parameter))).thenReturn(Optional.of(singleTestEntity));
-
-        Supplier<Optional<SingleTestEntity>> optionalEntitySupplier = searchWrapper.getOptionalEntitySupplier(SingleTestEntity.class, parameter);
+        Supplier<Optional<SingleTestEntity>> optionalEntitySupplier =
+                searchWrapper.getOptionalEntitySupplier(SingleTestEntity.class, parameter);
 
         Optional<SingleTestEntity> optional = optionalEntitySupplier.get();
 
         assertTrue(optional.isPresent());
         SingleTestEntity result = optional.get();
         assertEquals(1L, result.getId());
-        assertEquals("Simple Entity", result.getName());
+        assertEquals("Test Entity 1", result.getName());
     }
 
     @Test
@@ -114,16 +107,12 @@ public class SearchWrapperTest {
     void getEntity_success() {
         Parameter parameter = new Parameter("id", 1L);
 
-        SingleTestEntity singleTestEntity = new SingleTestEntity();
-        singleTestEntity.setId(1L);
-        singleTestEntity.setName("Simple Entity");
-        when(entityIdentifierDao.getEntity(eq(SingleTestEntity.class), eq(parameter))).thenReturn(singleTestEntity);
-
-        Supplier<SingleTestEntity> singleTestEntitySupplier = searchWrapper.getEntitySupplier(SingleTestEntity.class, parameter);
+        Supplier<SingleTestEntity> singleTestEntitySupplier =
+                searchWrapper.getEntitySupplier(SingleTestEntity.class, parameter);
 
         SingleTestEntity result = singleTestEntitySupplier.get();
         assertEquals(1L, result.getId());
-        assertEquals("Simple Entity", result.getName());
+        assertEquals("Test Entity 1", result.getName());
     }
 
 }

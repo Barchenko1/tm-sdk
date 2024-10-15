@@ -52,14 +52,6 @@ public abstract class AbstractSingleEntityDao extends AbstractEntityDao implemen
             throw e;
         }
     }
-// identify id code to do
-    //            Class<?> entityClass = entity.getClass();
-//            Object entityId = session.getIdentifier(entity);
-//
-//            E existingEntity = (E) session.get(entityClass, entityId);
-//            if (existingEntity == null) {
-//                throw new RuntimeException("Entity with ID " + entityId + " does not exist.");
-//            }
 
 
     @Override
@@ -113,6 +105,8 @@ public abstract class AbstractSingleEntityDao extends AbstractEntityDao implemen
                 transaction.rollback();
             }
             throw e;
+        } finally {
+            sessionManager.closeSession();
         }
     }
 
@@ -131,14 +125,15 @@ public abstract class AbstractSingleEntityDao extends AbstractEntityDao implemen
                 transaction.rollback();
             }
             throw e;
+        } finally {
+            sessionManager.closeSession();
         }
     }
 
     @Override
     public void mutateEntity(String sqlQuery, Parameter... params) {
         Transaction transaction = null;
-        try {
-            Session session = sessionManager.getSession();
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             Query<?> query = session.createNativeQuery(sqlQuery, this.clazz);
             for (int i = 0; i < params.length; i++) {
@@ -177,7 +172,9 @@ public abstract class AbstractSingleEntityDao extends AbstractEntityDao implemen
             return entityIdentifierDao.getEntityList(this.clazz, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity list error {}", e.getMessage());
-            throw e;
+            throw new RuntimeException(e);
+        } finally {
+            sessionManager.closeSession();
         }
     }
 
@@ -187,7 +184,9 @@ public abstract class AbstractSingleEntityDao extends AbstractEntityDao implemen
             return entityIdentifierDao.getEntity(this.clazz, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
-            throw e;
+            throw new RuntimeException(e);
+        } finally {
+            sessionManager.closeSession();
         }
     }
 
@@ -199,7 +198,9 @@ public abstract class AbstractSingleEntityDao extends AbstractEntityDao implemen
             return Optional.empty();
         } catch (Exception e) {
             LOGGER.warn("get optional entity error {}", e.getMessage());
-            throw e;
+            throw new RuntimeException(e);
+        } finally {
+            sessionManager.closeSession();
         }
     }
 
@@ -209,7 +210,9 @@ public abstract class AbstractSingleEntityDao extends AbstractEntityDao implemen
             return entityIdentifierDao.getEntityList(clazz, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity list error {}", e.getMessage());
-            throw e;
+            throw new RuntimeException(e);
+        } finally {
+            sessionManager.closeSession();
         }
     }
 
@@ -219,7 +222,9 @@ public abstract class AbstractSingleEntityDao extends AbstractEntityDao implemen
             return entityIdentifierDao.getEntity(clazz, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
-            throw e;
+            throw new RuntimeException(e);
+        } finally {
+            sessionManager.closeSession();
         }
     }
 
@@ -231,7 +236,9 @@ public abstract class AbstractSingleEntityDao extends AbstractEntityDao implemen
             return Optional.empty();
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
-            throw e;
+            throw new RuntimeException(e);
+        } finally {
+            sessionManager.closeSession();
         }
     }
 

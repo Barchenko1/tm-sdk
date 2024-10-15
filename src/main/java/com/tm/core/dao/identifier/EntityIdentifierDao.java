@@ -1,10 +1,7 @@
 package com.tm.core.dao.identifier;
 
-import com.tm.core.processor.finder.manager.EntityMappingManager;
 import com.tm.core.processor.finder.manager.IEntityMappingManager;
 import com.tm.core.processor.finder.parameter.Parameter;
-import com.tm.core.processor.finder.scanner.EntityScanner;
-import com.tm.core.processor.finder.scanner.IEntityScanner;
 import com.tm.core.processor.finder.table.EntityTable;
 import com.tm.core.processor.thread.IThreadLocalSessionManager;
 import org.hibernate.Session;

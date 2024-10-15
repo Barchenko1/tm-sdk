@@ -15,7 +15,7 @@ public class ThreadLocalSessionManager implements IThreadLocalSessionManager {
     @Override
     public Session getSession() {
         Session session = threadLocalSession.get();
-        if (session == null) {
+        if (session == null || !session.isOpen()) {
             session = sessionFactory.openSession();
             threadLocalSession.set(session);
         }
@@ -25,7 +25,7 @@ public class ThreadLocalSessionManager implements IThreadLocalSessionManager {
     @Override
     public void closeSession() {
         Session session = threadLocalSession.get();
-        if (session != null) {
+        if (session != null && session.isOpen()) {
             session.close();
             threadLocalSession.remove();
         }

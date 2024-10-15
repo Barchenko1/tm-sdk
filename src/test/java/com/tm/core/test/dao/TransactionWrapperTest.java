@@ -5,11 +5,8 @@ import com.github.database.rider.core.api.configuration.Orthography;
 import com.github.database.rider.core.api.connection.ConnectionHolder;
 import com.github.database.rider.core.api.dataset.DataSet;
 import com.github.database.rider.core.api.dataset.ExpectedDataSet;
-import com.github.database.rider.core.dsl.RiderDSL;
 import com.github.database.rider.junit5.api.DBRider;
-import com.tm.core.dao.transaction.ITransactionWrapper;
 import com.tm.core.dao.transaction.TransactionWrapper;
-import com.tm.core.dao.identifier.IEntityIdentifierDao;
 import com.tm.core.modal.single.SingleTestEntity;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -18,12 +15,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.sql.DataSource;
-import java.sql.SQLException;
+import java.lang.reflect.Field;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -31,6 +26,7 @@ import static com.tm.core.configuration.ConfigureSessionFactoryTest.getSessionFa
 import static com.tm.core.configuration.DataSourcePool.getHikariDataSource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -42,10 +38,7 @@ import static org.mockito.Mockito.when;
 @DBUnit(caseInsensitiveStrategy = Orthography.LOWERCASE)
 public class TransactionWrapperTest {
 
-    @Mock
-    private IEntityIdentifierDao entityIdentifierDao;
-
-    @InjectMocks
+    private static SessionFactory sessionFactory;
     private static TransactionWrapper transactionWrapper;
 
     private static ConnectionHolder connectionHolder;
@@ -54,18 +47,20 @@ public class TransactionWrapperTest {
     public static void setUpAll() {
         DataSource dataSource = getHikariDataSource();
         connectionHolder = dataSource::getConnection;
-        try {
-            RiderDSL.withConnection(connectionHolder.getConnection());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
 
-        SessionFactory sessionFactory = getSessionFactory();
+        sessionFactory = getSessionFactory();
         transactionWrapper = new TransactionWrapper(sessionFactory);
     }
 
     @BeforeEach
     public void setUp() {
+        try {
+            Field sessionFactoryField = TransactionWrapper.class.getDeclaredField("sessionFactory");
+            sessionFactoryField.setAccessible(true);
+            sessionFactoryField.set(transactionWrapper, sessionFactory);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -89,19 +84,25 @@ public class TransactionWrapperTest {
         Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
 
+        try {
+            Field sessionFactoryField = TransactionWrapper.class.getDeclaredField("sessionFactory");
+            sessionFactoryField.setAccessible(true);
+            sessionFactoryField.set(transactionWrapper, sessionFactory);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(session).persist(singleTestEntity);
 
-        ITransactionWrapper transactionWrapper =
-                new TransactionWrapper(sessionFactory);
-
         Supplier<SingleTestEntity> singleTestEntitySupplier = () -> singleTestEntity;
 
-        assertThrows(RuntimeException.class, () -> {
+        Exception exception = assertThrows(RuntimeException.class, () -> {
             transactionWrapper.saveEntity(singleTestEntitySupplier);
         });
 
+        assertEquals(RuntimeException.class, exception.getClass());
         verify(transaction).rollback();
         verify(transaction, never()).commit();
         verify(session).close();
@@ -126,20 +127,27 @@ public class TransactionWrapperTest {
         Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
 
+        try {
+            Field sessionFactoryField = TransactionWrapper.class.getDeclaredField("sessionFactory");
+            sessionFactoryField.setAccessible(true);
+            sessionFactoryField.set(transactionWrapper, sessionFactory);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
-
-        ITransactionWrapper transactionWrapper =
-                new TransactionWrapper(sessionFactory);
+        doThrow(new RuntimeException()).when(session).persist(any(SingleTestEntity.class));
 
         Consumer<Session> sessionConsumer = (Session s) -> {
-            throw new RuntimeException();
+            s.persist(new SingleTestEntity());
         };
 
-        assertThrows(RuntimeException.class, () -> {
+        Exception exception = assertThrows(RuntimeException.class, () -> {
             transactionWrapper.saveEntity(sessionConsumer);
         });
 
+        assertEquals(RuntimeException.class, exception.getClass());
         verify(transaction).rollback();
         verify(transaction, never()).commit();
         verify(session).close();
@@ -167,16 +175,27 @@ public class TransactionWrapperTest {
         Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
 
-        Supplier<SingleTestEntity> singleTestEntitySupplier = () -> singleTestEntity;
+        try {
+            Field sessionFactoryField = TransactionWrapper.class.getDeclaredField("sessionFactory");
+            sessionFactoryField.setAccessible(true);
+            sessionFactoryField.set(transactionWrapper, sessionFactory);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
-        ITransactionWrapper transactionWrapper =
-                new TransactionWrapper(sessionFactory);
+        Supplier<SingleTestEntity> singleTestEntitySupplier = () -> singleTestEntity;
 
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(session).merge(singleTestEntity);
 
-        assertThrows(RuntimeException.class, () -> transactionWrapper.updateEntity(singleTestEntitySupplier));
+        Exception exception =
+                assertThrows(RuntimeException.class, () -> transactionWrapper.updateEntity(singleTestEntitySupplier));
+
+        assertEquals(RuntimeException.class, exception.getClass());
+        verify(transaction).rollback();
+        verify(transaction, never()).commit();
+        verify(session).close();
     }
 
     @Test
@@ -194,25 +213,37 @@ public class TransactionWrapperTest {
 
     @Test
     void updateEntityConsumer_transactionFailure() {
-        SingleTestEntity singleTestEntity = new SingleTestEntity();
-        singleTestEntity.setId(100L);
-        singleTestEntity.setName("Update Entity");
-
         SessionFactory sessionFactory = mock(SessionFactory.class);
         Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
 
+        try {
+            Field sessionFactoryField = TransactionWrapper.class.getDeclaredField("sessionFactory");
+            sessionFactoryField.setAccessible(true);
+            sessionFactoryField.set(transactionWrapper, sessionFactory);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
         Consumer<Session> sessionConsumer = (Session s) -> {
+            SingleTestEntity singleTestEntity = new SingleTestEntity();
+            singleTestEntity.setId(1L);
+            singleTestEntity.setName("Update Entity");
+            s.merge(singleTestEntity);
             throw new RuntimeException();
         };
 
-        ITransactionWrapper transactionWrapper =
-                new TransactionWrapper(sessionFactory);
-
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(session).merge(any(SingleTestEntity.class));
 
-        assertThrows(RuntimeException.class, () -> transactionWrapper.updateEntity(sessionConsumer));
+        Exception exception =
+                assertThrows(RuntimeException.class, () -> transactionWrapper.updateEntity(sessionConsumer));
+
+        assertEquals(RuntimeException.class, exception.getClass());
+        verify(transaction).rollback();
+        verify(transaction, never()).commit();
+        verify(session).close();
     }
 
     @Test
@@ -234,10 +265,30 @@ public class TransactionWrapperTest {
         singleTestEntity.setId(100);
         Supplier<SingleTestEntity> singleTestEntitySupplier = () -> singleTestEntity;
 
+        SessionFactory sessionFactory = mock(SessionFactory.class);
+        Session session = mock(Session.class);
+        Transaction transaction = mock(Transaction.class);
+
+        try {
+            Field sessionFactoryField = TransactionWrapper.class.getDeclaredField("sessionFactory");
+            sessionFactoryField.setAccessible(true);
+            sessionFactoryField.set(transactionWrapper, sessionFactory);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        when(sessionFactory.openSession()).thenReturn(session);
+        when(session.beginTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(session).remove(singleTestEntity);
+
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             transactionWrapper.deleteEntity(singleTestEntitySupplier);
         });
 
+        assertEquals(RuntimeException.class, exception.getClass());
+        verify(transaction).rollback();
+        verify(transaction, never()).commit();
+        verify(session).close();
     }
     
 }

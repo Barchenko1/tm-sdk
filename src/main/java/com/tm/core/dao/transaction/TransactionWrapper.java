@@ -41,18 +41,7 @@ public class TransactionWrapper implements ITransactionWrapper {
 
     @Override
     public void saveEntity(Consumer<Session> consumer) {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
-            consumer.accept(session);
-            transaction.commit();
-        } catch (Exception e) {
-            LOGGER.warn("transaction error {}", e.getMessage());
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw e;
-        }
+        transactionWrap(consumer);
     }
 
     @Override
@@ -74,18 +63,7 @@ public class TransactionWrapper implements ITransactionWrapper {
 
     @Override
     public void updateEntity(Consumer<Session> consumer) {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
-            consumer.accept(session);
-            transaction.commit();
-        } catch (Exception e) {
-            LOGGER.warn("transaction error {}", e.getMessage());
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw e;
-        }
+        transactionWrap(consumer);
     }
 
     @Override
@@ -105,4 +83,23 @@ public class TransactionWrapper implements ITransactionWrapper {
         }
     }
 
+    @Override
+    public void deleteEntity(Consumer<Session> consumer) {
+        transactionWrap(consumer);
+    }
+
+    private void transactionWrap(Consumer<Session> consumer) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            consumer.accept(session);
+            transaction.commit();
+        } catch (Exception e) {
+            LOGGER.warn("transaction error {}", e.getMessage());
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
+        }
+    }
 }

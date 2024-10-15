@@ -14,6 +14,8 @@ public interface IGeneralEntityDao {
     void saveGeneralEntity(Consumer<Session> consumer);
     <E> void updateGeneralEntity(Supplier<E> supplier);
     void updateGeneralEntity(Consumer<Session> consumer);
+    void deleteGeneralEntity(GeneralEntity generalEntity);
+    void deleteGeneralEntity(Consumer<Session> consumer);
     <E> void deleteGeneralEntity(Class<?> clazz, Parameter... parameters);
     <E> void deleteGeneralEntity(Parameter... parameters);
 
@@ -23,4 +25,6 @@ public interface IGeneralEntityDao {
     <E> List<E> getGeneralEntityList(Parameter... parameters);
     <E> E getGeneralEntity(Parameter... parameters);
     <E> Optional<E> getOptionalGeneralEntity(Parameter... parameters);
+
+    <E> E initializeEntity(Class<?> clazz, long id);
 }

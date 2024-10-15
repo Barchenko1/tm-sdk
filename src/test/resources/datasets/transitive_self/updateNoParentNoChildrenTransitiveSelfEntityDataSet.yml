@@ -1,4 +1,4 @@
 transitiveSelfTestEntity:
   - name: "Parent"
-  - name: "Root"
+  - name: "Update Root"
   - name: "Child"

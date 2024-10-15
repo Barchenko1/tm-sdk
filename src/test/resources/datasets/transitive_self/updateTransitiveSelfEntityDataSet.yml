@@ -1,2 +1,9 @@
 transitiveSelfTestEntity:
-  - name: "Update TransitiveSelfEntity"
+  - id: 1
+    name: "Update Parent"
+  - id: 2
+    transitiveSelfTestEntity_id: 1
+    name: "Update Root"
+  - id: 3
+    transitiveSelfTestEntity_id: 2
+    name: "Update Child"
