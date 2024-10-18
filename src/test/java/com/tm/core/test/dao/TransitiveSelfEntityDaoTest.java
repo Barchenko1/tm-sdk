@@ -54,6 +54,7 @@ class TransitiveSelfEntityDaoTest {
 
     private static IThreadLocalSessionManager sessionManager;
     private static SessionFactory sessionFactory;
+    private static IEntityIdentifierDao entityIdentifierDao;
 
     private static TestTransitiveSelfEntityDao testTransitiveSelfEntityDao;
 
@@ -69,13 +70,17 @@ class TransitiveSelfEntityDaoTest {
 
         IEntityMappingManager entityMappingManager = new EntityMappingManager();
         entityMappingManager.addEntityTable(new EntityTable(TransitiveSelfTestEntity.class, "transitiveselftestentity"));
-        IEntityIdentifierDao entityIdentifierDao = new EntityIdentifierDao(sessionManager, entityMappingManager);
+        entityIdentifierDao = new EntityIdentifierDao(sessionManager, entityMappingManager);
         testTransitiveSelfEntityDao = new TestTransitiveSelfEntityDao(sessionFactory, entityIdentifierDao);
     }
 
     @BeforeEach
     public void setUp() {
         try {
+            Field entityIdentifierDaoField = AbstractTransitiveSelfEntityDao.class.getDeclaredField("entityIdentifierDao");
+            entityIdentifierDaoField.setAccessible(true);
+            entityIdentifierDaoField.set(testTransitiveSelfEntityDao, entityIdentifierDao);
+
             Field sessionManagerField = AbstractTransitiveSelfEntityDao.class.getDeclaredField("sessionFactory");
             sessionManagerField.setAccessible(true);
             sessionManagerField.set(testTransitiveSelfEntityDao, sessionFactory);
@@ -86,6 +91,14 @@ class TransitiveSelfEntityDaoTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            session.createNativeQuery("TRUNCATE TABLE transitiveselftestentity RESTART IDENTITY").executeUpdate();
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to refresh table: " + e.getMessage(), e);
+        }
+
     }
 
     @Test
@@ -143,10 +156,8 @@ class TransitiveSelfEntityDaoTest {
         TransitiveSelfTestEntity child = new TransitiveSelfTestEntity();
         child.setName("Child");
 
-        parent.setChildNodeList(List.of(root));
-        root.setParent(parent);
-        root.setChildNodeList(List.of(child));
-        child.setParent(root);
+        parent.addChildTransitiveEntity(root);
+        root.addChildTransitiveEntity(child);
 
         testTransitiveSelfEntityDao.saveEntityTree(root);
     }
@@ -184,7 +195,7 @@ class TransitiveSelfEntityDaoTest {
     @Test
     @DataSet("datasets/transitive_self/testTransitiveSelfEntityDataSet.yml")
     @ExpectedDataSet("datasets/transitive_self/updateTransitiveSelfEntityDataSet.yml")
-    void updateEntityTree_success() {
+    void updateEntityTreeOldMain_success() {
         TransitiveSelfTestEntity parent = new TransitiveSelfTestEntity();
         parent.setId(1L);
         parent.setName("Parent");
@@ -197,10 +208,8 @@ class TransitiveSelfEntityDaoTest {
         child.setId(3L);
         child.setName("Child");
 
-        parent.setChildNodeList(List.of(root));
-        root.setParent(parent);
-        root.setChildNodeList(List.of(child));
-        child.setParent(root);
+        parent.addChildTransitiveEntity(root);
+        root.addChildTransitiveEntity(child);
 
         TransitiveSelfTestEntity updParent = new TransitiveSelfTestEntity();
         updParent.setName("Update Parent");
@@ -211,20 +220,18 @@ class TransitiveSelfEntityDaoTest {
         TransitiveSelfTestEntity updChild = new TransitiveSelfTestEntity();
         updChild.setName("Update Child");
 
-        updParent.setChildNodeList(List.of(updRoot));
-        updRoot.setParent(updParent);
-        updRoot.setChildNodeList(List.of(updChild));
-        updChild.setParent(updRoot);
+        updParent.addChildTransitiveEntity(updRoot);
+        updRoot.addChildTransitiveEntity(updChild);
 
-        Parameter parameter = new Parameter("id", 1L);
+        Parameter parameter = new Parameter("id", 2L);
 
-        testTransitiveSelfEntityDao.updateEntityTree(updRoot, parameter);
+        testTransitiveSelfEntityDao.updateEntityTreeOldMain(updRoot, parameter);
     }
 
     @Test
     @DataSet("datasets/transitive_self/testTransitiveSelfEntityDataSet.yml")
     @ExpectedDataSet("datasets/transitive_self/updateTwoChildrenTransitiveSelfEntityDataSet.yml")
-    void updateEntityTreeTwoChildren_success() {
+    void updateEntityTreeOldMainTwoChildren_success() {
         TransitiveSelfTestEntity parent = new TransitiveSelfTestEntity();
         parent.setId(1L);
         parent.setName("Parent");
@@ -237,10 +244,8 @@ class TransitiveSelfEntityDaoTest {
         child.setId(3L);
         child.setName("Child");
 
-        parent.setChildNodeList(List.of(root));
-        root.setParent(parent);
-        root.setChildNodeList(List.of(child));
-        child.setParent(root);
+        parent.addChildTransitiveEntity(root);
+        root.addChildTransitiveEntity(child);
 
         TransitiveSelfTestEntity updParent = new TransitiveSelfTestEntity();
         updParent.setName("Update Parent");
@@ -253,21 +258,19 @@ class TransitiveSelfEntityDaoTest {
         TransitiveSelfTestEntity updChild2 = new TransitiveSelfTestEntity();
         updChild2.setName("Update Child");
 
-        updParent.setChildNodeList(List.of(updRoot));
-        updRoot.setParent(updParent);
-        updRoot.setChildNodeList(List.of(updChild1, updChild2));
-        updChild1.setParent(updRoot);
-        updChild2.setParent(updRoot);
+        updParent.addChildTransitiveEntity(updRoot);
+        updRoot.addChildTransitiveEntity(updChild1);
+        updRoot.addChildTransitiveEntity(updChild2);
 
-        Parameter parameter = new Parameter("id", 1L);
+        Parameter parameter = new Parameter("id", 2L);
 
-        testTransitiveSelfEntityDao.updateEntityTree(updRoot, parameter);
+        testTransitiveSelfEntityDao.updateEntityTreeOldMain(updRoot, parameter);
     }
 
     @Test
     @DataSet("datasets/transitive_self/testTransitiveSelfEntityDataSet.yml")
     @ExpectedDataSet("datasets/transitive_self/updateNoChildrenTransitiveSelfEntityDataSet.yml")
-    void updateEntityTreeNoChildren_success() {
+    void updateEntityTreeOldMainNoChildren_success() {
         TransitiveSelfTestEntity parent = new TransitiveSelfTestEntity();
         parent.setId(1L);
         parent.setName("Parent");
@@ -280,10 +283,8 @@ class TransitiveSelfEntityDaoTest {
         child.setId(3L);
         child.setName("Child");
 
-        parent.setChildNodeList(List.of(root));
-        root.setParent(parent);
-        root.setChildNodeList(List.of(child));
-        child.setParent(root);
+        parent.addChildTransitiveEntity(root);
+        root.addChildTransitiveEntity(child);
 
         TransitiveSelfTestEntity updParent = new TransitiveSelfTestEntity();
         updParent.setName("Update Parent");
@@ -291,18 +292,17 @@ class TransitiveSelfEntityDaoTest {
         TransitiveSelfTestEntity updRoot = new TransitiveSelfTestEntity();
         updRoot.setName("Update Root");
 
-        updParent.setChildNodeList(List.of(updRoot));
-        updRoot.setParent(updParent);
+        updParent.addChildTransitiveEntity(updRoot);
 
         Parameter parameter = new Parameter("id", 2L);
 
-        testTransitiveSelfEntityDao.updateEntityTree(updRoot, parameter);
+        testTransitiveSelfEntityDao.updateEntityTreeOldMain(updRoot, parameter);
     }
 
     @Test
     @DataSet("datasets/transitive_self/testTransitiveSelfEntityDataSet.yml")
     @ExpectedDataSet("datasets/transitive_self/updateNoParentNoChildrenTransitiveSelfEntityDataSet.yml")
-    void updateEntityTreeNoParentNoChildren_success() {
+    void updateEntityTreeOldMainNoParentNoChildren_success() {
         TransitiveSelfTestEntity parent = new TransitiveSelfTestEntity();
         parent.setId(1L);
         parent.setName("Parent");
@@ -315,27 +315,30 @@ class TransitiveSelfEntityDaoTest {
         child.setId(3L);
         child.setName("Child");
 
-        parent.setChildNodeList(List.of(root));
-        root.setParent(parent);
-        root.setChildNodeList(List.of(child));
-        child.setParent(root);
+        parent.addChildTransitiveEntity(root);
+        root.addChildTransitiveEntity(child);
 
         TransitiveSelfTestEntity updRoot = new TransitiveSelfTestEntity();
         updRoot.setName("Update Root");
 
         Parameter parameter = new Parameter("id", 2L);
 
-        testTransitiveSelfEntityDao.updateEntityTree(updRoot, parameter);
+        testTransitiveSelfEntityDao.updateEntityTreeOldMain(updRoot, parameter);
     }
 
     @Test
     @DataSet("datasets/transitive_self/testTransitiveSelfEntityDataSet.yml")
-    void updateEntityTree_transactionFailure() {
+    void updateEntityTreeOldMain_transactionFailure() {
         IThreadLocalSessionManager sessionManager = mock(IThreadLocalSessionManager.class);
         Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
+        IEntityIdentifierDao entityIdentifierDao = mock(IEntityIdentifierDao.class);
 
         try {
+            Field entityIdentifierDaoField = AbstractTransitiveSelfEntityDao.class.getDeclaredField("entityIdentifierDao");
+            entityIdentifierDaoField.setAccessible(true);
+            entityIdentifierDaoField.set(testTransitiveSelfEntityDao, entityIdentifierDao);
+
             Field sessionManagerField = AbstractTransitiveSelfEntityDao.class.getDeclaredField("sessionManager");
             sessionManagerField.setAccessible(true);
             sessionManagerField.set(testTransitiveSelfEntityDao, sessionManager);
@@ -346,21 +349,197 @@ class TransitiveSelfEntityDaoTest {
         TransitiveSelfTestEntity transitiveSelfTestEntity = new TransitiveSelfTestEntity();
         transitiveSelfTestEntity.setName("Entity");
 
-        Parameter parameter = new Parameter("id", 1L);
+        Parameter parameter = new Parameter("id", 2L);
 
         when(sessionManager.getSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
+        when(entityIdentifierDao.getEntity(TransitiveSelfTestEntity.class, parameter)).thenReturn(transitiveSelfTestEntity);
         doNothing().when(session).remove(any(TransitiveSelfTestEntity.class));
-        doThrow(new RuntimeException()).when(session).persist(transitiveSelfTestEntity);
+        doThrow(new RuntimeException()).when(session).merge(transitiveSelfTestEntity);
 
         assertThrows(RuntimeException.class, () -> {
-            testTransitiveSelfEntityDao.updateEntityTree(transitiveSelfTestEntity, parameter);
+            testTransitiveSelfEntityDao.updateEntityTreeOldMain(transitiveSelfTestEntity, parameter);
         });
 
         verify(transaction).rollback();
         verify(transaction, never()).commit();
         verify(sessionManager).closeSession();
     }
+
+    // fix tests or more to grape design
+//    @Test
+//    @DataSet("datasets/transitive_self/testTransitiveSelfEntityDataSet.yml")
+//    @ExpectedDataSet("datasets/transitive_self/updateTransitiveSelfEntityDataSet.yml")
+//    void updateEntityTreeNewMain_success() {
+//        TransitiveSelfTestEntity parent = new TransitiveSelfTestEntity();
+//        parent.setId(1L);
+//        parent.setName("Parent");
+//
+//        TransitiveSelfTestEntity root = new TransitiveSelfTestEntity();
+//        root.setId(2L);
+//        root.setName("Root");
+//
+//        TransitiveSelfTestEntity child = new TransitiveSelfTestEntity();
+//        child.setId(3L);
+//        child.setName("Child");
+//
+//        parent.addChildTransitiveEntity(root);
+//        root.addChildTransitiveEntity(child);
+//
+//        TransitiveSelfTestEntity updParent = new TransitiveSelfTestEntity();
+//        updParent.setName("Update Parent");
+//
+//        TransitiveSelfTestEntity updRoot = new TransitiveSelfTestEntity();
+//        updRoot.setName("Update Root");
+//
+//        TransitiveSelfTestEntity updChild = new TransitiveSelfTestEntity();
+//        updChild.setName("Update Child");
+//
+//        updParent.addChildTransitiveEntity(updRoot);
+//        updRoot.addChildTransitiveEntity(updChild);
+//
+//        Parameter parameter = new Parameter("id", 2L);
+//
+//        testTransitiveSelfEntityDao.updateEntityTreeNewMain(updRoot, parameter);
+//    }
+//
+//    @Test
+//    @DataSet("datasets/transitive_self/testTransitiveSelfEntityDataSet.yml")
+//    @ExpectedDataSet("datasets/transitive_self/updateTwoChildrenTransitiveSelfEntityDataSet.yml")
+//    void updateEntityTreeNewMainTwoChildren_success() {
+//        TransitiveSelfTestEntity parent = new TransitiveSelfTestEntity();
+//        parent.setId(1L);
+//        parent.setName("Parent");
+//
+//        TransitiveSelfTestEntity root = new TransitiveSelfTestEntity();
+//        root.setId(2L);
+//        root.setName("Root");
+//
+//        TransitiveSelfTestEntity child = new TransitiveSelfTestEntity();
+//        child.setId(3L);
+//        child.setName("Child");
+//
+//        parent.addChildTransitiveEntity(root);
+//        root.addChildTransitiveEntity(child);
+//
+//        TransitiveSelfTestEntity updParent = new TransitiveSelfTestEntity();
+//        updParent.setName("Update Parent");
+//
+//        TransitiveSelfTestEntity updRoot = new TransitiveSelfTestEntity();
+//        updRoot.setName("Update Root");
+//
+//        TransitiveSelfTestEntity updChild1 = new TransitiveSelfTestEntity();
+//        updChild1.setName("Update Child");
+//        TransitiveSelfTestEntity updChild2 = new TransitiveSelfTestEntity();
+//        updChild2.setName("Update Child");
+//
+//        updParent.addChildTransitiveEntity(updRoot);
+//        updRoot.addChildTransitiveEntity(updChild1);
+//        updRoot.addChildTransitiveEntity(updChild2);
+//
+//        Parameter parameter = new Parameter("id", 2L);
+//
+//        testTransitiveSelfEntityDao.updateEntityTreeNewMain(updRoot, parameter);
+//    }
+//
+//    @Test
+//    @DataSet("datasets/transitive_self/testTransitiveSelfEntityDataSet.yml")
+//    @ExpectedDataSet("datasets/transitive_self/updateNoChildrenTransitiveSelfEntityDataSet.yml")
+//    void updateEntityTreeNewMainNoChildren_success() {
+//        TransitiveSelfTestEntity parent = new TransitiveSelfTestEntity();
+//        parent.setId(1L);
+//        parent.setName("Parent");
+//
+//        TransitiveSelfTestEntity root = new TransitiveSelfTestEntity();
+//        root.setId(2L);
+//        root.setName("Root");
+//
+//        TransitiveSelfTestEntity child = new TransitiveSelfTestEntity();
+//        child.setId(3L);
+//        child.setName("Child");
+//
+//        parent.addChildTransitiveEntity(root);
+//        root.addChildTransitiveEntity(child);
+//
+//        TransitiveSelfTestEntity updParent = new TransitiveSelfTestEntity();
+//        updParent.setName("Update Parent");
+//
+//        TransitiveSelfTestEntity updRoot = new TransitiveSelfTestEntity();
+//        updRoot.setName("Update Root");
+//
+//        updParent.addChildTransitiveEntity(updRoot);
+//
+//        Parameter parameter = new Parameter("id", 2L);
+//
+//        testTransitiveSelfEntityDao.updateEntityTreeNewMain(updRoot, parameter);
+//    }
+//
+//    @Test
+//    @DataSet("datasets/transitive_self/testTransitiveSelfEntityDataSet.yml")
+//    @ExpectedDataSet("datasets/transitive_self/updateNoParentNoChildrenTransitiveSelfEntityDataSet.yml")
+//    void updateEntityTreeNewMainNoParentNoChildren_success() {
+//        TransitiveSelfTestEntity parent = new TransitiveSelfTestEntity();
+//        parent.setId(1L);
+//        parent.setName("Parent");
+//
+//        TransitiveSelfTestEntity root = new TransitiveSelfTestEntity();
+//        root.setId(2L);
+//        root.setName("Root");
+//
+//        TransitiveSelfTestEntity child = new TransitiveSelfTestEntity();
+//        child.setId(3L);
+//        child.setName("Child");
+//
+//        parent.addChildTransitiveEntity(root);
+//        root.addChildTransitiveEntity(child);
+//
+//        TransitiveSelfTestEntity updRoot = new TransitiveSelfTestEntity();
+//        updRoot.setName("Update Root");
+//
+//        Parameter parameter = new Parameter("id", 2L);
+//
+//        testTransitiveSelfEntityDao.updateEntityTreeNewMain(updRoot, parameter);
+//    }
+//
+//    @Test
+//    @DataSet("datasets/transitive_self/testTransitiveSelfEntityDataSet.yml")
+//    void updateEntityTreeNewMain_transactionFailure() {
+//        IThreadLocalSessionManager sessionManager = mock(IThreadLocalSessionManager.class);
+//        Session session = mock(Session.class);
+//        Transaction transaction = mock(Transaction.class);
+//        IEntityIdentifierDao entityIdentifierDao = mock(IEntityIdentifierDao.class);
+//
+//        try {
+//            Field entityIdentifierDaoField = AbstractTransitiveSelfEntityDao.class.getDeclaredField("entityIdentifierDao");
+//            entityIdentifierDaoField.setAccessible(true);
+//            entityIdentifierDaoField.set(testTransitiveSelfEntityDao, entityIdentifierDao);
+//
+//            Field sessionManagerField = AbstractTransitiveSelfEntityDao.class.getDeclaredField("sessionManager");
+//            sessionManagerField.setAccessible(true);
+//            sessionManagerField.set(testTransitiveSelfEntityDao, sessionManager);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        TransitiveSelfTestEntity transitiveSelfTestEntity = new TransitiveSelfTestEntity();
+//        transitiveSelfTestEntity.setName("Entity");
+//
+//        Parameter parameter = new Parameter("id", 2L);
+//
+//        when(sessionManager.getSession()).thenReturn(session);
+//        when(session.beginTransaction()).thenReturn(transaction);
+//        when(entityIdentifierDao.getEntity(TransitiveSelfTestEntity.class, parameter)).thenReturn(transitiveSelfTestEntity);
+//        doNothing().when(session).remove(any(TransitiveSelfTestEntity.class));
+//        doThrow(new RuntimeException()).when(session).merge(transitiveSelfTestEntity);
+//
+//        assertThrows(RuntimeException.class, () -> {
+//            testTransitiveSelfEntityDao.updateEntityTreeNewMain(transitiveSelfTestEntity, parameter);
+//        });
+//
+//        verify(transaction).rollback();
+//        verify(transaction, never()).commit();
+//        verify(sessionManager).closeSession();
+//    }
 
     @Test
     @DataSet("datasets/transitive_self/testTransitiveSelfEntityDataSet.yml")
@@ -378,14 +557,24 @@ class TransitiveSelfEntityDaoTest {
         child.setId(3L);
         child.setName("Child");
 
-        parent.setChildNodeList(List.of(root));
-        root.setParent(parent);
-        root.setChildNodeList(List.of(child));
-        child.setParent(root);
+        parent.addChildTransitiveEntity(root);
+        root.addChildTransitiveEntity(child);
 
         Parameter parameter = new Parameter("id", 1L);
 
         testTransitiveSelfEntityDao.deleteEntityTree(parameter);
+    }
+
+    @Test
+    @DataSet(value = "datasets/transitive_self/updateTransitiveSelfEntityDataSet.yml")
+    @ExpectedDataSet("datasets/transitive_self/updateTwoChildrenTransitiveSelfEntityDataSet.yml")
+    void addEntityToChildList_success() {
+        TransitiveSelfTestEntity addChild = new TransitiveSelfTestEntity();
+        addChild.setName("Update Child");
+
+        Parameter parameter = new Parameter("id", 2L);
+
+        testTransitiveSelfEntityDao.addEntityToChildList(addChild, parameter);
     }
 
     @Test
@@ -404,10 +593,8 @@ class TransitiveSelfEntityDaoTest {
         child.setId(3L);
         child.setName("Child");
 
-        parent.setChildNodeList(List.of(root));
-        root.setParent(parent);
-        root.setChildNodeList(List.of(child));
-        child.setParent(root);
+        parent.addChildTransitiveEntity(root);
+        root.addChildTransitiveEntity(child);
 
         Parameter parameter = new Parameter("id", 2L);
 
@@ -430,10 +617,8 @@ class TransitiveSelfEntityDaoTest {
         child.setId(3L);
         child.setName("Child");
 
-        parent.setChildNodeList(List.of(root));
-        root.setParent(parent);
-        root.setChildNodeList(List.of(child));
-        child.setParent(root);
+        parent.addChildTransitiveEntity(root);
+        root.addChildTransitiveEntity(child);
 
         Parameter parameter = new Parameter("id", 3L);
 
@@ -541,6 +726,12 @@ class TransitiveSelfEntityDaoTest {
 
         assertEquals(2L, result.getId());
         assertEquals("Root", result.getName());
+        TransitiveSelfTestEntity parent = result.getParent();
+        assertEquals(1L, parent.getId());
+        assertEquals("Parent", result.getParent().getRootField());
+        TransitiveSelfTestEntity child = (TransitiveSelfTestEntity) result.getChildNodeList().get(0);
+        assertEquals(3L, child.getId());
+        assertEquals("Child", child.getRootField());
     }
 
     @Test

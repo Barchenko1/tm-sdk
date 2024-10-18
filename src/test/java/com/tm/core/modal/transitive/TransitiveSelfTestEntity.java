@@ -4,6 +4,7 @@ import com.tm.core.modal.TransitiveSelfEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -12,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -19,21 +21,19 @@ import java.util.List;
 public class TransitiveSelfTestEntity extends TransitiveSelfEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
-
+    @Column(name = "id", nullable = false)
+    private long id;
     @Column
     private String name;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transitiveSelfTestEntity_id")
     private TransitiveSelfTestEntity parent;
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
-    private List<TransitiveSelfTestEntity> childNodeList;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "parent", cascade = CascadeType.ALL)
+    private List<TransitiveSelfTestEntity> childNodeList = new ArrayList<>();
 
     @Override
     public <E extends TransitiveSelfEntity> E getParent() {
-        return (E) parent;
+        return (E) this.parent;
     }
 
     @Override
@@ -43,12 +43,17 @@ public class TransitiveSelfTestEntity extends TransitiveSelfEntity {
 
     @Override
     public String getRootField() {
-        return name;
+        return this.name;
     }
 
     @Override
     public <E extends TransitiveSelfEntity> List<E> getChildNodeList() {
-        return (List<E>) childNodeList;
+        return (List<E>) this.childNodeList;
+    }
+
+    @Override
+    public <E extends TransitiveSelfEntity> void setChildNodeList(List<E> childNodeList) {
+        this.childNodeList = (List<TransitiveSelfTestEntity>) childNodeList;
     }
 
     public long getId() {
@@ -69,13 +74,5 @@ public class TransitiveSelfTestEntity extends TransitiveSelfEntity {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-//    public void setParent(TransitiveSelfEntity parent) {
-//        this.parent = parent;
-//    }
-
-    public void setChildNodeList(List<TransitiveSelfTestEntity> childNodeList) {
-        this.childNodeList = childNodeList;
     }
 }

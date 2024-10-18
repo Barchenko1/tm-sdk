@@ -8,18 +8,18 @@ version = '1.0-SNAPSHOT'
 apply plugin: 'maven-publish'
 
 repositories {
-    mavenLocal() // Add Maven Local repository
-    mavenCentral() // Add Maven Central repository
+    mavenLocal()
+    mavenCentral()
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            from components.java // Publishes all main Java sources
+            from components.java
         }
     }
     repositories {
-        mavenLocal() // Specifies that you want to publish to your local Maven repository
+        mavenLocal()
     }
 }
 

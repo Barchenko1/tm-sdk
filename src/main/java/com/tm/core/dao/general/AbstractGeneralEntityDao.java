@@ -8,8 +8,9 @@ import com.tm.core.processor.finder.parameter.Parameter;
 import com.tm.core.processor.thread.IThreadLocalSessionManager;
 import com.tm.core.processor.thread.ThreadLocalSessionManager;
 import com.tm.core.util.helper.EntityFieldHelper;
+import com.tm.core.util.helper.HibernateInitializer;
 import com.tm.core.util.helper.IEntityFieldHelper;
-import jakarta.transaction.Transactional;
+import com.tm.core.util.helper.IHibernateInitializer;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -20,10 +21,8 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -37,6 +36,8 @@ public abstract class AbstractGeneralEntityDao implements IGeneralEntityDao {
     protected final IEntityIdentifierDao entityIdentifierDao;
     protected final ITransactionWrapper transactionWrapper;
 
+    private final IHibernateInitializer hibernateInitializer;
+
     public AbstractGeneralEntityDao(SessionFactory sessionFactory,
                                     IEntityIdentifierDao entityIdentifierDao,
                                     Class<?> clazz) {
@@ -46,6 +47,7 @@ public abstract class AbstractGeneralEntityDao implements IGeneralEntityDao {
         this.entityFieldHelper = new EntityFieldHelper();
         this.entityIdentifierDao = entityIdentifierDao;
         this.transactionWrapper = new TransactionWrapper(sessionFactory);
+        this.hibernateInitializer = new HibernateInitializer(sessionFactory);
     }
 
     @Override
@@ -154,7 +156,7 @@ public abstract class AbstractGeneralEntityDao implements IGeneralEntityDao {
     public <E> List<E> getGeneralEntityList(Class<?> clazz, Parameter... parameters) {
         try {
             List<E> resultList = entityIdentifierDao.getEntityList(clazz, parameters);
-            resultList.forEach(this::initializeInnerEntities);
+            resultList.forEach(hibernateInitializer::initializeInnerEntities);
             return resultList;
         } catch (Exception e) {
             LOGGER.warn("get entity list error {}", e.getMessage());
@@ -168,7 +170,7 @@ public abstract class AbstractGeneralEntityDao implements IGeneralEntityDao {
     public <E> E getGeneralEntity(Class<?> clazz, Parameter... parameters) {
         try {
             E entity = entityIdentifierDao.getEntity(clazz, parameters);
-            initializeInnerEntities(entity);
+            hibernateInitializer.initializeInnerEntities(entity);
             return entity;
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
@@ -182,7 +184,7 @@ public abstract class AbstractGeneralEntityDao implements IGeneralEntityDao {
     public <E> Optional<E> getOptionalGeneralEntity(Class<?> clazz, Parameter... parameters) {
         try {
             Optional<E> optionalResult = entityIdentifierDao.getOptionalEntity(clazz, parameters);
-            optionalResult.ifPresent(this::initializeInnerEntities);
+            optionalResult.ifPresent(hibernateInitializer::initializeInnerEntities);
             return optionalResult;
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
@@ -195,8 +197,8 @@ public abstract class AbstractGeneralEntityDao implements IGeneralEntityDao {
     @Override
     public <E> List<E> getGeneralEntityList(Parameter... parameters) {
         try {
-            List<E> resultList = entityIdentifierDao.getEntityList(clazz, parameters);
-            resultList.forEach(this::initializeInnerEntities);
+            List<E> resultList = entityIdentifierDao.getEntityList(this.clazz, parameters);
+            resultList.forEach(hibernateInitializer::initializeInnerEntities);
             return resultList;
         } catch (Exception e) {
             LOGGER.warn("get entity list error {}", e.getMessage());
@@ -210,7 +212,7 @@ public abstract class AbstractGeneralEntityDao implements IGeneralEntityDao {
     public <E> E getGeneralEntity(Parameter... parameters) {
         try {
             E entity = entityIdentifierDao.getEntity(this.clazz, parameters);
-            initializeInnerEntities(entity);
+            hibernateInitializer.initializeInnerEntities(entity);
             return entity;
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
@@ -224,7 +226,7 @@ public abstract class AbstractGeneralEntityDao implements IGeneralEntityDao {
     public <E> Optional<E> getOptionalGeneralEntity(Parameter... parameters) {
         try {
             Optional<E> optionalResult = entityIdentifierDao.getOptionalEntity(this.clazz, parameters);
-            optionalResult.ifPresent(this::initializeInnerEntities);
+            optionalResult.ifPresent(hibernateInitializer::initializeInnerEntities);
             return optionalResult;
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
@@ -234,58 +236,52 @@ public abstract class AbstractGeneralEntityDao implements IGeneralEntityDao {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <E> E initializeEntity(Class<?> clazz, long id) {
-        E entity;
-        try (Session session = sessionFactory.openSession()){
-            entity = (E) session.get(clazz, id);
-            Hibernate.initialize(entity);
-        }
-        return entity;
+        return hibernateInitializer.initializeEntity(clazz, id);
     }
 
-    private <E> void initializeInnerEntities(E entity) {
-        List<Field> fieldsToInitialize = getNonPrimitiveFields(entity.getClass());
-        for (Field field : fieldsToInitialize) {
-            field.setAccessible(true);
-
-            Object fieldValue = null;
-            try {
-                fieldValue = field.get(entity);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-            if (fieldValue != null) {
-                Hibernate.initialize(fieldValue);
-            }
-        }
-    }
-
-    private List<Field> getNonPrimitiveFields(Class<?> clazz) {
-        List<Field> nonPrimitiveFields = new ArrayList<>();
-
-        Field[] fields = clazz.getDeclaredFields();
-
-        for (Field field : fields) {
-            Class<?> fieldType = field.getType();
-
-            if (!fieldType.isPrimitive() && !isDefaultJavaType(fieldType)) {
-                nonPrimitiveFields.add(field);
-            }
-        }
-
-        return nonPrimitiveFields;
-    }
-
-    private boolean isDefaultJavaType(Class<?> fieldType) {
-        List<Class<?>> defaultJavaTypes = Arrays.asList(
-                String.class,
-                Integer.class, Long.class, Double.class, Boolean.class, Float.class, Byte.class,
-                Short.class, Character.class, Void.class
-        );
-
-        return defaultJavaTypes.contains(fieldType);
-    }
+//    private <E> void initializeInnerEntities(E entity) {
+//        List<Field> fieldsToInitialize = getNonPrimitiveFields(entity.getClass());
+//        for (Field field : fieldsToInitialize) {
+//            field.setAccessible(true);
+//
+//            Object fieldValue = null;
+//            try {
+//                fieldValue = field.get(entity);
+//            } catch (IllegalAccessException e) {
+//                throw new RuntimeException(e);
+//            }
+//            if (fieldValue != null) {
+//                Hibernate.initialize(fieldValue);
+//            }
+//        }
+//    }
+//
+//    private List<Field> getNonPrimitiveFields(Class<?> clazz) {
+//        List<Field> nonPrimitiveFields = new ArrayList<>();
+//
+//        Field[] fields = clazz.getDeclaredFields();
+//
+//        for (Field field : fields) {
+//            Class<?> fieldType = field.getType();
+//
+//            if (!fieldType.isPrimitive() && !isDefaultJavaType(fieldType)) {
+//                nonPrimitiveFields.add(field);
+//            }
+//        }
+//
+//        return nonPrimitiveFields;
+//    }
+//
+//    private boolean isDefaultJavaType(Class<?> fieldType) {
+//        List<Class<?>> defaultJavaTypes = Arrays.asList(
+//                String.class,
+//                Integer.class, Long.class, Double.class, Boolean.class, Float.class, Byte.class,
+//                Short.class, Character.class, Void.class
+//        );
+//
+//        return defaultJavaTypes.contains(fieldType);
+//    }
 
 }
