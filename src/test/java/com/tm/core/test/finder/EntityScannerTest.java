@@ -4,6 +4,7 @@ import com.tm.core.modal.relationship.DependentTestEntity;
 import com.tm.core.modal.relationship.RelationshipRootTestEntity;
 import com.tm.core.modal.relationship.SingleDependentTestEntity;
 import com.tm.core.modal.single.SingleTestEntity;
+import com.tm.core.modal.transitive.MultiLinkedNodeTest;
 import com.tm.core.modal.transitive.TransitiveSelfTestEntity;
 import com.tm.core.processor.finder.manager.IEntityMappingManager;
 import com.tm.core.processor.finder.scanner.EntityScanner;
@@ -45,9 +46,9 @@ public class EntityScannerTest {
     @Test
     public void testGetEntityTables() {
         entityScanner = new EntityScanner(entityMappingManager, ENTITY_PACKAGE);
-        verify(entityMappingManager, times(5)).addEntityTable(entityTableCaptor.capture());
+        verify(entityMappingManager, times(6)).addEntityTable(entityTableCaptor.capture());
 
-        assertEquals(5, entityTableCaptor.getAllValues().size());
+        assertEquals(6, entityTableCaptor.getAllValues().size());
         List<EntityTable> capturedTables = entityTableCaptor.getAllValues();
         capturedTables.sort(Comparator.comparing(e -> e.getClazz().getName()));
 
@@ -68,8 +69,12 @@ public class EntityScannerTest {
         assertEquals("singleTestEntity", capturedTable4.getTableName());
 
         EntityTable capturedTable5 = capturedTables.get(4);
-        assertEquals(TransitiveSelfTestEntity.class, capturedTable5.getClazz());
-        assertEquals("transitiveSelfTestEntity", capturedTable5.getTableName());
+        assertEquals(MultiLinkedNodeTest.class, capturedTable5.getClazz());
+        assertEquals("multilinkednodetest", capturedTable5.getTableName());
+
+        EntityTable capturedTable6 = capturedTables.get(5);
+        assertEquals(TransitiveSelfTestEntity.class, capturedTable6.getClazz());
+        assertEquals("transitiveSelfTestEntity", capturedTable6.getTableName());
     }
 
     @Test

@@ -6,5 +6,5 @@ import java.util.function.Supplier;
 
 public interface ISessionFactoryManager {
 
-    Supplier<SessionFactory> getSessionFactorySupplier(DatabaseType databaseType);
+    Supplier<SessionFactory> getSessionFactorySupplier(DatabaseType databaseType, String configFileName);
 }

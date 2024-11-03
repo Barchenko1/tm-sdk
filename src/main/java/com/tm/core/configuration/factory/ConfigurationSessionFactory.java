@@ -25,14 +25,6 @@ public class ConfigurationSessionFactory implements IConfigurationSessionFactory
         this.annotationClasses = annotationClasses;
     }
 
-//    public SessionFactory getSessionFactory() {
-//        if (sessionFactory == null) {
-//            this.sessionFactory = configureSessionFactory();
-//        }
-//        return sessionFactory;
-//        return configureSessionFactory();
-//    }
-
     @Override
     public SessionFactory configureSessionFactory() {
         SessionFactory sessionFactory = null;

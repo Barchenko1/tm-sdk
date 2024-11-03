@@ -1,7 +1,5 @@
 package com.tm.core.dao.transaction;
 
-import com.tm.core.processor.thread.IThreadLocalSessionManager;
-import com.tm.core.processor.thread.ThreadLocalSessionManager;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -15,11 +13,9 @@ public class TransactionWrapper implements ITransactionWrapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionWrapper.class);
 
     private final SessionFactory sessionFactory;
-    private final IThreadLocalSessionManager sessionManager;
 
     public TransactionWrapper(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
-        this.sessionManager = new ThreadLocalSessionManager(this.sessionFactory);
     }
 
     @Override
@@ -41,7 +37,7 @@ public class TransactionWrapper implements ITransactionWrapper {
 
     @Override
     public void saveEntity(Consumer<Session> consumer) {
-        transactionWrap(consumer);
+        transactionConsumerWrap(consumer);
     }
 
     @Override
@@ -63,7 +59,7 @@ public class TransactionWrapper implements ITransactionWrapper {
 
     @Override
     public void updateEntity(Consumer<Session> consumer) {
-        transactionWrap(consumer);
+        transactionConsumerWrap(consumer);
     }
 
     @Override
@@ -85,10 +81,10 @@ public class TransactionWrapper implements ITransactionWrapper {
 
     @Override
     public void deleteEntity(Consumer<Session> consumer) {
-        transactionWrap(consumer);
+        transactionConsumerWrap(consumer);
     }
 
-    private void transactionWrap(Consumer<Session> consumer) {
+    private void transactionConsumerWrap(Consumer<Session> consumer) {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();

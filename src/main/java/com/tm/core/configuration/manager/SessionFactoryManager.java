@@ -4,85 +4,82 @@ import com.tm.core.configuration.factory.ConfigurationSessionFactory;
 import com.tm.core.configuration.factory.IConfigurationSessionFactory;
 import org.hibernate.SessionFactory;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
-import static com.tm.core.configuration.manager.DatabaseType.COMMON;
 import static com.tm.core.configuration.manager.DatabaseType.READ;
 import static com.tm.core.configuration.manager.DatabaseType.WRITE;
 
 public class SessionFactoryManager implements ISessionFactoryManager {
 
     private static SessionFactoryManager instance;
-    private final SessionFactory readSessionFactory;
-    private final SessionFactory writeSessionFactory;
-    private final IConfigurationSessionFactory configurationReadSessionFactory;
-    private final IConfigurationSessionFactory configurationWriteSessionFactory;
+    private final Map<String, SessionFactory> configurationReadSessionFactoryMap;
+    private final Map<String, SessionFactory> configurationWriteSessionFactoryMap;
 
-    private SessionFactoryManager(String configFileName) {
-        this.configurationReadSessionFactory = null;
-        this.configurationWriteSessionFactory = new ConfigurationSessionFactory(configFileName);
-        this.readSessionFactory = null;
-        this.writeSessionFactory = configurationWriteSessionFactory.configureSessionFactory();
+//    private SessionFactoryManager(Map<DatabaseType, String[]> databaseConfigurationMap) {
+//        String[] readConfigurations = databaseConfigurationMap.get(DatabaseType.READ);
+//        String[] writeConfigurations = databaseConfigurationMap.get(DatabaseType.WRITE);
+//        this.configurationReadSessionFactoryMap = new HashMap<>() {{
+//            if (readConfigurations != null) {
+//                for (String readConfiguration : readConfigurations) {
+//                    put(readConfiguration, new ConfigurationSessionFactory(readConfiguration).configureSessionFactory());
+//                }
+//            }
+//        }};
+//        this.configurationWriteSessionFactoryMap = new HashMap<>() {{
+//            if (writeConfigurations != null) {
+//                for (String writeConfiguration : writeConfigurations) {
+//                    put(writeConfiguration, new ConfigurationSessionFactory(writeConfiguration).configureSessionFactory());
+//                }
+//            }
+//        }};
+//    }
+
+    private SessionFactoryManager(DatabaseTypeConfiguration dataBaseConfiguration) {
+        this.configurationReadSessionFactoryMap = new HashMap<>() {{
+            if (dataBaseConfiguration.getDatabaseType() == DatabaseType.READ) {
+                DatabaseConfigurationAnnotationClass[] readDatabaseConfigurations = dataBaseConfiguration.getConfigurations();
+                if (readDatabaseConfigurations != null) {
+                    for (DatabaseConfigurationAnnotationClass readConfiguration : readDatabaseConfigurations) {
+                        put(readConfiguration.getConfigurationFileName(),
+                                new ConfigurationSessionFactory(readConfiguration.getConfigurationFileName()).configureSessionFactory());
+                    }
+                }
+            }
+        }};
+        this.configurationWriteSessionFactoryMap = new HashMap<>() {{
+            DatabaseConfigurationAnnotationClass[] writeDatabaseConfigurations = dataBaseConfiguration.getConfigurations();
+            if (writeDatabaseConfigurations != null) {
+                for (DatabaseConfigurationAnnotationClass writeConfiguration : writeDatabaseConfigurations) {
+                    put(writeConfiguration.getConfigurationFileName(),
+                            new ConfigurationSessionFactory(writeConfiguration.getConfigurationFileName()).configureSessionFactory());
+                }
+            }
+        }};
     }
 
-    private SessionFactoryManager(String configFileName, Class<?>[] annotationClasses) {
-        this.configurationReadSessionFactory = null;
-        this.configurationWriteSessionFactory = createSessionFactory(configFileName, annotationClasses);
-        this.readSessionFactory = null;
-        this.writeSessionFactory = configurationWriteSessionFactory.configureSessionFactory();
-    }
+//    public static synchronized SessionFactoryManager getInstance(Map<DatabaseType, String[]> databaseConfigurationMap) {
+//        if (instance == null) {
+//            instance = new SessionFactoryManager(databaseConfigurationMap);
+//        }
+//        return instance;
+//    }
 
-    private SessionFactoryManager(String readConfigFileName, String writeConfigFileName) {
-        this.configurationReadSessionFactory = new ConfigurationSessionFactory(readConfigFileName);
-        this.configurationWriteSessionFactory = new ConfigurationSessionFactory(writeConfigFileName);
-        this.readSessionFactory = configurationReadSessionFactory.configureSessionFactory();
-        this.writeSessionFactory = configurationWriteSessionFactory.configureSessionFactory();
-    }
-
-    private SessionFactoryManager(String readConfigFileName, Class<?>[] readAnnotationClasses,
-                                 String writeConfigFileName, Class<?>[] writeAnnotationClasses) {
-        this.configurationReadSessionFactory = createSessionFactory(readConfigFileName, readAnnotationClasses);
-        this.configurationWriteSessionFactory = createSessionFactory(writeConfigFileName, writeAnnotationClasses);
-        this.readSessionFactory = configurationReadSessionFactory.configureSessionFactory();
-        this.writeSessionFactory = configurationWriteSessionFactory.configureSessionFactory();
-    }
-
-    public static synchronized SessionFactoryManager getInstance(String configFileName) {
+    public static synchronized SessionFactoryManager getInstance(DatabaseTypeConfiguration databaseConfiguration) {
         if (instance == null) {
-            instance = new SessionFactoryManager(configFileName);
-        }
-        return instance;
-    }
-
-    public static synchronized SessionFactoryManager getInstance(String configFileName, Class<?>[] annotationClasses) {
-        if (instance == null) {
-            instance = new SessionFactoryManager(configFileName, annotationClasses);
-        }
-        return instance;
-    }
-
-    public static synchronized SessionFactoryManager getInstance(String readConfigFileName, String writeConfigFileName) {
-        if (instance == null) {
-            instance = new SessionFactoryManager(readConfigFileName, writeConfigFileName);
-        }
-        return instance;
-    }
-
-    public static synchronized SessionFactoryManager getInstance(String readConfigFileName, Class<?>[] readAnnotationClasses,
-                                                                 String writeConfigFileName, Class<?>[] writeAnnotationClasses) {
-        if (instance == null) {
-            instance = new SessionFactoryManager(readConfigFileName, readAnnotationClasses, writeConfigFileName, writeAnnotationClasses);
+            instance = new SessionFactoryManager(databaseConfiguration);
         }
         return instance;
     }
 
     @Override
-    public Supplier<SessionFactory> getSessionFactorySupplier(DatabaseType databaseType) {
+    public Supplier<SessionFactory> getSessionFactorySupplier(DatabaseType databaseType, String configFileName) {
         if (READ.equals(databaseType)) {
-            return () -> this.readSessionFactory;
+            return () -> this.configurationReadSessionFactoryMap.get(configFileName);
         }
-        if (WRITE.equals(databaseType) || COMMON.equals(databaseType)) {
-            return () -> writeSessionFactory;
+        if (WRITE.equals(databaseType)) {
+            return () -> this.configurationWriteSessionFactoryMap.get(configFileName);
         }
         throw new IllegalArgumentException("Unsupported database type: " + databaseType);
     }
