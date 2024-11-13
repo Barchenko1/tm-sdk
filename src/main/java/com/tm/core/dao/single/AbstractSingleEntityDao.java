@@ -131,42 +131,6 @@ public abstract class AbstractSingleEntityDao extends AbstractEntityDao implemen
     }
 
     @Override
-    public void mutateEntity(String sqlQuery, Parameter... params) {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
-            Query<?> query = session.createNativeQuery(sqlQuery, this.clazz);
-            for (int i = 0; i < params.length; i++) {
-                query.setParameter(i + 1, params[i].getValue());
-            }
-            int affectedRows = query.executeUpdate();
-            if (affectedRows == 0) {
-                throw new RuntimeException("No rows affected, possibly invalid id or condition.");
-            }
-            transaction.commit();
-        } catch (Exception e) {
-            LOGGER.warn("transaction error {}", e.getMessage());
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw e;
-        }
-    }
-
-//    @Override
-//    @SuppressWarnings("unchecked")
-//    public <E> List<E> getEntityListBySQLQuery(String sqlQuery) {
-//        try (Session session = sessionFactory.openSession()) {
-//            return (List<E>) session
-//                    .createNativeQuery(sqlQuery, clazz)
-//                    .list();
-//        } catch (Exception e) {
-//            LOGGER.warn("get entity error {}", e.getMessage());
-//            throw new RuntimeException(e);
-//        }
-//    }
-
-    @Override
     public <E> List<E> getEntityList(Parameter... parameters) {
         try {
             return entityIdentifierDao.getEntityList(this.clazz, parameters);

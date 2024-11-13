@@ -14,8 +14,6 @@ public interface ISingleEntityDao {
     <E> void findEntityAndUpdate(E entity, Parameter... parameters);
     <E> void findEntityAndDelete(Parameter... parameters);
 
-    void mutateEntity(String sqlQuery, Parameter... params);
-
     <E> List<E> getEntityList(Parameter... parameters);
     <E> List<E> getEntityList(Class<?> clazz, Parameter... parameters);
     <E> E getEntity(Parameter... parameters);
