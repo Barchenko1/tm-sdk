@@ -3,12 +3,12 @@ package com.tm.core.dao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractEntityDao {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractEntityDao.class);
+public abstract class AbstractEntityChecker {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractEntityChecker.class);
 
     protected Class<?> clazz;
 
-    public AbstractEntityDao(Class<?> clazz) {
+    public AbstractEntityChecker(Class<?> clazz) {
         this.clazz = clazz;
     }
 

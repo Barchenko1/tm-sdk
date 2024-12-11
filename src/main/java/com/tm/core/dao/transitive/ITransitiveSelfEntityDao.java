@@ -19,9 +19,6 @@ public interface ITransitiveSelfEntityDao {
     <E extends TransitiveSelfEntity> List<E> getTransitiveSelfEntityList(Parameter... parameters);
     <E extends TransitiveSelfEntity> E getTransitiveSelfEntity(Parameter... parameters);
     <E extends TransitiveSelfEntity> Optional<E> getOptionalTransitiveSelfEntity(Parameter... parameters);
-    <E> List<E> getTransitiveSelfEntityList(Class<?> clazz, Parameter... parameters);
-    <E> E getTransitiveSelfEntity(Class<?> clazz, Parameter... parameters);
-    <E> Optional<E> getOptionalTransitiveSelfEntity(Class<?> clazz, Parameter... parameters);
 
     <E extends TransitiveSelfEntity> Map<TransitiveSelfEnum, List<E>> getTransitiveSelfEntitiesTree();
 }

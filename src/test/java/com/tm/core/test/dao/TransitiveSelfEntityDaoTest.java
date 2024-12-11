@@ -114,32 +114,11 @@ class TransitiveSelfEntityDaoTest {
     }
 
     @Test
-    @DataSet("datasets/transitive_self/testTransitiveSelfEntityDataSet.yml")
-    void getTransitiveSelfEntityListWithClass_success() {
-        Parameter parameter = new Parameter("id", 2L);
-
-        List<TransitiveSelfTestEntity> result = testTransitiveSelfEntityDao.getTransitiveSelfEntityList(TransitiveSelfTestEntity.class, parameter);
-
-        assertEquals(1, result.size());
-        assertEquals(2L, result.get(0).getId());
-        assertEquals("Root", result.get(0).getName());
-    }
-
-    @Test
     void getTransitiveSelfEntityList_Failure() {
         Parameter parameter = new Parameter("id1", 1L);
 
         assertThrows(RuntimeException.class, () -> {
             testTransitiveSelfEntityDao.getTransitiveSelfEntityList(parameter);
-        });
-    }
-
-    @Test
-    void getTransitiveSelfEntityListWithClass_Failure() {
-        Parameter parameter = new Parameter("id1", 1L);
-
-        assertThrows(RuntimeException.class, () -> {
-            testTransitiveSelfEntityDao.getTransitiveSelfEntityList(TransitiveSelfTestEntity.class, parameter);
         });
     }
 
@@ -668,19 +647,6 @@ class TransitiveSelfEntityDaoTest {
     }
 
     @Test
-    @DataSet("datasets/transitive_self/testTransitiveSelfEntityDataSet.yml")
-    void getOptionalTransitiveSelfEntityWithClass_success() {
-        Parameter parameter = new Parameter("id", 2L);
-
-        Optional<TransitiveSelfTestEntity> result = testTransitiveSelfEntityDao.getOptionalTransitiveSelfEntity(TransitiveSelfTestEntity.class, parameter);
-
-        assertTrue(result.isPresent());
-        TransitiveSelfTestEntity resultEntity = result.get();
-        assertEquals(2L, resultEntity.getId());
-        assertEquals("Root", resultEntity.getName());
-    }
-
-    @Test
     void getOptionalTransitiveSelfEntity_Failure() {
         Parameter parameter = new Parameter("id1", 1L);
 
@@ -690,29 +656,10 @@ class TransitiveSelfEntityDaoTest {
     }
 
     @Test
-    void getOptionalTransitiveSelfEntityWithClass_Failure() {
-        Parameter parameter = new Parameter("id1", 1L);
-
-        assertThrows(RuntimeException.class, () -> {
-            testTransitiveSelfEntityDao.getOptionalTransitiveSelfEntity(TransitiveSelfTestEntity.class, parameter);
-        });
-    }
-
-    @Test
     void getOptionalTransitiveSelfEntity_NoResult() {
         Parameter parameter = new Parameter("id", 100L);
 
         Optional<TransitiveSelfTestEntity> result = testTransitiveSelfEntityDao.getOptionalTransitiveSelfEntity(parameter);
-
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void getOptionalTransitiveSelfEntityWithClass_NoResult() {
-        Parameter parameter = new Parameter("id", 100L);
-
-        Optional<TransitiveSelfTestEntity> result =
-                testTransitiveSelfEntityDao.getOptionalTransitiveSelfEntity(TransitiveSelfTestEntity.class, parameter);
 
         assertTrue(result.isEmpty());
     }
@@ -735,31 +682,11 @@ class TransitiveSelfEntityDaoTest {
     }
 
     @Test
-    @DataSet("datasets/transitive_self/testTransitiveSelfEntityDataSet.yml")
-    void getTransitiveSelfEntityWithClass_success() {
-        Parameter parameter = new Parameter("id", 2L);
-
-        TransitiveSelfTestEntity result = testTransitiveSelfEntityDao.getTransitiveSelfEntity(TransitiveSelfTestEntity.class, parameter);
-
-        assertEquals(2L, result.getId());
-        assertEquals("Root", result.getName());
-    }
-
-    @Test
     void getTransitiveSelfEntity_Failure() {
         Parameter parameter = new Parameter("id1", 1L);
 
         assertThrows(RuntimeException.class, () -> {
             testTransitiveSelfEntityDao.getTransitiveSelfEntity(parameter);
-        });
-    }
-
-    @Test
-    void getTransitiveSelfEntityWith_Failure() {
-        Parameter parameter = new Parameter("id1", 1L);
-
-        assertThrows(RuntimeException.class, () -> {
-            testTransitiveSelfEntityDao.getTransitiveSelfEntity(TransitiveSelfTestEntity.class, parameter);
         });
     }
 

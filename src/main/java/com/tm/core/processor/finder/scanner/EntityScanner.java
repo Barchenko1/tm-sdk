@@ -64,7 +64,6 @@ public class EntityScanner implements IEntityScanner {
                         int startIndex = relativePath.indexOf(packageName);
                         String className = relativePath.substring(startIndex, relativePath.length() - 6); // Remove ".class"
                         try {
-                            // Load only top-level classes, ignore inner classes
                             if (!className.contains("$")) {
                                 return Class.forName(className);
                             }

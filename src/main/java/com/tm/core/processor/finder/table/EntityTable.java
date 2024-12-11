@@ -8,7 +8,6 @@ public class EntityTable implements IEntityTable {
     private final Class<?> clazz;
     private final String tableName;
     private final String selectAllQuery;
-//    private List<Parameter> paramList;
 
     public EntityTable(Class<?> clazz, String tableName) {
         this.clazz = clazz;
@@ -27,19 +26,6 @@ public class EntityTable implements IEntityTable {
     public String getTableName() {
         return tableName;
     }
-
-    //    public List<Parameter> getParamList() {
-//        return paramList;
-//    }
-
-//    public String createFindQuery() {
-//        return createFindQuery(this.paramList);
-//    }
-
-//    @Override
-//    public void addParams(Parameter... params) {
-//        this.paramList = List.of(params);
-//    }
 
     @Override
     public String createFindQuery(Parameter... params) {

@@ -1,6 +1,6 @@
 package com.tm.core.dao.transitive;
 
-import com.tm.core.dao.AbstractEntityDao;
+import com.tm.core.dao.AbstractEntityChecker;
 import com.tm.core.dao.identifier.IEntityIdentifierDao;
 import com.tm.core.modal.TransitiveSelfEntity;
 import com.tm.core.processor.finder.parameter.Parameter;
@@ -14,7 +14,6 @@ import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.proxy.HibernateProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public abstract class AbstractTransitiveSelfEntityDao extends AbstractEntityDao implements ITransitiveSelfEntityDao {
+public abstract class AbstractTransitiveSelfEntityDao extends AbstractEntityChecker implements ITransitiveSelfEntityDao {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTransitiveSelfEntityDao.class);
     protected final SessionFactory sessionFactory;
     protected final IThreadLocalSessionManager sessionManager;
@@ -327,45 +326,6 @@ public abstract class AbstractTransitiveSelfEntityDao extends AbstractEntityDao 
                 Hibernate.initialize(e.getChildNodeList());
             });
             return optionalEntity;
-        } catch (NoResultException e) {
-            return Optional.empty();
-        } catch (Exception e) {
-            LOGGER.warn("get entity error {}", e.getMessage());
-            throw e;
-        } finally {
-            sessionManager.closeSession();
-        }
-    }
-
-    @Override
-    public <E> List<E> getTransitiveSelfEntityList(Class<?> clazz, Parameter... parameters) {
-        try {
-            return this.entityIdentifierDao.getEntityList(clazz, parameters);
-        } catch (Exception e) {
-            LOGGER.warn("get entity error {}", e.getMessage());
-            throw e;
-        } finally {
-            sessionManager.closeSession();
-        }
-    }
-
-    @Override
-    public <E> E getTransitiveSelfEntity(Class<?> clazz, Parameter... parameters) {
-        try {
-            E entity =  this.entityIdentifierDao.getEntity(clazz, parameters);
-            return entity;
-        } catch (Exception e) {
-            LOGGER.warn("get entity error {}", e.getMessage());
-            throw e;
-        } finally {
-            sessionManager.closeSession();
-        }
-    }
-
-    @Override
-    public <E> Optional<E> getOptionalTransitiveSelfEntity(Class<?> clazz, Parameter... parameters) {
-        try {
-            return this.entityIdentifierDao.getOptionalEntity(clazz, parameters);
         } catch (NoResultException e) {
             return Optional.empty();
         } catch (Exception e) {

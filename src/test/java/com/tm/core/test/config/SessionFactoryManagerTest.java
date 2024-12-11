@@ -56,23 +56,4 @@ public class SessionFactoryManagerTest {
         Supplier<SessionFactory> writeFactorySupplier = instance.getSessionFactorySupplier(WRITE, CONFIGURATION_FILE_NAME);
         assertNotNull(writeFactorySupplier.get());
     }
-
-//    @Test
-//    void testGetInstanceWithReadAndWriteConfigFileNames() {
-//        SessionFactoryManager instance = SessionFactoryManager.getInstance(CONFIGURATION_FILE_NAME, CONFIGURATION_FILE_NAME);
-//        assertNotNull(instance);
-//        Supplier<SessionFactory> readFactorySupplier = instance.getSessionFactorySupplier(READ, CONFIGURATION_FILE_NAME);
-//        assertNotNull(readFactorySupplier.get());
-//    }
-//
-//    @Test
-//    void testGetInstanceWithReadWriteConfigFilesAndAnnotations() {
-//        Class<?>[] annotationClasses = new Class<?>[]{
-//                SingleTestEntity.class
-//        };
-//        SessionFactoryManager instance = SessionFactoryManager.getInstance(CONFIGURATION_FILE_NAME, annotationClasses, CONFIGURATION_FILE_NAME, annotationClasses);
-//        assertNotNull(instance);
-//        Supplier<SessionFactory> writeFactorySupplier = instance.getSessionFactorySupplier(WRITE, CONFIGURATION_FILE_NAME);
-//        assertNotNull(writeFactorySupplier.get());
-//    }
 }

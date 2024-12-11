@@ -17,25 +17,6 @@ public class SessionFactoryManager implements ISessionFactoryManager {
     private final Map<String, SessionFactory> configurationReadSessionFactoryMap;
     private final Map<String, SessionFactory> configurationWriteSessionFactoryMap;
 
-//    private SessionFactoryManager(Map<DatabaseType, String[]> databaseConfigurationMap) {
-//        String[] readConfigurations = databaseConfigurationMap.get(DatabaseType.READ);
-//        String[] writeConfigurations = databaseConfigurationMap.get(DatabaseType.WRITE);
-//        this.configurationReadSessionFactoryMap = new HashMap<>() {{
-//            if (readConfigurations != null) {
-//                for (String readConfiguration : readConfigurations) {
-//                    put(readConfiguration, new ConfigurationSessionFactory(readConfiguration).configureSessionFactory());
-//                }
-//            }
-//        }};
-//        this.configurationWriteSessionFactoryMap = new HashMap<>() {{
-//            if (writeConfigurations != null) {
-//                for (String writeConfiguration : writeConfigurations) {
-//                    put(writeConfiguration, new ConfigurationSessionFactory(writeConfiguration).configureSessionFactory());
-//                }
-//            }
-//        }};
-//    }
-
     private SessionFactoryManager(DatabaseTypeConfiguration dataBaseConfiguration) {
         this.configurationReadSessionFactoryMap = new HashMap<>() {{
             if (dataBaseConfiguration.getDatabaseType() == DatabaseType.READ) {
@@ -58,13 +39,6 @@ public class SessionFactoryManager implements ISessionFactoryManager {
             }
         }};
     }
-
-//    public static synchronized SessionFactoryManager getInstance(Map<DatabaseType, String[]> databaseConfigurationMap) {
-//        if (instance == null) {
-//            instance = new SessionFactoryManager(databaseConfigurationMap);
-//        }
-//        return instance;
-//    }
 
     public static synchronized SessionFactoryManager getInstance(DatabaseTypeConfiguration databaseConfiguration) {
         if (instance == null) {
