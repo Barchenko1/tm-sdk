@@ -10,7 +10,5 @@ public interface IFunctionCommandDao {
     <E> void updateEntity(Supplier<E> supplier);
     <E> void deleteEntity(Supplier<E> supplier);
 
-    void saveEntity(Consumer<Session> consumer);
-    void updateEntity(Consumer<Session> consumer);
-    void deleteEntity(Consumer<Session> consumer);
+    void executeConsumer(Consumer<Session> consumer);
 }

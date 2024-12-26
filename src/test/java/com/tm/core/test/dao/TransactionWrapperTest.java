@@ -118,7 +118,7 @@ public class TransactionWrapperTest {
             s.persist(singleTestEntity);
         };
 
-        transactionWrapper.saveEntity(sessionConsumer);
+        transactionWrapper.executeConsumer(sessionConsumer);
     }
 
     @Test
@@ -144,7 +144,7 @@ public class TransactionWrapperTest {
         };
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            transactionWrapper.saveEntity(sessionConsumer);
+            transactionWrapper.executeConsumer(sessionConsumer);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
@@ -208,7 +208,7 @@ public class TransactionWrapperTest {
             singleTestEntity.setName("Update Entity");
             s.merge(singleTestEntity);
         };
-        transactionWrapper.updateEntity(sessionConsumer);
+        transactionWrapper.executeConsumer(sessionConsumer);
     }
 
     @Test
@@ -238,7 +238,7 @@ public class TransactionWrapperTest {
         doThrow(new RuntimeException()).when(session).merge(any(SingleTestEntity.class));
 
         Exception exception =
-                assertThrows(RuntimeException.class, () -> transactionWrapper.updateEntity(sessionConsumer));
+                assertThrows(RuntimeException.class, () -> transactionWrapper.executeConsumer(sessionConsumer));
 
         assertEquals(RuntimeException.class, exception.getClass());
         verify(transaction).rollback();

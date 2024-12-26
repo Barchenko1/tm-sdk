@@ -19,6 +19,22 @@ public class TransactionWrapper implements ITransactionWrapper {
     }
 
     @Override
+    public void executeConsumer(Consumer<Session> consumer) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            consumer.accept(session);
+            transaction.commit();
+        } catch (Exception e) {
+            LOGGER.warn("transaction error {}", e.getMessage());
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
+        }
+    }
+
+    @Override
     public <E> void saveEntity(Supplier<E> supplier) {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
@@ -33,11 +49,6 @@ public class TransactionWrapper implements ITransactionWrapper {
             }
             throw e;
         }
-    }
-
-    @Override
-    public void saveEntity(Consumer<Session> consumer) {
-        transactionConsumerWrap(consumer);
     }
 
     @Override
@@ -58,11 +69,6 @@ public class TransactionWrapper implements ITransactionWrapper {
     }
 
     @Override
-    public void updateEntity(Consumer<Session> consumer) {
-        transactionConsumerWrap(consumer);
-    }
-
-    @Override
     public <E> void deleteEntity(Supplier<E> supplier) {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
@@ -79,23 +85,4 @@ public class TransactionWrapper implements ITransactionWrapper {
         }
     }
 
-    @Override
-    public void deleteEntity(Consumer<Session> consumer) {
-        transactionConsumerWrap(consumer);
-    }
-
-    private void transactionConsumerWrap(Consumer<Session> consumer) {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
-            consumer.accept(session);
-            transaction.commit();
-        } catch (Exception e) {
-            LOGGER.warn("transaction error {}", e.getMessage());
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw e;
-        }
-    }
 }

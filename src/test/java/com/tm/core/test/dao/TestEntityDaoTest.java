@@ -254,7 +254,7 @@ public class TestEntityDaoTest {
             s.persist(relationshipRootTestEntity);
         };
 
-        testEntityDao.saveEntity(consumer);
+        testEntityDao.executeConsumer(consumer);
     }
 
     @Test
@@ -268,7 +268,7 @@ public class TestEntityDaoTest {
         };
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            testEntityDao.saveEntity(consumer);
+            testEntityDao.executeConsumer(consumer);
         });
 
         assertEquals(IllegalStateException.class, exception.getClass());
@@ -358,7 +358,7 @@ public class TestEntityDaoTest {
                     .setId(oldRelationShipEntity.getDependentTestEntityList().get(1).getId());
             s.merge(relationshipRootTestEntityToUpdate);
         };
-        testEntityDao.updateEntity(consumer);
+        testEntityDao.executeConsumer(consumer);
     }
 
     @Test
@@ -371,7 +371,7 @@ public class TestEntityDaoTest {
         };
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            testEntityDao.updateEntity(relationshipRootTestEntitySupplier);
+            testEntityDao.executeConsumer(relationshipRootTestEntitySupplier);
         });
 
         assertEquals(IllegalStateException.class, exception.getClass());
@@ -427,7 +427,7 @@ public class TestEntityDaoTest {
             s.remove(relationshipRootTestEntity);
         };
 
-        testEntityDao.deleteEntity(consumer);
+        testEntityDao.executeConsumer(consumer);
     }
 
     @Test
@@ -438,7 +438,7 @@ public class TestEntityDaoTest {
         };
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            testEntityDao.deleteEntity(consumer);
+            testEntityDao.executeConsumer(consumer);
         });
 
         assertEquals(IllegalStateException.class, exception.getClass());

@@ -150,18 +150,8 @@ public class AbstractEntityDao implements IEntityDao {
     }
 
     @Override
-    public void saveEntity(Consumer<Session> consumer) {
-        transactionWrapper.saveEntity(consumer);
-    }
-
-    @Override
-    public void updateEntity(Consumer<Session> consumer) {
-        transactionWrapper.updateEntity(consumer);
-    }
-
-    @Override
-    public void deleteEntity(Consumer<Session> consumer) {
-        transactionWrapper.deleteEntity(consumer);
+    public void executeConsumer(Consumer<Session> consumer) {
+        transactionWrapper.executeConsumer(consumer);
     }
 
     @Override
