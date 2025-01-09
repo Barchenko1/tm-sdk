@@ -198,4 +198,9 @@ public class AbstractEntityDao implements IEntityDao {
             );
         }
     }
+
+    @Override
+    public Class<?> getEntityClass() {
+        return this.clazz;
+    }
 }

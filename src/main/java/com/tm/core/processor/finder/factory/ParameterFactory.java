@@ -12,6 +12,11 @@ public class ParameterFactory implements IParameterFactory {
     }
 
     @Override
+    public Parameter createNumberParameter(String parameterName, Number parameterValue) {
+        return createParameter(parameterName, parameterValue);
+    }
+
+    @Override
     public Parameter createIntegerParameter(String parameterName, Integer parameterValue) {
         return createParameter(parameterName, parameterValue);
     }

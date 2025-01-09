@@ -23,6 +23,18 @@ class ParameterFactoryTest {
     }
 
     @Test
+    void creatCreateNumberParameter_ShouldCreateParameter() {
+        String parameterName = "age";
+        Number parameterValue = 30;
+
+        Parameter parameter = parameterFactory.createNumberParameter(parameterName, parameterValue);
+
+        assertNotNull(parameter);
+        assertEquals(parameterName, parameter.getName());
+        assertEquals(parameterValue, parameter.getValue());
+    }
+
+    @Test
     void createIntegerParameter_ShouldCreateParameter() {
         String parameterName = "age";
         Integer parameterValue = 30;
