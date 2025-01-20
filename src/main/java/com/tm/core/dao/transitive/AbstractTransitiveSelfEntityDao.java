@@ -4,8 +4,6 @@ import com.tm.core.dao.AbstractEntityChecker;
 import com.tm.core.dao.identifier.IEntityIdentifierDao;
 import com.tm.core.modal.TransitiveSelfEntity;
 import com.tm.core.processor.finder.parameter.Parameter;
-import com.tm.core.processor.thread.IThreadLocalSessionManager;
-import com.tm.core.processor.thread.ThreadLocalSessionManager;
 import com.tm.core.util.TransitiveSelfEnum;
 import com.tm.core.util.helper.EntityFieldHelper;
 import com.tm.core.util.helper.IEntityFieldHelper;
@@ -27,7 +25,6 @@ import java.util.stream.Collectors;
 public abstract class AbstractTransitiveSelfEntityDao extends AbstractEntityChecker implements ITransitiveSelfEntityDao {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTransitiveSelfEntityDao.class);
     protected final SessionFactory sessionFactory;
-    protected final IThreadLocalSessionManager sessionManager;
     protected final IEntityIdentifierDao entityIdentifierDao;
     protected final IEntityFieldHelper entityFieldHelper;
 
@@ -36,7 +33,6 @@ public abstract class AbstractTransitiveSelfEntityDao extends AbstractEntityChec
                                               Class<?> clazz) {
         super(clazz);
         this.sessionFactory = sessionFactory;
-        this.sessionManager = new ThreadLocalSessionManager(sessionFactory);
         this.entityIdentifierDao = entityIdentifierDao;
         this.entityFieldHelper = new EntityFieldHelper();
     }
@@ -66,10 +62,9 @@ public abstract class AbstractTransitiveSelfEntityDao extends AbstractEntityChec
     public <E extends TransitiveSelfEntity> void updateEntityTreeOldMain(E entity, Parameter... parameters) {
         classTypeChecker(entity);
         Transaction transaction = null;
-        try {
-            Session session = sessionManager.getSession();
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            E oldEntity = this.entityIdentifierDao.getEntity(this.clazz, parameters);
+            E oldEntity = this.entityIdentifierDao.getEntity(session, this.clazz, parameters);
             Optional<List<E>> optionalOldChildList = Optional.ofNullable(oldEntity.getChildNodeList());
             Optional<E> optionalOldRoot = Optional.of(oldEntity);
             Optional<E> optionalOldParent = Optional.ofNullable(oldEntity.getParent());
@@ -122,8 +117,6 @@ public abstract class AbstractTransitiveSelfEntityDao extends AbstractEntityChec
                 transaction.rollback();
             }
             throw e;
-        } finally {
-            sessionManager.closeSession();
         }
     }
 
@@ -131,15 +124,14 @@ public abstract class AbstractTransitiveSelfEntityDao extends AbstractEntityChec
     public <E extends TransitiveSelfEntity> void updateEntityTreeNewMain(E entity, Parameter... parameters) {
         classTypeChecker(entity);
         Transaction transaction = null;
-        try {
-            Session session = sessionManager.getSession();
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             // requirements
             // need update only entity by param
             // if entity update have null parent old parent is main
             // if entity update have null child old child is main
             // if entity parent or child not null, update only entity, parent and child will be old
-            E oldEntity = this.entityIdentifierDao.getEntity(this.clazz, parameters);
+            E oldEntity = this.entityIdentifierDao.getEntity(session, this.clazz, parameters);
 
             Optional<List<E>> optionalOldChildList = Optional.ofNullable(oldEntity.getChildNodeList());
             Optional<E> optionalOldRoot = Optional.of(oldEntity);
@@ -168,18 +160,15 @@ public abstract class AbstractTransitiveSelfEntityDao extends AbstractEntityChec
                 transaction.rollback();
             }
             throw e;
-        } finally {
-            sessionManager.closeSession();
         }
     }
 
     @Override
     public <E extends TransitiveSelfEntity> void deleteEntityTree(Parameter... parameters) {
         Transaction transaction = null;
-        try {
-            Session session = sessionManager.getSession();
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            E entity = this.entityIdentifierDao.getEntity(this.clazz, parameters);
+            E entity = this.entityIdentifierDao.getEntity(session, this.clazz, parameters);
 
             Optional.ofNullable(entity.getChildNodeList()).ifPresent(list -> list.forEach(session::remove));
             Optional.of(entity).ifPresent(session::remove);
@@ -191,66 +180,17 @@ public abstract class AbstractTransitiveSelfEntityDao extends AbstractEntityChec
                 transaction.rollback();
             }
             throw e;
-        } finally {
-            sessionManager.closeSession();
         }
     }
-
-    //working but need to fix simply
-//    @Override
-//    public <E extends TransitiveSelfEntity> void addEntityToChildList(E entity, Parameter... parameters) {
-//        classTypeChecker(entity);
-//        Transaction transaction = null;
-//        try {
-//            Session session = sessionManager.getSession();
-//            transaction = session.beginTransaction();
-//
-//            E oldEntity = this.entityIdentifierDao.getEntity(this.clazz, parameters);
-//
-//            Optional<List<E>> optionalOldChildList = Optional.ofNullable(oldEntity.getChildNodeList());
-//            Optional<E> optionalOldRoot = Optional.of(oldEntity);
-//            Optional<E> optionalOldParent = Optional.ofNullable(oldEntity.getParent());
-//
-////            optionalOldChildList.ifPresent(oldChildList -> {
-////                oldChildList.forEach(session::remove);
-////            });
-////            optionalOldRoot.ifPresent(session::remove);
-//            optionalOldParent.ifPresent(session::remove);
-//            session.flush();
-//            session.clear();
-//            optionalOldParent.ifPresent(oldParent -> {
-//                oldParent.setChildNodeList(new ArrayList<>());
-//                oldParent.setParent(null);
-//            });
-//            optionalOldChildList.ifPresent(oldChildList -> oldChildList.forEach(oldChild -> {
-//                oldChild.setChildNodeList(new ArrayList<>());
-//            }));
-//            if (optionalOldParent.isPresent()) {
-//                optionalOldParent.get().addChildTransitiveEntity(oldEntity);
-//            }
-//            oldEntity.addChildTransitiveEntity(entity);
-//            session.merge(oldEntity.getParent());
-//            transaction.commit();
-//        } catch (Exception e) {
-//            LOGGER.warn("transaction error {}", e.getMessage());
-//            if (transaction != null) {
-//                transaction.rollback();
-//            }
-//            throw e;
-//        } finally {
-//            sessionManager.closeSession();
-//        }
-//    }
 
     @Override
     public <E extends TransitiveSelfEntity> void addEntityToChildList(E entity, Parameter... parameters) {
         classTypeChecker(entity);
         Transaction transaction = null;
-        try {
-            Session session = sessionManager.getSession();
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
 
-            E oldEntity = this.entityIdentifierDao.getEntity(this.clazz, parameters);
+            E oldEntity = this.entityIdentifierDao.getEntity(session, this.clazz, parameters);
 
             Optional<List<E>> optionalOldChildList = Optional.ofNullable(oldEntity.getChildNodeList());
             Optional<E> optionalOldParent = Optional.ofNullable(oldEntity.getParent());
@@ -275,15 +215,13 @@ public abstract class AbstractTransitiveSelfEntityDao extends AbstractEntityChec
                 transaction.rollback();
             }
             throw e;
-        } finally {
-            sessionManager.closeSession();
         }
     }
 
     @Override
     public <E extends TransitiveSelfEntity> List<E> getTransitiveSelfEntityList(Parameter... parameters) {
         try {
-            List<E> resultEntityList = this.entityIdentifierDao.getEntityList(this.clazz, parameters);
+            List<E> resultEntityList = this.entityIdentifierDao.getEntityList(sessionFactory.openSession(), this.clazz, parameters);
 
             if (!resultEntityList.isEmpty()) {
                 resultEntityList.forEach(resultEntity -> {
@@ -295,51 +233,35 @@ public abstract class AbstractTransitiveSelfEntityDao extends AbstractEntityChec
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
             throw e;
-        } finally {
-            sessionManager.closeSession();
         }
     }
 
     @Override
     public <E extends TransitiveSelfEntity> E getTransitiveSelfEntity(Parameter... parameters) {
         try {
-            E resultEntity = this.entityIdentifierDao.getEntity(this.clazz, parameters);
-            if (resultEntity != null) {
-                Hibernate.initialize(resultEntity.getParent());
-                Hibernate.initialize(resultEntity.getChildNodeList());
-            }
-            return resultEntity;
+            return this.entityIdentifierDao.getEntity(sessionFactory.openSession(), this.clazz, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
             throw e;
-        } finally {
-            sessionManager.closeSession();
         }
     }
 
     @Override
     public <E extends TransitiveSelfEntity> Optional<E> getOptionalTransitiveSelfEntity(Parameter... parameters) {
         try {
-            Optional<E> optionalEntity = this.entityIdentifierDao.getOptionalEntity(this.clazz, parameters);
-            optionalEntity.ifPresent(e -> {
-                Hibernate.initialize(e.getParent());
-                Hibernate.initialize(e.getChildNodeList());
-            });
-            return optionalEntity;
+            return this.entityIdentifierDao.getOptionalEntity(sessionFactory.openSession(), this.clazz, parameters);
         } catch (NoResultException e) {
             return Optional.empty();
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
             throw e;
-        } finally {
-            sessionManager.closeSession();
         }
     }
 
     @Override
     public <E extends TransitiveSelfEntity> Map<TransitiveSelfEnum, List<E>> getTransitiveSelfEntitiesTree() {
-        try {
-            List<E> transitiveSelfEntityList = this.entityIdentifierDao.getEntityList(this.clazz);
+        try (Session session = sessionFactory.openSession()) {
+            List<E> transitiveSelfEntityList = this.entityIdentifierDao.getEntityList(session, this.clazz);
             List<E> result = new ArrayList<>();
             for (Object obj : transitiveSelfEntityList) {
                 if (obj instanceof List) {
@@ -349,21 +271,15 @@ public abstract class AbstractTransitiveSelfEntityDao extends AbstractEntityChec
                 }
             }
             return result.stream()
-                    .peek(transitiveSelfEntity -> {
-                        Hibernate.initialize(transitiveSelfEntity.getParent());
-                        Hibernate.initialize(transitiveSelfEntity.getChildNodeList());
-                    })
                     .collect(Collectors.groupingBy(transitiveSelfEntity -> {
                         if (transitiveSelfEntity.getParent() == null) {
                             return TransitiveSelfEnum.PARENT;
                         } else if (transitiveSelfEntity.getParent() != null && transitiveSelfEntity.getChildNodeList().isEmpty()) {
                             return TransitiveSelfEnum.CHILD;
-                        } else if (transitiveSelfEntity.getParent() != null && transitiveSelfEntity.getChildNodeList() != null){
+                        } else if (transitiveSelfEntity.getParent() != null && transitiveSelfEntity.getChildNodeList() != null) {
                             return TransitiveSelfEnum.ROOT;
                         } else throw new RuntimeException();
                     }));
-        } finally {
-            sessionManager.closeSession();
         }
     }
 

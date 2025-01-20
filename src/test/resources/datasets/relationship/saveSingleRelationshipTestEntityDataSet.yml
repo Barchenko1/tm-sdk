@@ -1,2 +1,2 @@
-relationshipRootTestEntity:
+employee:
     - name: "Relationship Root Entity"

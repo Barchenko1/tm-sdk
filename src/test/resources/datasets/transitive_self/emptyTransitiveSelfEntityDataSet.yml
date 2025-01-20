@@ -1,1 +1,1 @@
-transitiveSelfTestEntity: [] # Empty list indicates no rows
+transitiveSelfEntity: [] # Empty list indicates no rows

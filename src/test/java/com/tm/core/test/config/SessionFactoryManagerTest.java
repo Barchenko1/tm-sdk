@@ -4,17 +4,14 @@ import com.tm.core.configuration.manager.DatabaseConfigurationAnnotationClass;
 import com.tm.core.configuration.manager.DatabaseType;
 import com.tm.core.configuration.manager.DatabaseTypeConfiguration;
 import com.tm.core.configuration.manager.SessionFactoryManager;
-import com.tm.core.modal.single.SingleTestEntity;
+import com.tm.core.modal.relationship.Item;
 import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Supplier;
 
-import static com.tm.core.configuration.manager.DatabaseType.READ;
 import static com.tm.core.configuration.manager.DatabaseType.WRITE;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -45,7 +42,7 @@ public class SessionFactoryManagerTest {
     @Test
     void testGetInstanceWithConfigFileNameAndAnnotations() {
         Class<?>[] annotationClasses = new Class<?>[]{
-                SingleTestEntity.class
+                Item.class
         };
         DatabaseConfigurationAnnotationClass databaseConfigurationAnnotationClass =
                 new DatabaseConfigurationAnnotationClass(CONFIGURATION_FILE_NAME, annotationClasses);

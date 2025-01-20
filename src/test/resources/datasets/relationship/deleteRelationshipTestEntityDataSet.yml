@@ -1,0 +1,7 @@
+item:
+  - id: 1
+    name: "Item Entity"
+dependent: []
+employee: []
+employee_dependent: []
+employee_item: []

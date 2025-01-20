@@ -1,29 +1,18 @@
 package com.tm.core.test.dao;
 
-import com.github.database.rider.core.api.configuration.DBUnit;
-import com.github.database.rider.core.api.configuration.Orthography;
-import com.github.database.rider.core.api.connection.ConnectionHolder;
-import com.github.database.rider.core.api.dataset.DataSet;
-import com.github.database.rider.core.api.dataset.ExpectedDataSet;
-import com.github.database.rider.junit5.api.DBRider;
 import com.tm.core.dao.transaction.TransactionWrapper;
-import com.tm.core.modal.single.SingleTestEntity;
+import com.tm.core.modal.relationship.Item;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.sql.DataSource;
 import java.lang.reflect.Field;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.tm.core.configuration.ConfigureSessionFactoryTest.getSessionFactory;
-import static com.tm.core.configuration.DataSourcePool.getHikariDataSource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,22 +22,12 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-@DBRider
-@DBUnit(caseInsensitiveStrategy = Orthography.LOWERCASE)
-public class TransactionWrapperTest {
+public class TransactionWrapperTest extends AbstractDaoTest {
 
-    private static SessionFactory sessionFactory;
     private static TransactionWrapper transactionWrapper;
 
-    private static ConnectionHolder connectionHolder;
-
     @BeforeAll
-    public static void setUpAll() {
-        DataSource dataSource = getHikariDataSource();
-        connectionHolder = dataSource::getConnection;
-
-        sessionFactory = getSessionFactory();
+    public static void setupAll() {
         transactionWrapper = new TransactionWrapper(sessionFactory);
     }
 
@@ -64,21 +43,21 @@ public class TransactionWrapperTest {
     }
 
     @Test
-    @DataSet("datasets/single/emptySingleEntityDataSet.yml")
-    @ExpectedDataSet("datasets/single/saveSingleEntityDataSet.yml")
     void saveEntity_success() {
-        SingleTestEntity singleTestEntity = new SingleTestEntity();
-        singleTestEntity.setName("New Entity");
+        loadDataSet("/datasets/single/emptyItemEntityDataSet.yml");
+        Item Item = new Item();
+        Item.setName("New Entity");
 
-        Supplier<SingleTestEntity> singleTestEntitySupplier = () -> singleTestEntity;
+        Supplier<Item> ItemSupplier = () -> Item;
 
-        transactionWrapper.saveEntity(singleTestEntitySupplier);
+        transactionWrapper.saveEntity(ItemSupplier);
+        verifyExpectedData("/datasets/single/saveItemEntityDataSet.yml");
     }
 
     @Test
     void saveEntity_transactionFailure() {
-        SingleTestEntity singleTestEntity = new SingleTestEntity();
-        singleTestEntity.setName("New Entity");
+        Item Item = new Item();
+        Item.setName("New Entity");
 
         SessionFactory sessionFactory = mock(SessionFactory.class);
         Session session = mock(Session.class);
@@ -94,12 +73,12 @@ public class TransactionWrapperTest {
 
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(session).persist(singleTestEntity);
+        doThrow(new RuntimeException()).when(session).persist(Item);
 
-        Supplier<SingleTestEntity> singleTestEntitySupplier = () -> singleTestEntity;
+        Supplier<Item> ItemSupplier = () -> Item;
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            transactionWrapper.saveEntity(singleTestEntitySupplier);
+            transactionWrapper.saveEntity(ItemSupplier);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
@@ -109,16 +88,16 @@ public class TransactionWrapperTest {
     }
 
     @Test
-    @DataSet("datasets/single/emptySingleEntityDataSet.yml")
-    @ExpectedDataSet("datasets/single/saveSingleEntityDataSet.yml")
     void saveEntityConsumer_success() {
+        loadDataSet("/datasets/single/emptyItemEntityDataSet.yml");
         Consumer<Session> sessionConsumer = (Session s) -> {
-            SingleTestEntity singleTestEntity = new SingleTestEntity();
-            singleTestEntity.setName("New Entity");
-            s.persist(singleTestEntity);
+            Item Item = new Item();
+            Item.setName("New Entity");
+            s.persist(Item);
         };
 
         transactionWrapper.executeConsumer(sessionConsumer);
+        verifyExpectedData("/datasets/single/saveItemEntityDataSet.yml");
     }
 
     @Test
@@ -137,10 +116,10 @@ public class TransactionWrapperTest {
 
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(session).persist(any(SingleTestEntity.class));
+        doThrow(new RuntimeException()).when(session).persist(any(Item.class));
 
         Consumer<Session> sessionConsumer = (Session s) -> {
-            s.persist(new SingleTestEntity());
+            s.persist(new Item());
         };
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
@@ -154,22 +133,22 @@ public class TransactionWrapperTest {
     }
 
     @Test
-    @DataSet("datasets/single/testSingleEntityDataSet.yml")
-    @ExpectedDataSet("datasets/single/updateSingleEntityDataSet.yml")
     void updateEntity_success() {
-        SingleTestEntity singleTestEntity = new SingleTestEntity();
-        singleTestEntity.setId(1);
-        singleTestEntity.setName("Update Entity");
-        Supplier<SingleTestEntity> singleTestEntitySupplier = () -> singleTestEntity;
+        loadDataSet("/datasets/single/testItemEntityDataSet.yml");
+        Item Item = new Item();
+        Item.setId(1);
+        Item.setName("Update Entity");
+        Supplier<Item> ItemSupplier = () -> Item;
 
-        transactionWrapper.updateEntity(singleTestEntitySupplier);
+        transactionWrapper.updateEntity(ItemSupplier);
+        verifyExpectedData("/datasets/single/updateItemEntityDataSet.yml");
     }
 
     @Test
     void updateEntity_transactionFailure() {
-        SingleTestEntity singleTestEntity = new SingleTestEntity();
-        singleTestEntity.setId(100L);
-        singleTestEntity.setName("Update Entity");
+        Item Item = new Item();
+        Item.setId(100L);
+        Item.setName("Update Entity");
 
         SessionFactory sessionFactory = mock(SessionFactory.class);
         Session session = mock(Session.class);
@@ -183,14 +162,14 @@ public class TransactionWrapperTest {
             throw new RuntimeException(e);
         }
 
-        Supplier<SingleTestEntity> singleTestEntitySupplier = () -> singleTestEntity;
+        Supplier<Item> ItemSupplier = () -> Item;
 
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(session).merge(singleTestEntity);
+        doThrow(new RuntimeException()).when(session).merge(Item);
 
         Exception exception =
-                assertThrows(RuntimeException.class, () -> transactionWrapper.updateEntity(singleTestEntitySupplier));
+                assertThrows(RuntimeException.class, () -> transactionWrapper.updateEntity(ItemSupplier));
 
         assertEquals(RuntimeException.class, exception.getClass());
         verify(transaction).rollback();
@@ -199,16 +178,16 @@ public class TransactionWrapperTest {
     }
 
     @Test
-    @DataSet("datasets/single/testSingleEntityDataSet.yml")
-    @ExpectedDataSet("datasets/single/updateSingleEntityDataSet.yml")
     void updateEntityConsumer_success() {
+        loadDataSet("/datasets/single/testItemEntityDataSet.yml");
         Consumer<Session> sessionConsumer = (Session s) -> {
-            SingleTestEntity singleTestEntity = new SingleTestEntity();
-            singleTestEntity.setId(1);
-            singleTestEntity.setName("Update Entity");
-            s.merge(singleTestEntity);
+            Item Item = new Item();
+            Item.setId(1);
+            Item.setName("Update Entity");
+            s.merge(Item);
         };
         transactionWrapper.executeConsumer(sessionConsumer);
+        verifyExpectedData("/datasets/single/updateItemEntityDataSet.yml");
     }
 
     @Test
@@ -226,16 +205,16 @@ public class TransactionWrapperTest {
         }
 
         Consumer<Session> sessionConsumer = (Session s) -> {
-            SingleTestEntity singleTestEntity = new SingleTestEntity();
-            singleTestEntity.setId(1L);
-            singleTestEntity.setName("Update Entity");
-            s.merge(singleTestEntity);
+            Item Item = new Item();
+            Item.setId(1L);
+            Item.setName("Update Entity");
+            s.merge(Item);
             throw new RuntimeException();
         };
 
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(session).merge(any(SingleTestEntity.class));
+        doThrow(new RuntimeException()).when(session).merge(any(Item.class));
 
         Exception exception =
                 assertThrows(RuntimeException.class, () -> transactionWrapper.executeConsumer(sessionConsumer));
@@ -247,23 +226,22 @@ public class TransactionWrapperTest {
     }
 
     @Test
-    @DataSet("datasets/single/testSingleEntityDataSet.yml")
-    @ExpectedDataSet("datasets/single/emptySingleEntityDataSet.yml")
     void deleteEntity_success() {
-        SingleTestEntity singleTestEntity = new SingleTestEntity();
-        singleTestEntity.setId(1);
-        Supplier<SingleTestEntity> singleTestEntitySupplier = () -> singleTestEntity;
+        loadDataSet("/datasets/single/testItemEntityDataSet.yml");
+        Item Item = new Item();
+        Item.setId(1);
+        Supplier<Item> ItemSupplier = () -> Item;
 
-        transactionWrapper.deleteEntity(singleTestEntitySupplier);
+        transactionWrapper.deleteEntity(ItemSupplier);
+        verifyExpectedData("/datasets/single/emptyItemEntityDataSet.yml");
     }
 
     @Test
-    @DataSet("datasets/single/testSingleEntityDataSet.yml")
-    @ExpectedDataSet("datasets/single/testSingleEntityDataSet.yml")
     void deleteEntity_transactionFailure() {
-        SingleTestEntity singleTestEntity = new SingleTestEntity();
-        singleTestEntity.setId(100);
-        Supplier<SingleTestEntity> singleTestEntitySupplier = () -> singleTestEntity;
+        loadDataSet("/datasets/single/testItemEntityDataSet.yml");
+        Item Item = new Item();
+        Item.setId(100);
+        Supplier<Item> ItemSupplier = () -> Item;
 
         SessionFactory sessionFactory = mock(SessionFactory.class);
         Session session = mock(Session.class);
@@ -279,16 +257,18 @@ public class TransactionWrapperTest {
 
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(session).remove(singleTestEntity);
+        doThrow(new RuntimeException()).when(session).remove(Item);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            transactionWrapper.deleteEntity(singleTestEntitySupplier);
+            transactionWrapper.deleteEntity(ItemSupplier);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
         verify(transaction).rollback();
         verify(transaction, never()).commit();
         verify(session).close();
+
+        verifyExpectedData("/datasets/single/testItemEntityDataSet.yml");
     }
     
 }

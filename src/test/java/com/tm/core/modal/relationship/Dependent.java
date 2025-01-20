@@ -8,13 +8,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "singleDependentTestEntity")
-public class SingleDependentTestEntity {
+@Table(name = "dependent")
+public class Dependent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-
     @Column
     private String name;
 

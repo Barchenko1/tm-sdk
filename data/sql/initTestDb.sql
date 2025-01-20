@@ -9,7 +9,7 @@ create table dependentTestEntity (
 
 
 
-create table relationshipRootTestEntity (
+create table employee (
                                             id bigserial not null,
                                             name varchar(255),
                                             singleDependentTestEntity_id bigint,
@@ -23,7 +23,7 @@ create table relationshipRootTestEntity_dependentTestEntity (
 )
 
 
-create table singleDependentTestEntity (
+create table item (
                                            id bigserial not null,
                                            name varchar(255),
                                            primary key (id)
@@ -37,7 +37,7 @@ create table singleTestEntity (
 )
 
 
-create table transitiveSelfTestEntity (
+create table transitiveSelfEntity (
                                           id bigserial not null,
                                           name varchar(255),
                                           transitiveSelfTestEntity_id bigint,
@@ -48,10 +48,10 @@ alter table if exists relationshipRootTestEntity_dependentTestEntity
     add constraint UK_7ja7meqt3ufwu9q0lup1mhajw unique (dependentTestEntityList_id)
 
 
-alter table if exists relationshipRootTestEntity
+alter table if exists employee
     add constraint FK4nv2e5ewb18clnvcxr3fwohey
     foreign key (singleDependentTestEntity_id)
-    references singleDependentTestEntity
+    references item
 
 
 alter table if exists relationshipRootTestEntity_dependentTestEntity
@@ -63,11 +63,11 @@ alter table if exists relationshipRootTestEntity_dependentTestEntity
 alter table if exists relationshipRootTestEntity_dependentTestEntity
     add constraint FKccl9i2jjq596jlui41viojmea
     foreign key (RelationshipRootTestEntity_id)
-    references relationshipRootTestEntity
+    references employee
 
 
-alter table if exists transitiveSelfTestEntity
+alter table if exists transitiveSelfEntity
     add constraint FKj3uwgx6fiysmcxsspvuiyr9cy
     foreign key (transitiveSelfTestEntity_id)
-    references transitiveSelfTestEntity
+    references transitiveSelfEntity
 

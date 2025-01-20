@@ -24,11 +24,10 @@
         <property name="hibernate.connection.provider_class">org.hibernate.hikaricp.internal.HikariCPConnectionProvider</property>
         <property name="hibernate.connection.isolation">2</property>
         <!-- add annotated resources here -->
-        <mapping class="com.tm.core.modal.single.SingleTestEntity" />
-        <mapping class="com.tm.core.modal.transitive.TransitiveSelfTestEntity" />
-        <mapping class="com.tm.core.modal.relationship.RelationshipRootTestEntity" />
-        <mapping class="com.tm.core.modal.relationship.DependentTestEntity" />
-        <mapping class="com.tm.core.modal.relationship.SingleDependentTestEntity" />
+        <mapping class="com.tm.core.modal.transitive.TransitiveSelfEntity" />
+        <mapping class="com.tm.core.modal.relationship.Employee" />
+        <mapping class="com.tm.core.modal.relationship.Dependent" />
+        <mapping class="com.tm.core.modal.relationship.Item" />
 
     </session-factory>
 </hibernate-configuration>

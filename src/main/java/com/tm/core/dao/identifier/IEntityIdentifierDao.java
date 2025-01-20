@@ -5,10 +5,16 @@ import org.hibernate.Session;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 public interface IEntityIdentifierDao {
 
-    <E> List<E> getEntityList(Class<?> clazz, Parameter... parameters);
-    <E> E getEntity(Class<?> clazz, Parameter... parameters);
-    <E> Optional<E> getOptionalEntity(Class<?> clazz, Parameter... parameters);
+    <E> List<E> getEntityList(Session session, Class<?> clazz, Parameter... parameters);
+    <E, R> List<R> getEntityListFunction(Session session, Class<?> clazz, Function<E, R> function, Parameter... parameters);
+
+    <E> E getEntity(Session session, Class<?> clazz, Parameter... parameters);
+    <E, R> R getEntityFunction(Session session, Class<?> clazz, Function<E, R> function, Parameter... parameters);
+
+    <E> Optional<E> getOptionalEntity(Session session, Class<?> clazz, Parameter... parameters);
+    <E, R> Optional<R> getOptionalEntityFunction(Session session, Class<?> clazz, Function<E, R> function, Parameter... parameters);
 }

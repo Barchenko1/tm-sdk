@@ -1,6 +1,5 @@
 package com.tm.core.modal.transitive;
 
-import com.tm.core.modal.TransitiveSelfEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,8 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "transitiveSelfTestEntity")
-public class TransitiveSelfTestEntity extends TransitiveSelfEntity {
+@Table(name = "transitiveSelfEntity")
+public class TransitiveSelfEntity extends com.tm.core.modal.TransitiveSelfEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -26,19 +25,19 @@ public class TransitiveSelfTestEntity extends TransitiveSelfEntity {
     @Column
     private String name;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "transitiveSelfTestEntity_id")
-    private TransitiveSelfTestEntity parent;
+    @JoinColumn(name = "transitiveSelfEntity_id")
+    private TransitiveSelfEntity parent;
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "parent", cascade = CascadeType.ALL)
-    private List<TransitiveSelfTestEntity> childNodeList = new ArrayList<>();
+    private List<TransitiveSelfEntity> childNodeList = new ArrayList<>();
 
     @Override
-    public <E extends TransitiveSelfEntity> E getParent() {
+    public <E extends com.tm.core.modal.TransitiveSelfEntity> E getParent() {
         return (E) this.parent;
     }
 
     @Override
-    public void setParent(TransitiveSelfEntity parent) {
-        this.parent = (TransitiveSelfTestEntity) parent;
+    public void setParent(com.tm.core.modal.TransitiveSelfEntity parent) {
+        this.parent = (TransitiveSelfEntity) parent;
     }
 
     @Override
@@ -47,13 +46,13 @@ public class TransitiveSelfTestEntity extends TransitiveSelfEntity {
     }
 
     @Override
-    public <E extends TransitiveSelfEntity> List<E> getChildNodeList() {
+    public <E extends com.tm.core.modal.TransitiveSelfEntity> List<E> getChildNodeList() {
         return (List<E>) this.childNodeList;
     }
 
     @Override
-    public <E extends TransitiveSelfEntity> void setChildNodeList(List<E> childNodeList) {
-        this.childNodeList = (List<TransitiveSelfTestEntity>) childNodeList;
+    public <E extends com.tm.core.modal.TransitiveSelfEntity> void setChildNodeList(List<E> childNodeList) {
+        this.childNodeList = (List<TransitiveSelfEntity>) childNodeList;
     }
 
     public long getId() {
