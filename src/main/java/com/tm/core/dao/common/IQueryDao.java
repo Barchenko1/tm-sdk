@@ -8,9 +8,9 @@ import java.util.function.Function;
 
 public interface IQueryDao {
     <E> List<E> getEntityList(Parameter... parameters);
-    <E, R> List<R> getEntityListFunction(Function<E, R> function, Parameter... parameters);
+    <E> List<E> getEntityGraphList(String graphName, Parameter... parameters);
     <E> E getEntity(Parameter... parameters);
-    <E, R> R getEntityFunction(Function<E, R> function, Parameter... parameters);
+    <E> E getEntityGraph(String graphName, Parameter... parameters);
     <E> Optional<E> getOptionalEntity(Parameter... parameters);
-    <E, R> Optional<R> getOptionalEntityFunction(Function<E, R> function, Parameter... parameters);
+    <E> Optional<E> getOptionalEntityGraph(String graphName, Parameter... parameters);
 }

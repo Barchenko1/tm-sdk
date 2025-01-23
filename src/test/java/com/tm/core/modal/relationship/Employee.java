@@ -10,6 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -21,6 +23,14 @@ import java.util.Set;
 
 @Entity
 @Table(name = "employee")
+@NamedEntityGraph(
+        name = "Employee.full",
+        attributeNodes = {
+                @NamedAttributeNode("spouse"),
+                @NamedAttributeNode("dependentList"),
+                @NamedAttributeNode("itemSet")
+        }
+)
 public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

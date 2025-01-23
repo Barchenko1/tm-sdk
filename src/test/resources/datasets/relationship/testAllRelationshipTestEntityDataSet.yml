@@ -1,0 +1,40 @@
+item:
+  - id: 1
+    name: "Item Entity"
+  - id: 2
+    name: "Item Entity"
+dependent:
+  - id: 1
+    name: "Dependent Entity"
+  - id: 2
+    name: "Dependent Entity"
+  - id: 3
+    name: "Dependent Entity"
+  - id: 4
+    name: "Dependent Entity"
+  - id: 5
+    name: "Dependent Entity"
+  - id: 6
+    name: "Dependent Entity"
+employee:
+  - id: 1
+    name: "Relationship Root Entity"
+    dependent_id: 1
+  - id: 2
+    name: "Relationship Root Entity"
+    dependent_id: 4
+employee_dependent:
+  - employee_id: 1
+    dependentlist_id: 2
+  - employee_id: 1
+    dependentlist_id: 3
+  - employee_id: 2
+    dependentlist_id: 5
+  - employee_id: 2
+    dependentlist_id: 6
+employee_item:
+  - employee_id: 1
+    itemset_id: 1
+  - employee_id: 2
+    itemset_id: 2
+

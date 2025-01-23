@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class EntityIdentifierDao implements IEntityIdentifierDao {
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityIdentifierDao.class);
@@ -25,53 +23,41 @@ public class EntityIdentifierDao implements IEntityIdentifierDao {
     @Override
     public <E> List<E> getEntityList(Session session, Class<?> clazz, Parameter... parameters) {
         Query<E> query = getEntityQuery(session, clazz, parameters);
-        List<E> list = query.list();
-
-        return list;
+        return query.list();
     }
 
     @Override
-    public <E, R> List<R> getEntityListFunction(Session session, Class<?> clazz, Function<E, R> function, Parameter... parameters) {
-        Query<E> query = getEntityQuery(session, clazz, parameters);
-        List<E> list = query.list();
-        return list.stream().map(function)
-                .collect(Collectors.toList());
+    public <E> List<E> getEntityListGraph(Session session, String graphName, Class<?> clazz, Parameter... parameters) {
+        Query<E> query = getDynamicEntityGraphQuery(session, graphName, clazz, parameters);
+        return query.list();
     }
 
     @Override
     public <E> E getEntity(Session session, Class<?> clazz, Parameter... parameters) {
         Query<E> query = getEntityQuery(session, clazz, parameters);
-        E e = query.getSingleResult();
-
-        return e;
+        return query.getSingleResult();
     }
 
     @Override
-    public <E, R> R getEntityFunction(Session session, Class<?> clazz, Function<E, R> function, Parameter... parameters) {
-        Query<E> query = getEntityQuery(session, clazz, parameters);
-        E e = query.getSingleResult();
-        return Optional.ofNullable(e).map(function)
-                .orElseThrow(() -> new RuntimeException());
+    public <E> E getEntityGraph(Session session, String graphName, Class<?> clazz, Parameter... parameters) {
+        Query<E> query = getDynamicEntityGraphQuery(session, graphName, clazz, parameters);
+        return query.getSingleResult();
     }
 
     @Override
     public <E> Optional<E> getOptionalEntity(Session session, Class<?> clazz, Parameter... parameters) {
-        Query<E> query = getEntityQuery(session,clazz, parameters);
-        Optional<E> optional = query.uniqueResultOptional();
-
-        return optional;
+        Query<E> query = getEntityQuery(session, clazz, parameters);
+        return query.uniqueResultOptional();
     }
 
     @Override
-    public <E, R> Optional<R> getOptionalEntityFunction(Session session, Class<?> clazz, Function<E, R> function, Parameter... parameters) {
-        Query<E> query = getEntityQuery(session,clazz, parameters);
-        Optional<E> optional = query.uniqueResultOptional();
-        return Optional.ofNullable(optional.map(function)
-                .orElseThrow(() -> new RuntimeException()));
+    public <E> Optional<E> getOptionalEntityGraph(Session session, String graphName, Class<?> clazz, Parameter... parameters) {
+        Query<E> query = getDynamicEntityGraphQuery(session, graphName, clazz, parameters);
+        return query.uniqueResultOptional();
     }
 
     @SuppressWarnings("unchecked")
-    public <E> Query<E> getEntityQuery(Session session, Class<?> clazz, Parameter... params) {
+    private <E> Query<E> getEntityQuery(Session session, Class<?> clazz, Parameter... params) {
         EntityTable entityTable = entityMappingManager.getEntityTable(clazz);
         if (entityTable == null) {
             throw new RuntimeException("Invalid select class: " + clazz);
@@ -87,4 +73,29 @@ public class EntityIdentifierDao implements IEntityIdentifierDao {
             return query;
         }
     }
+
+    @SuppressWarnings("unchecked")
+    private <E> Query<E> getDynamicEntityGraphQuery(Session session, String graphName, Class<?> clazz, Parameter... params) {
+        EntityTable entityTable = entityMappingManager.getEntityTable(clazz);
+        if (entityTable == null) {
+            throw new RuntimeException("Invalid select class: " + clazz);
+        }
+        if ((params == null) || (params.length == 0)) {
+            Query<E> query = (Query<E>) session.createQuery(entityTable.getSelectAllJqlQuery(), entityTable.getClazz());
+            query.setHint("jakarta.persistence.loadgraph", session.getEntityGraph(graphName));
+            return query;
+        } else {
+            String jpql = entityTable.createFindJqlQuery(params);
+
+            Query<E> query = (Query<E>) session.createQuery(jpql, entityTable.getClazz());
+
+            for (Parameter param : params) {
+                query.setParameter(param.getName(), param.getValue());
+            }
+
+            query.setHint("jakarta.persistence.loadgraph", session.getEntityGraph(graphName));
+            return query;
+        }
+    }
+
 }

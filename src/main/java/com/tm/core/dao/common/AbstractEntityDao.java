@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class AbstractEntityDao implements IEntityDao {
@@ -156,9 +155,9 @@ public class AbstractEntityDao implements IEntityDao {
     }
 
     @Override
-    public <E, R> List<R> getEntityListFunction(Function<E, R> function, Parameter... parameters) {
+    public <E> List<E> getEntityGraphList(String graphName, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
-            return entityIdentifierDao.getEntityListFunction(session, this.clazz, function, parameters);
+            return entityIdentifierDao.getEntityListGraph(session, graphName, this.clazz, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity list error {}", e.getMessage());
             throw e;
@@ -176,9 +175,9 @@ public class AbstractEntityDao implements IEntityDao {
     }
 
     @Override
-    public <E, R> R getEntityFunction(Function<E, R> function, Parameter... parameters) {
+    public <E> E getEntityGraph(String graphName, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
-            return entityIdentifierDao.getEntityFunction(session, this.clazz, function, parameters);
+            return entityIdentifierDao.getEntityGraph(session, graphName, this.clazz, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
             throw e;
@@ -196,9 +195,9 @@ public class AbstractEntityDao implements IEntityDao {
     }
 
     @Override
-    public <E, R> Optional<R> getOptionalEntityFunction(Function<E, R> function, Parameter... parameters) {
+    public <E> Optional<E> getOptionalEntityGraph(String graphName, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
-            return entityIdentifierDao.getOptionalEntityFunction(session, this.clazz, function, parameters);
+            return entityIdentifierDao.getOptionalEntityGraph(session, graphName, this.clazz, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
             throw e;

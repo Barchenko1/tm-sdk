@@ -4,15 +4,18 @@ import com.tm.core.processor.finder.parameter.Parameter;
 
 public class EntityTable implements IEntityTable {
     private static final String SELECT_TEMPLATE = "SELECT * FROM %s";
+    private static final String JQL_SELECT_TEMPLATE = "SELECT e FROM %s e";
 
     private final Class<?> clazz;
     private final String tableName;
     private final String selectAllQuery;
+    private final String selectAllJqlQuery;
 
     public EntityTable(Class<?> clazz, String tableName) {
         this.clazz = clazz;
         this.tableName = tableName;
         this.selectAllQuery = String.format(SELECT_TEMPLATE, tableName);
+        this.selectAllJqlQuery = String.format(JQL_SELECT_TEMPLATE, tableName);
     }
 
     public Class<?> getClazz() {
@@ -21,6 +24,10 @@ public class EntityTable implements IEntityTable {
 
     public String getSelectAllQuery() {
         return selectAllQuery;
+    }
+
+    public String getSelectAllJqlQuery() {
+        return selectAllJqlQuery;
     }
 
     public String getTableName() {
@@ -46,6 +53,29 @@ public class EntityTable implements IEntityTable {
                 }
             }
             sb.append(";");
+            return sb.toString();
+        }
+        throw new IllegalArgumentException("params cannot be null or empty");
+    }
+
+    @Override
+    public String createFindJqlQuery(Parameter... params) {
+        if (params != null && params.length > 0) {
+            StringBuilder sb = new StringBuilder(String.format(selectAllJqlQuery, tableName));
+            sb.append(" WHERE ");
+            if (params.length > 1) {
+                for (Parameter param : params) {
+                    sb.append(String.format("%s : ", param.getName()));
+                    sb.append("? ");
+                    sb.append("OR ");
+                }
+                sb.delete(sb.length() - 4, sb.length());
+            } else {
+                for (Parameter param : params) {
+                    sb.append(String.format("e.%s = ", param.getName()));
+                    sb.append(String.format(":%s ", param.getName()));
+                }
+            }
             return sb.toString();
         }
         throw new IllegalArgumentException("params cannot be null or empty");

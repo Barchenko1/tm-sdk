@@ -5,4 +5,5 @@ import com.tm.core.processor.finder.parameter.Parameter;
 public interface IEntityTable {
 
     String createFindQuery(Parameter... params);
+    String createFindJqlQuery(Parameter... params);
 }
