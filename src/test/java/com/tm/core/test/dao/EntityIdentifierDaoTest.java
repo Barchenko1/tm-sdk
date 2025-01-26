@@ -24,6 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class EntityIdentifierDaoTest extends AbstractDaoTest {
 
     private final String GRAPH_PATH = "Employee.full";
+    private final String NAMED_QUERY_NAME_ONE = "Employee.findByIdWithJoins";
+    private final String NAMED_QUERY_NAME_ALL = "Employee.findAllWithJoins";
     private EntityIdentifierDao entityIdentifierDao;
 
     @BeforeEach
@@ -85,6 +87,32 @@ public class EntityIdentifierDaoTest extends AbstractDaoTest {
     }
 
     @Test
+    public void testGetEntityNamedQueryListAll() {
+        loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
+
+        List<Employee> entities =
+                entityIdentifierDao.getEntityListNamedQuery(sessionFactory.openSession(), NAMED_QUERY_NAME_ALL, Employee.class);
+
+        assertNotNull(entities);
+        assertFalse(entities.isEmpty());
+        assertEquals(2, entities.size());
+    }
+
+    @Test
+    public void testGetEntityNamedQueryListAllOne() {
+        loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
+        Employee expectedEmployee = getEmployee();
+        List<Employee> entities =
+                entityIdentifierDao.getEntityListNamedQuery(sessionFactory.openSession(), NAMED_QUERY_NAME_ONE, Employee.class, new Parameter("id", 1));
+
+        assertNotNull(entities);
+        assertFalse(entities.isEmpty());
+        assertEquals(1, entities.size());
+        checkEmployee(expectedEmployee, entities.get(0));
+    }
+
+
+    @Test
     public void testGetEntity() {
         loadDataSet("/datasets/single/searchAllItemEntityDataSet.yml");
         Item entity =
@@ -92,6 +120,30 @@ public class EntityIdentifierDaoTest extends AbstractDaoTest {
 
         assertNotNull(entity);
         assertEquals(1, entity.getId());
+    }
+
+    @Test
+    public void testGetEntityNamedQuery() {
+        loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
+        Employee expectedEmployee = getEmployee();
+        Employee entity =
+                entityIdentifierDao.getEntityNamedQuery(sessionFactory.openSession(), NAMED_QUERY_NAME_ONE, Employee.class, new Parameter("id", 1));
+
+        assertNotNull(entity);
+        assertEquals(1, entity.getId());
+        checkEmployee(expectedEmployee, entity);
+    }
+
+    @Test
+    public void testGetOptionalEntityNamedQuery() {
+        loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
+        Employee expectedEmployee = getEmployee();
+        Optional<Employee> optional =
+                entityIdentifierDao.getOptionalEntityNamedQuery(sessionFactory.openSession(), NAMED_QUERY_NAME_ONE, Employee.class, new Parameter("id", 1));
+
+        assertTrue(optional.isPresent());
+        Employee result = optional.get();
+        checkEmployee(expectedEmployee, result);
     }
 
     @Test
@@ -183,17 +235,15 @@ public class EntityIdentifierDaoTest extends AbstractDaoTest {
     @Test
     public void testGetEntityWithNullParameter() {
         loadDataSet("/datasets/single/searchAllItemEntityDataSet.yml");
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            entityIdentifierDao.getEntity(sessionFactory.openSession(), Item.class, (Parameter[]) null);
-        });
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                entityIdentifierDao.getEntity(sessionFactory.openSession(), Item.class, (Parameter[]) null));
     }
 
     @Test
     public void testGetOptionalEntityWithNullParameters() {
         loadDataSet("/datasets/single/searchAllItemEntityDataSet.yml");
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            entityIdentifierDao.getOptionalEntity(sessionFactory.openSession(), Item.class, (Parameter[]) null);
-        });
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                entityIdentifierDao.getOptionalEntity(sessionFactory.openSession(), Item.class, (Parameter[]) null));
     }
 
     @Test

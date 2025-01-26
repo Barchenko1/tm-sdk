@@ -15,7 +15,7 @@ public class EntityTable implements IEntityTable {
         this.clazz = clazz;
         this.tableName = tableName;
         this.selectAllQuery = String.format(SELECT_TEMPLATE, tableName);
-        this.selectAllJqlQuery = String.format(JQL_SELECT_TEMPLATE, tableName);
+        this.selectAllJqlQuery = String.format(JQL_SELECT_TEMPLATE, capitalizeFirstLetter(tableName));
     }
 
     public Class<?> getClazz() {
@@ -79,5 +79,12 @@ public class EntityTable implements IEntityTable {
             return sb.toString();
         }
         throw new IllegalArgumentException("params cannot be null or empty");
+    }
+
+    private String capitalizeFirstLetter(String input) {
+        if (input == null || input.isEmpty()) {
+            throw new IllegalArgumentException("Input cannot be null or empty");
+        }
+        return input.substring(0, 1).toUpperCase() + input.substring(1);
     }
 }

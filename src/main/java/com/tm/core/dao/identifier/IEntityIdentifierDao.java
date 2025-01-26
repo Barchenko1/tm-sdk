@@ -10,8 +10,11 @@ public interface IEntityIdentifierDao {
 
     <E> List<E> getEntityList(Session session, Class<?> clazz, Parameter... parameters);
     <E> List<E> getEntityListGraph(Session session, String graphName, Class<?> clazz, Parameter... parameters);
+    <E> List<E> getEntityListNamedQuery(Session session, String namedQuery, Class<?> clazz, Parameter... parameters);
     <E> E getEntity(Session session, Class<?> clazz, Parameter... parameters);
     <E> E getEntityGraph(Session session, String graphName, Class<?> clazz, Parameter... parameters);
+    <E> E getEntityNamedQuery(Session session, String namedQuery, Class<?> clazz, Parameter... parameters);
     <E> Optional<E> getOptionalEntity(Session session, Class<?> clazz, Parameter... parameters);
     <E> Optional<E> getOptionalEntityGraph(Session session, String graphName, Class<?> clazz, Parameter... parameters);
+    <E> Optional<E> getOptionalEntityNamedQuery(Session session, String namedQuery, Class<?> clazz, Parameter... parameters);
 }

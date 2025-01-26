@@ -165,6 +165,16 @@ public class AbstractEntityDao implements IEntityDao {
     }
 
     @Override
+    public <E> List<E> getEntityNamedQueryList(String namedQuery, Parameter... parameters) {
+        try (Session session = sessionFactory.openSession()) {
+            return entityIdentifierDao.getEntityListNamedQuery(session, namedQuery, this.clazz, parameters);
+        } catch (Exception e) {
+            LOGGER.warn("get entity list error {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @Override
     public <E> E getEntity(Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
             return entityIdentifierDao.getEntity(session, this.clazz, parameters);
@@ -185,6 +195,16 @@ public class AbstractEntityDao implements IEntityDao {
     }
 
     @Override
+    public <E> E getEntityNamedQuery(String namedQuery, Parameter... parameters) {
+        try (Session session = sessionFactory.openSession()) {
+            return entityIdentifierDao.getEntityNamedQuery(session, namedQuery, this.clazz, parameters);
+        } catch (Exception e) {
+            LOGGER.warn("get entity error {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @Override
     public <E> Optional<E> getOptionalEntity(Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
             return entityIdentifierDao.getOptionalEntity(session, this.clazz, parameters);
@@ -198,6 +218,16 @@ public class AbstractEntityDao implements IEntityDao {
     public <E> Optional<E> getOptionalEntityGraph(String graphName, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
             return entityIdentifierDao.getOptionalEntityGraph(session, graphName, this.clazz, parameters);
+        } catch (Exception e) {
+            LOGGER.warn("get entity error {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @Override
+    public <E> Optional<E> getOptionalEntityNamedQuery(String namedQuery, Parameter... parameters) {
+        try (Session session = sessionFactory.openSession()) {
+            return entityIdentifierDao.getOptionalEntityNamedQuery(session, namedQuery, this.clazz, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
             throw e;

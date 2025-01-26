@@ -10,4 +10,11 @@ public interface ISearchWrapper {
     <E> E getEntity(Class<?> clazz, Parameter... parameters);
     <E> Optional<E> getOptionalEntity(Class<?> clazz, Parameter... parameters);
 
+    <E> List<E> getEntityListGraph(Class<?> clazz, String graphName, Parameter... parameters);
+    <E> E getEntityGraph(Class<?> clazz, String graphName, Parameter... parameters);
+    <E> Optional<E> getOptionalEntityGraph(Class<?> clazz, String graphName, Parameter... parameters);
+
+    <E> List<E> getEntityNamedQueryList(Class<?> clazz, String namedQuery, Parameter... parameters);
+    <E> E getEntityNamedQuery(Class<?> clazz, String namedQuery, Parameter... parameters);
+    <E> Optional<E> getOptionalEntityNamedQuery(Class<?> clazz, String namedQuery, Parameter... parameters);
 }

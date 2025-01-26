@@ -12,6 +12,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -30,6 +31,21 @@ import java.util.Set;
                 @NamedAttributeNode("dependentList"),
                 @NamedAttributeNode("itemSet")
         }
+)
+@NamedQuery(
+        name = "Employee.findByIdWithJoins",
+        query = "SELECT e FROM Employee e " +
+                "LEFT JOIN FETCH e.spouse s " +
+                "LEFT JOIN FETCH e.dependentList d " +
+                "LEFT JOIN FETCH e.itemSet i " +
+                "WHERE e.id = :id"
+)
+@NamedQuery(
+        name = "Employee.findAllWithJoins",
+        query = "SELECT e FROM Employee e " +
+                "LEFT JOIN FETCH e.spouse s " +
+                "LEFT JOIN FETCH e.dependentList d " +
+                "LEFT JOIN FETCH e.itemSet i"
 )
 public class Employee {
     @Id

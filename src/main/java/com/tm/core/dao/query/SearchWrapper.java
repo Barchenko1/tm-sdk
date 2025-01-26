@@ -43,4 +43,46 @@ public class SearchWrapper implements ISearchWrapper {
         }
     }
 
+    @Override
+    public <E> List<E> getEntityListGraph(Class<?> clazz, String graphName, Parameter... parameters) {
+        try (Session session = sessionFactory.openSession()) {
+            return entityIdentifierDao.getEntityListGraph(session, graphName, clazz, parameters);
+        }
+    }
+
+    @Override
+    public <E> E getEntityGraph(Class<?> clazz, String graphName, Parameter... parameters) {
+        try (Session session = sessionFactory.openSession()) {
+            return entityIdentifierDao.getEntityGraph(session, graphName, clazz, parameters);
+        }
+    }
+
+    @Override
+    public <E> Optional<E> getOptionalEntityGraph(Class<?> clazz, String graphName, Parameter... parameters) {
+        try (Session session = sessionFactory.openSession()) {
+            return entityIdentifierDao.getOptionalEntityGraph(session, graphName, clazz, parameters);
+        }
+    }
+
+    @Override
+    public <E> List<E> getEntityNamedQueryList(Class<?> clazz, String namedQuery, Parameter... parameters) {
+        try (Session session = sessionFactory.openSession()) {
+            return entityIdentifierDao.getEntityListNamedQuery(session, namedQuery, clazz, parameters);
+        }
+    }
+
+    @Override
+    public <E> E getEntityNamedQuery(Class<?> clazz, String namedQuery, Parameter... parameters) {
+        try (Session session = sessionFactory.openSession()) {
+            return entityIdentifierDao.getEntityNamedQuery(session, namedQuery, clazz, parameters);
+        }
+    }
+
+    @Override
+    public <E> Optional<E> getOptionalEntityNamedQuery(Class<?> clazz, String namedQuery, Parameter... parameters) {
+        try (Session session = sessionFactory.openSession()) {
+            return entityIdentifierDao.getOptionalEntityNamedQuery(session, namedQuery, clazz, parameters);
+        }
+    }
+
 }
