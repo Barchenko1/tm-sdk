@@ -15,7 +15,7 @@ public class EntityTable implements IEntityTable {
         this.clazz = clazz;
         this.tableName = tableName;
         this.selectAllQuery = String.format(SELECT_TEMPLATE, tableName);
-        this.selectAllJqlQuery = String.format(JQL_SELECT_TEMPLATE, capitalizeFirstLetter(tableName));
+        this.selectAllJqlQuery = String.format(JQL_SELECT_TEMPLATE, this.clazz.getSimpleName());
     }
 
     public Class<?> getClazz() {
