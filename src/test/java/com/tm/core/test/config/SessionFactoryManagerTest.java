@@ -19,9 +19,9 @@ public class SessionFactoryManagerTest {
 
     private static final String CONFIGURATION_FILE_NAME = "hikari.hibernate.cfg.xml";
     private static final DatabaseTypeConfiguration DATABASE_TYPE_CONFIGURATION = new DatabaseTypeConfiguration(
-            DatabaseType.WRITE, new DatabaseConfigurationAnnotationClass[]{
-            new DatabaseConfigurationAnnotationClass(CONFIGURATION_FILE_NAME)
-    }
+            DatabaseType.WRITE, new DatabaseConfigurationAnnotationClass[] {
+                new DatabaseConfigurationAnnotationClass(CONFIGURATION_FILE_NAME)
+            }
     );
 
     @BeforeEach

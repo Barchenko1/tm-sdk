@@ -1,6 +1,6 @@
 package com.tm.core.dao.identifier;
 
-import com.tm.core.processor.finder.parameter.Parameter;
+import com.tm.core.finder.parameter.Parameter;
 import org.hibernate.Session;
 
 import java.util.List;

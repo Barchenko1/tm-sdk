@@ -3,7 +3,7 @@ package com.tm.core.dao.transitive;
 import com.tm.core.dao.AbstractEntityChecker;
 import com.tm.core.dao.identifier.IEntityIdentifierDao;
 import com.tm.core.modal.TransitiveSelfEntity;
-import com.tm.core.processor.finder.parameter.Parameter;
+import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.util.TransitiveSelfEnum;
 import com.tm.core.util.helper.EntityFieldHelper;
 import com.tm.core.util.helper.IEntityFieldHelper;

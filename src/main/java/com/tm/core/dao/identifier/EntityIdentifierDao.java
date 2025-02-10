@@ -1,8 +1,8 @@
 package com.tm.core.dao.identifier;
 
-import com.tm.core.processor.finder.manager.IEntityMappingManager;
-import com.tm.core.processor.finder.parameter.Parameter;
-import com.tm.core.processor.finder.table.EntityTable;
+import com.tm.core.finder.manager.IEntityMappingManager;
+import com.tm.core.finder.parameter.Parameter;
+import com.tm.core.finder.table.EntityTable;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
@@ -115,6 +115,7 @@ public class EntityIdentifierDao implements IEntityIdentifierDao {
         }
 
         query.setHint("jakarta.persistence.loadgraph", session.getEntityGraph(graphName));
+//        query.setHint("jakarta.persistence.fetchgraph", session.getEntityGraph(graphName));
         return query;
     }
 

@@ -1,6 +1,6 @@
 package com.tm.core.test.finder;
 
-import com.tm.core.processor.finder.table.EntityTable;
+import com.tm.core.finder.table.EntityTable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

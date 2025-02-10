@@ -1,7 +1,7 @@
 package com.tm.core.dao.transitive;
 
 import com.tm.core.modal.TransitiveSelfEntity;
-import com.tm.core.processor.finder.parameter.Parameter;
+import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.util.TransitiveSelfEnum;
 
 import java.util.List;

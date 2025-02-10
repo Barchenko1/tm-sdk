@@ -1,7 +1,7 @@
 package com.tm.core.test.finder;
 
-import com.tm.core.processor.finder.parameter.Parameter;
-import com.tm.core.processor.finder.factory.ParameterFactory;
+import com.tm.core.finder.parameter.Parameter;
+import com.tm.core.finder.factory.ParameterFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

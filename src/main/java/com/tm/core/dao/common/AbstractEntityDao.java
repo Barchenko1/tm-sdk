@@ -1,9 +1,9 @@
 package com.tm.core.dao.common;
 
 import com.tm.core.dao.identifier.IEntityIdentifierDao;
-import com.tm.core.dao.transaction.ITransactionWrapper;
-import com.tm.core.dao.transaction.TransactionWrapper;
-import com.tm.core.processor.finder.parameter.Parameter;
+import com.tm.core.dao.transaction.ITransactionHandler;
+import com.tm.core.dao.transaction.TransactionHandler;
+import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.util.helper.EntityFieldHelper;
 import com.tm.core.util.helper.IEntityFieldHelper;
 import org.hibernate.Session;
@@ -24,7 +24,7 @@ public class AbstractEntityDao implements IEntityDao {
     protected final SessionFactory sessionFactory;
     protected final IEntityFieldHelper entityFieldHelper;
     protected final IEntityIdentifierDao entityIdentifierDao;
-    protected final ITransactionWrapper transactionWrapper;
+    protected final ITransactionHandler transactionWrapper;
 
     public AbstractEntityDao(SessionFactory sessionFactory,
                              IEntityIdentifierDao entityIdentifierDao,
@@ -33,7 +33,7 @@ public class AbstractEntityDao implements IEntityDao {
         this.sessionFactory = sessionFactory;
         this.entityFieldHelper = new EntityFieldHelper();
         this.entityIdentifierDao = entityIdentifierDao;
-        this.transactionWrapper = new TransactionWrapper(sessionFactory);
+        this.transactionWrapper = new TransactionHandler(sessionFactory);
     }
 
     @Override

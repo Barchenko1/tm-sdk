@@ -1,6 +1,6 @@
 package com.tm.core.dao.common;
 
-import com.tm.core.processor.finder.parameter.Parameter;
+import com.tm.core.finder.parameter.Parameter;
 
 public interface IEntityCommandDao {
     <E> void persistEntity(E entity);

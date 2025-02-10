@@ -1,10 +1,9 @@
 package com.tm.core.dao.common;
 
-import com.tm.core.processor.finder.parameter.Parameter;
+import com.tm.core.finder.parameter.Parameter;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 public interface IQueryDao {
     <E> List<E> getEntityList(Parameter... parameters);
