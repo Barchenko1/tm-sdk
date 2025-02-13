@@ -1,9 +1,9 @@
 package com.tm.core.test.dao;
 
 import com.tm.core.dao.basic.TestTransitiveSelfEntityDao;
-import com.tm.core.dao.identifier.EntityIdentifierDao;
-import com.tm.core.dao.identifier.IEntityIdentifierDao;
-import com.tm.core.dao.transitive.AbstractTransitiveSelfEntityDao;
+import com.tm.core.process.dao.identifier.QueryService;
+import com.tm.core.process.dao.identifier.IQueryService;
+import com.tm.core.process.dao.transitive.AbstractTransitiveSelfEntityDao;
 import com.tm.core.modal.transitive.TransitiveSelfEntity;
 import com.tm.core.finder.manager.EntityMappingManager;
 import com.tm.core.finder.manager.IEntityMappingManager;
@@ -38,7 +38,7 @@ import static org.mockito.Mockito.when;
 
 class TransitiveSelfEntityDaoTest extends AbstractDaoTest {
 
-    private static IEntityIdentifierDao entityIdentifierDao;
+    private static IQueryService queryService;
 
     private static TestTransitiveSelfEntityDao testTransitiveSelfEntityDao;
 
@@ -46,16 +46,16 @@ class TransitiveSelfEntityDaoTest extends AbstractDaoTest {
     public static void setUpAll() {
         IEntityMappingManager entityMappingManager = new EntityMappingManager();
         entityMappingManager.addEntityTable(new EntityTable(TransitiveSelfEntity.class, "transitiveselfentity"));
-        entityIdentifierDao = new EntityIdentifierDao(entityMappingManager);
-        testTransitiveSelfEntityDao = new TestTransitiveSelfEntityDao(sessionFactory, entityIdentifierDao);
+        queryService = new QueryService(entityMappingManager);
+        testTransitiveSelfEntityDao = new TestTransitiveSelfEntityDao(sessionFactory, queryService);
     }
 
     @BeforeEach
     public void setUp() {
         try {
-            Field entityIdentifierDaoField = AbstractTransitiveSelfEntityDao.class.getDeclaredField("entityIdentifierDao");
-            entityIdentifierDaoField.setAccessible(true);
-            entityIdentifierDaoField.set(testTransitiveSelfEntityDao, entityIdentifierDao);
+            Field queryServiceField = AbstractTransitiveSelfEntityDao.class.getDeclaredField("queryService");
+            queryServiceField.setAccessible(true);
+            queryServiceField.set(testTransitiveSelfEntityDao, queryService);
 
             Field sessionManagerField = AbstractTransitiveSelfEntityDao.class.getDeclaredField("sessionFactory");
             sessionManagerField.setAccessible(true);
@@ -284,7 +284,7 @@ class TransitiveSelfEntityDaoTest extends AbstractDaoTest {
         Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
         NativeQuery<TransitiveSelfEntity> query = mock(NativeQuery.class);
-        IEntityIdentifierDao entityIdentifierDao = mock(IEntityIdentifierDao.class);
+        IQueryService queryService = mock(IQueryService.class);
 
         try {
             Field sessionManagerField = AbstractTransitiveSelfEntityDao.class.getDeclaredField("sessionFactory");

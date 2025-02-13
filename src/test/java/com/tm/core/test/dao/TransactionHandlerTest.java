@@ -1,6 +1,6 @@
 package com.tm.core.test.dao;
 
-import com.tm.core.dao.transaction.TransactionHandler;
+import com.tm.core.process.dao.transaction.TransactionHandler;
 import com.tm.core.modal.relationship.Item;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
