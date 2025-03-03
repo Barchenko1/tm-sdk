@@ -47,61 +47,24 @@ public class FetchHandlerTest extends AbstractDaoTest {
     }
 
     @Test
-    void getEntityList_success() {
-        loadDataSet("/datasets/single/testItemEntityDataSet.yml");
-        Parameter parameter = new Parameter("id", 1L);
-
-        List<Item> result =
-                fetchHandler.getEntityList(Item.class, parameter);
-
-        assertEquals(1, result.size());
-        assertEquals(1L, result.get(0).getId());
-        assertEquals("Test Entity 1", result.get(0).getName());
-    }
-
-    @Test
-    void getOptionalEntity_success() {
-        loadDataSet("/datasets/single/testItemEntityDataSet.yml");
-        Parameter parameter = new Parameter("id", 1L);
-
-        Optional<Item> optional =
-                fetchHandler.getOptionalEntity(Item.class, parameter);
-
-        assertTrue(optional.isPresent());
-        Item result = optional.get();
-        assertEquals(1L, result.getId());
-        assertEquals("Test Entity 1", result.getName());
-    }
-
-    @Test
-    void getEntity_success() {
-        loadDataSet("/datasets/single/testItemEntityDataSet.yml");
-        Parameter parameter = new Parameter("id", 1L);
-
-        Item result = fetchHandler.getEntity(Item.class, parameter);
-        assertEquals(1L, result.getId());
-        assertEquals("Test Entity 1", result.getName());
-    }
-
-    @Test
-    void getEntityListGraph_success() {
+    void getGraph_EntityList_success() {
         loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
         Parameter parameter = new Parameter("id", 1L);
         Employee expectedEmployee = getEmployee();
         List<Employee> result =
-                fetchHandler.getEntityListGraph(Employee.class, GRAPH_PATH,parameter);
+                fetchHandler.getGraphEntityList(Employee.class, GRAPH_PATH,parameter);
 
         assertEquals(1, result.size());
         checkEmployee(expectedEmployee, result.get(0));
     }
 
     @Test
-    void getOptionalEntityGraph_success() {
+    void getGraph_OptionalEntity_success() {
         loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
         Parameter parameter = new Parameter("id", 1L);
         Employee expectedEmployee = getEmployee();
         Optional<Employee> optional =
-                fetchHandler.getOptionalEntityGraph(Employee.class, GRAPH_PATH, parameter);
+                fetchHandler.getGraphOptionalEntity(Employee.class, GRAPH_PATH, parameter);
 
         assertTrue(optional.isPresent());
         Employee result = optional.get();
@@ -110,42 +73,42 @@ public class FetchHandlerTest extends AbstractDaoTest {
     }
 
     @Test
-    void getEntityGraph_success() {
+    void getGraph_Entity_success() {
         loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
         Parameter parameter = new Parameter("id", 1L);
         Employee expectedEmployee = getEmployee();
-        Employee result = fetchHandler.getEntityGraph(Employee.class, GRAPH_PATH, parameter);
+        Employee result = fetchHandler.getGraphEntity(Employee.class, GRAPH_PATH, parameter);
         checkEmployee(expectedEmployee, result);
     }
 
     @Test
-    void getEntityNamedQueryList_success() {
+    void getNamedQueryEntityList_success() {
         loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
         Parameter parameter = new Parameter("id", 1L);
         Employee expectedEmployee = getEmployee();
         List<Employee> result =
-                fetchHandler.getEntityNamedQueryList(Employee.class, NAMED_QUERY_NAME_ONE, parameter);
+                fetchHandler.getNamedQueryEntityList(Employee.class, NAMED_QUERY_NAME_ONE, parameter);
 
         assertEquals(1, result.size());
         checkEmployee(expectedEmployee, result.get(0));
     }
 
     @Test
-    void getEntityNamedQueryAllList_success() {
+    void getNamedQueryEntityAllList_success() {
         loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
         List<Employee> result =
-                fetchHandler.getEntityNamedQueryList(Employee.class, NAMED_QUERY_NAME_ALL);
+                fetchHandler.getNamedQueryEntityList(Employee.class, NAMED_QUERY_NAME_ALL);
 
         assertEquals(2, result.size());
     }
 
     @Test
-    void getOptionalEntityNamedQuery_success() {
+    void getNamedQuery_OptionalEntity_success() {
         loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
         Parameter parameter = new Parameter("id", 1L);
         Employee expectedEmployee = getEmployee();
         Optional<Employee> optional =
-                fetchHandler.getOptionalEntityNamedQuery(Employee.class, NAMED_QUERY_NAME_ONE, parameter);
+                fetchHandler.getNamedQueryOptionalEntity(Employee.class, NAMED_QUERY_NAME_ONE, parameter);
 
         assertTrue(optional.isPresent());
         Employee result = optional.get();
@@ -154,11 +117,11 @@ public class FetchHandlerTest extends AbstractDaoTest {
     }
 
     @Test
-    void getEntityNamedQuery_success() {
+    void getNamedQuery_Entity_success() {
         loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
         Parameter parameter = new Parameter("id", 1L);
         Employee expectedEmployee = getEmployee();
-        Employee result = fetchHandler.getEntityNamedQuery(Employee.class, NAMED_QUERY_NAME_ONE, parameter);
+        Employee result = fetchHandler.getNamedQueryEntity(Employee.class, NAMED_QUERY_NAME_ONE, parameter);
         checkEmployee(expectedEmployee, result);
     }
 

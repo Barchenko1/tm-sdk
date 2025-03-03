@@ -48,25 +48,13 @@ public class QueryServiceTest extends AbstractDaoTest {
     }
 
     @Test
-    public void testGetEntityList() {
-        loadDataSet("/datasets/single/searchAllItemEntityDataSet.yml");
-
-        List<Item> entities =
-                queryService.getEntityList(sessionFactory.openSession(), Item.class, new Parameter("id", 1));
-
-        assertNotNull(entities);
-        assertFalse(entities.isEmpty());
-        assertEquals(1, entities.size());
-    }
-
-    @Test
-    public void testGetEntityListGraph() {
+    public void testGetGraphEntityList() {
         loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
 
         Employee expectedEmployee = getEmployee();
 
         List<Employee> entities =
-                queryService.getEntityListGraph(sessionFactory.openSession(), Employee.class, GRAPH_PATH, new Parameter("id", 1));
+                queryService.getGraphEntityList(sessionFactory.openSession(), Employee.class, GRAPH_PATH, new Parameter("id", 1));
 
         assertNotNull(entities);
         assertFalse(entities.isEmpty());
@@ -75,11 +63,11 @@ public class QueryServiceTest extends AbstractDaoTest {
     }
 
     @Test
-    public void testGetEntityListGraphAll() {
+    public void testGetGraphEntityListAll() {
         loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
 
         List<Employee> entities =
-                queryService.getEntityListGraph(sessionFactory.openSession(), Employee.class, GRAPH_PATH);
+                queryService.getGraphEntityList(sessionFactory.openSession(), Employee.class, GRAPH_PATH);
 
         assertNotNull(entities);
         assertFalse(entities.isEmpty());
@@ -87,11 +75,11 @@ public class QueryServiceTest extends AbstractDaoTest {
     }
 
     @Test
-    public void testGetEntityNamedQueryListAll() {
+    public void testGetNamedQueryEntityListAll() {
         loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
 
         List<Employee> entities =
-                queryService.getEntityListNamedQuery(sessionFactory.openSession(), Employee.class, NAMED_QUERY_NAME_ALL);
+                queryService.getNamedQueryEntityList(sessionFactory.openSession(), Employee.class, NAMED_QUERY_NAME_ALL);
 
         assertNotNull(entities);
         assertFalse(entities.isEmpty());
@@ -99,11 +87,11 @@ public class QueryServiceTest extends AbstractDaoTest {
     }
 
     @Test
-    public void testGetEntityNamedQueryListAllOne() {
+    public void testGetNamedQueryEntityListAllOne() {
         loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
         Employee expectedEmployee = getEmployee();
         List<Employee> entities =
-                queryService.getEntityListNamedQuery(sessionFactory.openSession(), Employee.class, NAMED_QUERY_NAME_ONE, new Parameter("id", 1));
+                queryService.getNamedQueryEntityList(sessionFactory.openSession(), Employee.class, NAMED_QUERY_NAME_ONE, new Parameter("id", 1));
 
         assertNotNull(entities);
         assertFalse(entities.isEmpty());
@@ -111,23 +99,12 @@ public class QueryServiceTest extends AbstractDaoTest {
         checkEmployee(expectedEmployee, entities.get(0));
     }
 
-
     @Test
-    public void testGetEntity() {
-        loadDataSet("/datasets/single/searchAllItemEntityDataSet.yml");
-        Item entity =
-                queryService.getEntity(sessionFactory.openSession(), Item.class, new Parameter("id", 1));
-
-        assertNotNull(entity);
-        assertEquals(1, entity.getId());
-    }
-
-    @Test
-    public void testGetEntityNamedQuery() {
+    public void testGetNamedQueryEntity() {
         loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
         Employee expectedEmployee = getEmployee();
         Employee entity =
-                queryService.getEntityNamedQuery(sessionFactory.openSession(), Employee.class, NAMED_QUERY_NAME_ONE, new Parameter("id", 1));
+                queryService.getNamedQueryEntity(sessionFactory.openSession(), Employee.class, NAMED_QUERY_NAME_ONE, new Parameter("id", 1));
 
         assertNotNull(entity);
         assertEquals(1, entity.getId());
@@ -135,11 +112,11 @@ public class QueryServiceTest extends AbstractDaoTest {
     }
 
     @Test
-    public void testGetOptionalEntityNamedQuery() {
+    public void testGetNamedQueryOptionalEntity() {
         loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
         Employee expectedEmployee = getEmployee();
         Optional<Employee> optional =
-                queryService.getOptionalEntityNamedQuery(sessionFactory.openSession(), Employee.class, NAMED_QUERY_NAME_ONE, new Parameter("id", 1));
+                queryService.getNamedQueryOptionalEntity(sessionFactory.openSession(), Employee.class, NAMED_QUERY_NAME_ONE, new Parameter("id", 1));
 
         assertTrue(optional.isPresent());
         Employee result = optional.get();
@@ -147,11 +124,11 @@ public class QueryServiceTest extends AbstractDaoTest {
     }
 
     @Test
-    public void testGetEntityGraph() {
+    public void testGetGraphEntity() {
         loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
         Employee expectedEmployee = getEmployee();
         Employee entity =
-                queryService.getEntityGraph(sessionFactory.openSession(), Employee.class, GRAPH_PATH, new Parameter("id", 1));
+                queryService.getGraphEntity(sessionFactory.openSession(), Employee.class, GRAPH_PATH, new Parameter("id", 1));
 
         assertNotNull(entity);
         assertEquals(1, entity.getId());
@@ -159,20 +136,10 @@ public class QueryServiceTest extends AbstractDaoTest {
     }
 
     @Test
-    public void testGetOptionalEntity() {
-        loadDataSet("/datasets/single/searchAllItemEntityDataSet.yml");
-        Optional<Item> optionalEntity =
-                queryService.getOptionalEntity(sessionFactory.openSession(), Item.class, new Parameter("id", 1));
-
-        assertTrue(optionalEntity.isPresent());
-        assertEquals(1, optionalEntity.get().getId());
-    }
-
-    @Test
-    public void testGetOptionalEntityGraph() {
+    public void testGetGraphOptionalEntity() {
         loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
         Optional<Employee> optionalEntity =
-                queryService.getOptionalEntityGraph(sessionFactory.openSession(), Employee.class, GRAPH_PATH, new Parameter("id", 1));
+                queryService.getGraphOptionalEntity(sessionFactory.openSession(), Employee.class, GRAPH_PATH, new Parameter("id", 1));
 
         assertTrue(optionalEntity.isPresent());
         assertEquals(1, optionalEntity.get().getId());
@@ -180,87 +147,11 @@ public class QueryServiceTest extends AbstractDaoTest {
     }
 
     @Test
-    public void testGetListEntity() {
-        loadDataSet("/datasets/single/searchAllItemEntityDataSet.yml");
-        List<Item> entities =
-                queryService.getEntityList(sessionFactory.openSession(), Item.class, new Parameter("id", 1));
-
-        assertNotNull(entities);
-        assertFalse(entities.isEmpty());
-        assertEquals(1, entities.size());
-    }
-
-    @Test
-    public void testGetListEntityWithMultiOneTypeParams() {
-        loadDataSet("/datasets/single/searchAllItemEntityDataSet.yml");
-        List<Item> entities =
-                queryService.getEntityList(sessionFactory.openSession(), Item.class, new Parameter[] {
-                        new Parameter("id", 1),
-                        new Parameter("id", 2),
-                });
-
-        assertNotNull(entities);
-        assertFalse(entities.isEmpty());
-        assertEquals(2, entities.size());
-        assertEquals(1 , entities.get(0).getId());
-        assertEquals(2 , entities.get(1).getId());
-    }
-
-    @Test
-    public void testGetListEntityWithMultiDifferentTypeParams() {
-        loadDataSet("/datasets/single/searchAllItemEntityDataSet.yml");
-        List<Item> entities =
-                queryService.getEntityList(sessionFactory.openSession(), Item.class, new Parameter[] {
-                        new Parameter("id", 1),
-                        new Parameter("name", "Test Entity 3"),
-                });
-
-        assertNotNull(entities);
-        assertFalse(entities.isEmpty());
-        assertEquals(2, entities.size());
-        assertEquals(1 , entities.get(0).getId());
-        assertEquals(3 , entities.get(1).getId());
-    }
-
-    @Test
-    public void testGetEntityListWithNullParameters() {
-        loadDataSet("/datasets/single/searchAllItemEntityDataSet.yml");
-        List<Item> entities = queryService.getEntityList(sessionFactory.openSession(), Item.class);
-
-        assertNotNull(entities);
-        assertFalse(entities.isEmpty());
-        assertEquals(3, entities.size());
-    }
-
-    @Test
-    public void testGetEntityWithNullParameter() {
-        loadDataSet("/datasets/single/searchAllItemEntityDataSet.yml");
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                queryService.getEntity(sessionFactory.openSession(), Item.class, (Parameter[]) null));
-    }
-
-    @Test
-    public void testGetOptionalEntityWithNullParameters() {
-        loadDataSet("/datasets/single/searchAllItemEntityDataSet.yml");
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                queryService.getOptionalEntity(sessionFactory.openSession(), Item.class, (Parameter[]) null));
-    }
-
-    @Test
-    public void testGetEntityListAllException() {
-        loadDataSet("/datasets/single/searchAllItemEntityDataSet.yml");
-
-        assertThrows(RuntimeException.class, () -> {
-            queryService.getEntityList(sessionFactory.openSession(), Object.class);
-        });
-    }
-
-    @Test
-    public void testGetEntityListGraphAllException() {
+    public void testGetGraphEntityListAllException() {
         loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
 
         assertThrows(RuntimeException.class, () -> {
-            queryService.getEntityListGraph(sessionFactory.openSession(), Object.class, GRAPH_PATH);
+            queryService.getGraphEntityList(sessionFactory.openSession(), Object.class, GRAPH_PATH);
         });
     }
 

@@ -94,7 +94,7 @@ public class AbstractEntityDao implements IEntityDao {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            E oldEntity = (E) queryService.getEntity(session, this.clazz, parameters);
+            E oldEntity = (E) queryService.getEntityByDefaultNamedQuery(session, this.clazz, parameters);
             entityFieldHelper.setId(entity, entityFieldHelper.findId(oldEntity));
             session.merge(entity);
             transaction.commit();
@@ -113,7 +113,7 @@ public class AbstractEntityDao implements IEntityDao {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            E entity = (E) queryService.getEntity(session, this.clazz, parameters);
+            E entity = (E) queryService.getEntityByDefaultNamedQuery(session, this.clazz, parameters);
             classTypeChecker(entity);
             session.remove(entity);
             transaction.commit();
@@ -148,9 +148,9 @@ public class AbstractEntityDao implements IEntityDao {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <E> List<E> getEntityList(Parameter... parameters) {
+    public <E> List<E> getGraphEntityList(String graphName, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
-            return (List<E>) queryService.getEntityList(session, this.clazz, parameters);
+            return (List<E>) queryService.getGraphEntityList(session, this.clazz, graphName, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity list error {}", e.getMessage());
             throw e;
@@ -159,9 +159,9 @@ public class AbstractEntityDao implements IEntityDao {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <E> List<E> getEntityGraphList(String graphName, Parameter... parameters) {
+    public <E> List<E> getNamedQueryEntityList(String namedQuery, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
-            return (List<E>) queryService.getEntityListGraph(session, this.clazz, graphName, parameters);
+            return (List<E>) queryService.getNamedQueryEntityList(session, this.clazz, namedQuery, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity list error {}", e.getMessage());
             throw e;
@@ -170,20 +170,9 @@ public class AbstractEntityDao implements IEntityDao {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <E> List<E> getEntityNamedQueryList(String namedQuery, Parameter... parameters) {
+    public <E> E getGraphEntity(String graphName, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
-            return (List<E>) queryService.getEntityListNamedQuery(session, this.clazz, namedQuery, parameters);
-        } catch (Exception e) {
-            LOGGER.warn("get entity list error {}", e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <E> E getEntity(Parameter... parameters) {
-        try (Session session = sessionFactory.openSession()) {
-            return (E) queryService.getEntity(session, this.clazz, parameters);
+            return (E) queryService.getGraphEntity(session, this.clazz, graphName, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
             throw e;
@@ -192,9 +181,9 @@ public class AbstractEntityDao implements IEntityDao {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <E> E getEntityGraph(String graphName, Parameter... parameters) {
+    public <E> E getNamedQueryEntity(String namedQuery, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
-            return (E) queryService.getEntityGraph(session, this.clazz, graphName, parameters);
+            return (E) queryService.getNamedQueryEntity(session, this.clazz, namedQuery, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
             throw e;
@@ -203,9 +192,9 @@ public class AbstractEntityDao implements IEntityDao {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <E> E getEntityNamedQuery(String namedQuery, Parameter... parameters) {
+    public <E> Optional<E> getGraphOptionalEntity(String graph, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
-            return (E) queryService.getEntityNamedQuery(session, this.clazz, namedQuery, parameters);
+            return (Optional<E>) queryService.getGraphOptionalEntity(session, this.clazz, graph, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
             throw e;
@@ -214,31 +203,9 @@ public class AbstractEntityDao implements IEntityDao {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <E> Optional<E> getOptionalEntity(Parameter... parameters) {
+    public <E> Optional<E> getNamedQueryOptionalEntity(String namedQuery, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
-            return (Optional<E>) queryService.getOptionalEntity(session, this.clazz, parameters);
-        } catch (Exception e) {
-            LOGGER.warn("get entity error {}", e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <E> Optional<E> getOptionalEntityGraph(String graph, Parameter... parameters) {
-        try (Session session = sessionFactory.openSession()) {
-            return (Optional<E>) queryService.getOptionalEntityGraph(session, this.clazz, graph, parameters);
-        } catch (Exception e) {
-            LOGGER.warn("get entity error {}", e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <E> Optional<E> getOptionalEntityNamedQuery(String namedQuery, Parameter... parameters) {
-        try (Session session = sessionFactory.openSession()) {
-            return (Optional<E>) queryService.getOptionalEntityNamedQuery(session, this.clazz, namedQuery, parameters);
+            return (Optional<E>) queryService.getNamedQueryOptionalEntity(session, this.clazz, namedQuery, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
             throw e;

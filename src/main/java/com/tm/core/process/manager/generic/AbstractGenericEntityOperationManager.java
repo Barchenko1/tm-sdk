@@ -76,86 +76,68 @@ public abstract class AbstractGenericEntityOperationManager implements IGenericO
     }
 
     @Override
-    public <E> E getEntity(Class<E> clazz, Parameter parameter) {
+    public <E> E getGraphEntity(Class<E> clazz, String graph, Parameter parameter) {
         LOGGER.info("Getting entity");
-        return genericEntityDao.getEntity(clazz, parameter);
+        return genericEntityDao.getGraphEntity(clazz, graph, parameter);
     }
 
     @Override
-    public <E> Optional<E> getOptionalEntity(Class<E> clazz, Parameter parameter) {
+    public <E> Optional<E> getGraphOptionalEntity(Class<E> clazz, String graph, Parameter parameter) {
         LOGGER.info("Getting entity");
-        return genericEntityDao.getOptionalEntity(clazz, parameter);
+        return genericEntityDao.getGraphOptionalEntity(clazz, graph, parameter);
     }
 
     @Override
-    public <E> List<E> getEntityList(Class<E> clazz, Parameter parameter) {
+    public <E> List<E> getGraphEntityList(Class<E> clazz, String graph, Parameter parameter) {
         LOGGER.info("Getting entity list");
-        return genericEntityDao.getEntityList(clazz, parameter);
+        return genericEntityDao.getGraphEntityList(clazz, graph, parameter);
     }
 
     @Override
-    public <E> E getEntityGraph(Class<E> clazz, String graph, Parameter parameter) {
+    public <E> E getNamedQueryEntity(Class<E> clazz, String namedQuery, Parameter parameter) {
         LOGGER.info("Getting entity");
-        return genericEntityDao.getEntityGraph(clazz, graph, parameter);
+        return genericEntityDao.getNamedQueryEntity(clazz, namedQuery, parameter);
     }
 
     @Override
-    public <E> Optional<E> getOptionalEntityGraph(Class<E> clazz, String graph, Parameter parameter) {
+    public <E> Optional<E> getNamedQueryOptionalEntity(Class<E> clazz, String namedQuery, Parameter parameter) {
         LOGGER.info("Getting entity");
-        return genericEntityDao.getOptionalEntityGraph(clazz, graph, parameter);
+        return genericEntityDao.getNamedQueryOptionalEntity(clazz, namedQuery, parameter);
     }
 
     @Override
-    public <E> List<E> getEntityGraphList(Class<E> clazz, String graph, Parameter parameter) {
+    public <E> List<E> getNamedQueryEntityList(Class<E> clazz, String namedQuery, Parameter parameter) {
         LOGGER.info("Getting entity list");
-        return genericEntityDao.getEntityGraphList(clazz, graph, parameter);
+        return genericEntityDao.getNamedQueryEntityList(clazz, namedQuery, parameter);
     }
 
     @Override
-    public <E> E getEntityNamedQuery(Class<E> clazz, String namedQuery, Parameter parameter) {
-        LOGGER.info("Getting entity");
-        return genericEntityDao.getEntityNamedQuery(clazz, namedQuery, parameter);
-    }
-
-    @Override
-    public <E> Optional<E> getOptionalEntityNamedQuery(Class<E> clazz, String namedQuery, Parameter parameter) {
-        LOGGER.info("Getting entity");
-        return genericEntityDao.getOptionalEntityNamedQuery(clazz, namedQuery, parameter);
-    }
-
-    @Override
-    public <E> List<E> getEntityNamedQueryList(Class<E> clazz, String namedQuery, Parameter parameter) {
-        LOGGER.info("Getting entity list");
-        return genericEntityDao.getEntityNamedQueryList(clazz, namedQuery, parameter);
-    }
-
-    @Override
-    public <E, R> R getEntityGraphDto(Class<E> clazz, String graph, Parameter parameter, Function<E, R> mapToDtoFunction) {
+    public <E, R> R getGraphEntityDto(Class<E> clazz, String graph, Parameter parameter, Function<E, R> mapToDtoFunction) {
         LOGGER.info("Getting entity dto");
-        E entity = genericEntityDao.getEntityGraph(clazz, graph, parameter);
+        E entity = genericEntityDao.getGraphEntity(clazz, graph, parameter);
         return Optional.ofNullable(entity).map(mapToDtoFunction).orElse(null);
     }
 
     @Override
-    public <E, R> Optional<R> getOptionalEntityGraphDto(Class<E> clazz, String graph, Parameter parameter, Function<E, R> mapToDtoFunction) {
+    public <E, R> Optional<R> getGraphOptionalEntityDto(Class<E> clazz, String graph, Parameter parameter, Function<E, R> mapToDtoFunction) {
         LOGGER.info("Getting entity dto");
-        E entity = genericEntityDao.getEntityGraph(clazz, graph, parameter);
+        E entity = genericEntityDao.getGraphEntity(clazz, graph, parameter);
         return Optional.ofNullable(entity).map(mapToDtoFunction);
     }
 
     @Override
-    public <E, R> List<R> getEntityGraphDtoList(Class<E> clazz, String graph, Function<E, R> mapToDtoFunction) {
+    public <E, R> List<R> getGraphEntityDtoList(Class<E> clazz, String graph, Function<E, R> mapToDtoFunction) {
         LOGGER.info("Getting entity dto list");
-        List<E> entityList = genericEntityDao.getEntityGraphList(clazz, graph);
+        List<E> entityList = genericEntityDao.getGraphEntityList(clazz, graph);
         return entityList.stream()
                 .map(entity -> transformEntityToDto(entity, mapToDtoFunction))
                 .toList();
     }
 
     @Override
-    public <E, R> List<R> getSubEntityGraphDtoList(Class<E> clazz, String graph, Parameter parameter, Function<E, R> mapToDtoFunction) {
+    public <E, R> List<R> getSubGraphEntityDtoList(Class<E> clazz, String graph, Parameter parameter, Function<E, R> mapToDtoFunction) {
         LOGGER.info("Getting entity dto list");
-        List<E> entityList = genericEntityDao.getEntityGraphList(clazz, graph, parameter);
+        List<E> entityList = genericEntityDao.getGraphEntityList(clazz, graph, parameter);
         return entityList.stream()
                 .map(entity -> transformEntityToDto(entity, mapToDtoFunction))
                 .toList();

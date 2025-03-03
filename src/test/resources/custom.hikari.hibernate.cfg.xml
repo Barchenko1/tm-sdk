@@ -24,7 +24,6 @@
         <property name="hibernate.connection.provider_class">org.hibernate.hikaricp.internal.HikariCPConnectionProvider</property>
         <property name="hibernate.connection.isolation">2</property>
         <!-- add annotated resources here -->
-        <mapping class="com.tm.core.modal.transitive.TransitiveSelfEntity" />
         <mapping class="com.tm.core.modal.relationship.Employee" />
         <mapping class="com.tm.core.modal.relationship.Dependent" />
         <mapping class="com.tm.core.modal.relationship.Item" />

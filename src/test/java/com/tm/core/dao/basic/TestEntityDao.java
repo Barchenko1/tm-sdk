@@ -6,8 +6,7 @@ import com.tm.core.modal.relationship.Employee;
 import org.hibernate.SessionFactory;
 
 public class TestEntityDao extends AbstractEntityDao {
-    public TestEntityDao(SessionFactory sessionFactory,
-                         IQueryService queryService) {
+    public TestEntityDao(SessionFactory sessionFactory, IQueryService queryService) {
         super(sessionFactory, queryService, Employee.class);
     }
 }

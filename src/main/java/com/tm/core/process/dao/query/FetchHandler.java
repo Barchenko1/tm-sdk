@@ -23,65 +23,44 @@ public class FetchHandler implements IFetchHandler {
     }
 
     @Override
-    public <E> List<E> getEntityList(Class<E> clazz, Parameter... parameters) {
+    public <E> List<E> getGraphEntityList(Class<E> clazz, String graph, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
-            return queryService.getEntityList(session, clazz, parameters);
+            return queryService.getGraphEntityList(session, clazz, graph, parameters);
         }
     }
 
     @Override
-    public <E> E getEntity(Class<E> clazz, Parameter... parameters) {
+    public <E> E getGraphEntity(Class<E> clazz, String graph, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
-            return queryService.getEntity(session, clazz, parameters);
+            return queryService.getGraphEntity(session, clazz, graph, parameters);
         }
     }
 
     @Override
-    public <E> Optional<E> getOptionalEntity(Class<E> clazz, Parameter... parameters) {
+    public <E> Optional<E> getGraphOptionalEntity(Class<E> clazz, String graph, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
-            return queryService.getOptionalEntity(session, clazz, parameters);
+            return queryService.getGraphOptionalEntity(session, clazz, graph, parameters);
         }
     }
 
     @Override
-    public <E> List<E> getEntityListGraph(Class<E> clazz, String graph, Parameter... parameters) {
+    public <E> List<E> getNamedQueryEntityList(Class<E> clazz, String namedQuery, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
-            return queryService.getEntityListGraph(session, clazz, graph, parameters);
+            return queryService.getNamedQueryEntityList(session, clazz, namedQuery, parameters);
         }
     }
 
     @Override
-    public <E> E getEntityGraph(Class<E> clazz, String graph, Parameter... parameters) {
+    public <E> E getNamedQueryEntity(Class<E> clazz, String namedQuery, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
-            return queryService.getEntityGraph(session, clazz, graph, parameters);
+            return queryService.getNamedQueryEntity(session, clazz, namedQuery, parameters);
         }
     }
 
     @Override
-    public <E> Optional<E> getOptionalEntityGraph(Class<E> clazz, String graph, Parameter... parameters) {
+    public <E> Optional<E> getNamedQueryOptionalEntity(Class<E> clazz, String namedQuery, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
-            return queryService.getOptionalEntityGraph(session, clazz, graph, parameters);
-        }
-    }
-
-    @Override
-    public <E> List<E> getEntityNamedQueryList(Class<E> clazz, String namedQuery, Parameter... parameters) {
-        try (Session session = sessionFactory.openSession()) {
-            return queryService.getEntityListNamedQuery(session, clazz, namedQuery, parameters);
-        }
-    }
-
-    @Override
-    public <E> E getEntityNamedQuery(Class<E> clazz, String namedQuery, Parameter... parameters) {
-        try (Session session = sessionFactory.openSession()) {
-            return queryService.getEntityNamedQuery(session, clazz, namedQuery, parameters);
-        }
-    }
-
-    @Override
-    public <E> Optional<E> getOptionalEntityNamedQuery(Class<E> clazz, String namedQuery, Parameter... parameters) {
-        try (Session session = sessionFactory.openSession()) {
-            return queryService.getOptionalEntityNamedQuery(session, clazz, namedQuery, parameters);
+            return queryService.getNamedQueryOptionalEntity(session, clazz, namedQuery, parameters);
         }
     }
 

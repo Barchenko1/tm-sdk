@@ -3,6 +3,7 @@ package com.tm.core.finder.scanner;
 import com.tm.core.finder.manager.IEntityMappingManager;
 import com.tm.core.finder.table.EntityTable;
 import jakarta.persistence.Entity;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 
 import java.io.File;
@@ -37,14 +38,23 @@ public class EntityScanner implements IEntityScanner {
             if (entityClass.isAnnotationPresent(Entity.class)) {
                 Table table = entityClass.getAnnotation(Table.class);
                 String tableName = (table != null) ? table.name() : entityClass.getSimpleName();
+                String defaultNamedQuery = null;
+                NamedQuery[] namedQueries = entityClass.getAnnotationsByType(NamedQuery.class);
 
+                for (NamedQuery namedQuery : namedQueries) {
+                    if (namedQuery.name().equals(entityClass.getSimpleName() + ".default")) {
+                        defaultNamedQuery = namedQuery.name();
+                        break;
+                    }
+                }
                 Map<String, Class<?>> fields = new HashMap<>();
                 for (Field field : entityClass.getDeclaredFields()) {
                     fields.put(field.getName(), field.getType());
                 }
                 EntityTable entityTable = new EntityTable(
                         entityClass,
-                        tableName);
+                        tableName,
+                        defaultNamedQuery);
                 entityInfo.put(entityClass, entityTable);
                 entityMappingManager.addEntityTable(entityTable);
             }

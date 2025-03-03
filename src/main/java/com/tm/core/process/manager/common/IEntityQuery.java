@@ -7,16 +7,12 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public interface IEntityQuery {
-    <E> E getEntity(Parameter parameter);
-    <E> Optional<E> getOptionalEntity(Parameter parameter);
-    <E> List<E> getEntityList(Parameter parameter);
+    <E> E getGraphEntity(String graph, Parameter parameter);
+    <E> Optional<E> getGraphOptionalEntity(String graph, Parameter parameter);
+    <E> List<E> getGraphEntityList(String graph, Parameter parameter);
 
-    <E> E getEntityGraph(String graph, Parameter parameter);
-    <E> Optional<E> getOptionalEntityGraph(String graph, Parameter parameter);
-    <E> List<E> getEntityGraphList(String graph, Parameter parameter);
-
-    <E, R> R getEntityGraphDto(String graph, Parameter parameter, Function<E, R> mapToDtoFunction);
-    <E, R> Optional<R> getOptionalEntityGraphDto(String graph, Parameter parameter, Function<E, R> mapToDtoFunction);
-    <E, R> List<R> getEntityGraphDtoList(String graph, Function<E, R> mapToDtoFunction);
-    <E, R> List<R> getSubEntityGraphDtoList(String graph, Parameter parameter, Function<E, R> mapToDtoFunction);
+    <E, R> R getGraphEntityDto(String graph, Parameter parameter, Function<E, R> mapToDtoFunction);
+    <E, R> Optional<R> getGraphOptionalEntityDto(String graph, Parameter parameter, Function<E, R> mapToDtoFunction);
+    <E, R> List<R> getGraphEntityDtoList(String graph, Function<E, R> mapToDtoFunction);
+    <E, R> List<R> getSubGraphEntityDtoList(String graph, Parameter parameter, Function<E, R> mapToDtoFunction);
 }
