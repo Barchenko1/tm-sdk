@@ -35,7 +35,7 @@ import java.util.Set;
 )
 @NamedQueries({
         @NamedQuery(
-                name = "Employee.default",
+                name = "Employee.findByValue",
                 query = "SELECT e FROM Employee e " +
                         "LEFT JOIN FETCH e.spouse " +
                         "LEFT JOIN FETCH e.dependentList " +

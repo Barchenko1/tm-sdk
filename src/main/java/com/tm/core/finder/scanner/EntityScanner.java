@@ -42,7 +42,7 @@ public class EntityScanner implements IEntityScanner {
                 NamedQuery[] namedQueries = entityClass.getAnnotationsByType(NamedQuery.class);
 
                 for (NamedQuery namedQuery : namedQueries) {
-                    if (namedQuery.name().equals(entityClass.getSimpleName() + ".default")) {
+                    if (namedQuery.name().equals(entityClass.getSimpleName() + ".findByValue")) {
                         defaultNamedQuery = namedQuery.name();
                         break;
                     }

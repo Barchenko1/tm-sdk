@@ -123,6 +123,57 @@ public abstract class AbstractEntityOperationManager implements IEntityOperation
                 .toList();
     }
 
+    @Override
+    public <E> E getNamedQueryEntity(String namedQuery, Parameter parameter) {
+        LOGGER.info("Getting entity dto");
+        return dao.getNamedQueryEntity(namedQuery, parameter);
+    }
+
+    @Override
+    public <E> Optional<E> getNamedQueryOptionalEntity(String namedQuery, Parameter parameter) {
+        LOGGER.info("Getting entity dto");
+        return dao.getNamedQueryOptionalEntity(namedQuery, parameter);
+    }
+
+    @Override
+    public <E> List<E> getNamedQueryEntityList(String namedQuery) {
+        LOGGER.info("Getting entity dto list");
+        return dao.getNamedQueryEntityList(namedQuery);
+    }
+
+    @Override
+    public <E, R> R getNamedQueryEntityDto(String namedQuery, Parameter parameter, Function<E, R> mapToDtoFunction) {
+        LOGGER.info("Getting entity dto");
+        E entity = dao.getNamedQueryEntity(namedQuery, parameter);
+        return Optional.ofNullable(entity).map(mapToDtoFunction).orElse(null);
+    }
+
+    @Override
+    public <E, R> Optional<R> getNamedQueryOptionalEntityDto(String namedQuery, Parameter parameter, Function<E, R> mapToDtoFunction) {
+        LOGGER.info("Getting entity dto");
+        E entity = dao.getNamedQueryEntity(namedQuery, parameter);
+        return Optional.ofNullable(entity)
+                .map(o -> transformEntityToDto(o, mapToDtoFunction));
+    }
+
+    @Override
+    public <E, R> List<R> getNamedQueryEntityDtoList(String namedQuery, Function<E, R> mapToDtoFunction) {
+        LOGGER.info("Getting entity dto list");
+        List<E> entityList = dao.getNamedQueryEntityList(namedQuery);
+        return entityList.stream()
+                .map(entity -> transformEntityToDto(entity, mapToDtoFunction))
+                .toList();
+    }
+
+    @Override
+    public <E, R> List<R> getSubNamedQueryEntityDtoList(String namedQuery, Parameter parameter, Function<E, R> mapToDtoFunction) {
+        LOGGER.info("Getting entity dto list");
+        List<E> entityList = dao.getNamedQueryEntityList(namedQuery, parameter);
+        return entityList.stream()
+                .map(entity -> transformEntityToDto(entity, mapToDtoFunction))
+                .toList();
+    }
+
     private <E, R> R transformEntityToDto(E entity, Function<E, R> mapToDtoFunction) {
         LOGGER.info("Entity: {}", entity);
         R dto = mapToDtoFunction.apply(entity);

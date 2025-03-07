@@ -56,7 +56,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
     private static IEntityMappingManager getEntityMappingManager() {
         EntityTable dependentTestEntity = new EntityTable(Dependent.class, "dependent");
         EntityTable singleDependentTestEntity = new EntityTable(Item.class, "item");
-        EntityTable relationshipRootTestEntity = new EntityTable(Employee.class, "Employee", "Employee.default");
+        EntityTable relationshipRootTestEntity = new EntityTable(Employee.class, "Employee", "Employee.findByValue");
 
         IEntityMappingManager entityMappingManager = new EntityMappingManager();
         entityMappingManager.addEntityTable(dependentTestEntity);

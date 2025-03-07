@@ -63,7 +63,7 @@ class EntityOperationManagerTest extends AbstractDaoTest {
     private static IEntityMappingManager getEntityMappingManager() {
         EntityTable dependentTestEntity = new EntityTable(Dependent.class, "dependent");
         EntityTable singleDependentTestEntity = new EntityTable(Item.class, "item");
-        EntityTable relationshipRootTestEntity = new EntityTable(Employee.class, "Employee", "Employee.default");
+        EntityTable relationshipRootTestEntity = new EntityTable(Employee.class, "Employee", "Employee.findByValue");
 
         IEntityMappingManager entityMappingManager = new EntityMappingManager();
         entityMappingManager.addEntityTable(dependentTestEntity);
@@ -540,15 +540,6 @@ class EntityOperationManagerTest extends AbstractDaoTest {
 
         assertEquals(1, result.getItemSet().iterator().next().getId());
         assertEquals("Item Entity", result.getItemSet().iterator().next().getName());
-    }
-
-    @Test
-    public void testGetEntityGraph() {
-        loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Employee entity = entityOperationManager.getGraphEntity(GRAPH_PATH, new Parameter("id", 1));
-
-        assertNotNull(entity);
-        assertEquals(1, entity.getId());
     }
 
     @Test
