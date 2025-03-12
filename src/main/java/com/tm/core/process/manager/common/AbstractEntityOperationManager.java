@@ -124,20 +124,32 @@ public abstract class AbstractEntityOperationManager implements IEntityOperation
     }
 
     @Override
+    public <E> E getNamedQueryEntity(String namedQuery) {
+        LOGGER.info("Getting entity");
+        return dao.getNamedQueryEntity(namedQuery);
+    }
+
+    @Override
+    public <E> Optional<E> getNamedQueryOptionalEntity(String namedQuery) {
+        LOGGER.info("Getting entity");
+        return dao.getNamedQueryOptionalEntity(namedQuery);
+    }
+
+    @Override
     public <E> E getNamedQueryEntity(String namedQuery, Parameter parameter) {
-        LOGGER.info("Getting entity dto");
+        LOGGER.info("Getting entity");
         return dao.getNamedQueryEntity(namedQuery, parameter);
     }
 
     @Override
     public <E> Optional<E> getNamedQueryOptionalEntity(String namedQuery, Parameter parameter) {
-        LOGGER.info("Getting entity dto");
+        LOGGER.info("Getting entity");
         return dao.getNamedQueryOptionalEntity(namedQuery, parameter);
     }
 
     @Override
     public <E> List<E> getNamedQueryEntityList(String namedQuery) {
-        LOGGER.info("Getting entity dto list");
+        LOGGER.info("Getting entity list");
         return dao.getNamedQueryEntityList(namedQuery);
     }
 

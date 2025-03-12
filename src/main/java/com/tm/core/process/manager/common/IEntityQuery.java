@@ -16,6 +16,8 @@ public interface IEntityQuery {
     <E, R> List<R> getGraphEntityDtoList(String graph, Function<E, R> mapToDtoFunction);
     <E, R> List<R> getSubGraphEntityDtoList(String graph, Parameter parameter, Function<E, R> mapToDtoFunction);
     //
+    <E> E getNamedQueryEntity(String namedQuery);
+    <E> Optional<E> getNamedQueryOptionalEntity(String namedQuery);
     <E> E getNamedQueryEntity(String namedQuery, Parameter parameter);
     <E> Optional<E> getNamedQueryOptionalEntity(String namedQuery, Parameter parameter);
     <E> List<E> getNamedQueryEntityList(String namedQuery);
