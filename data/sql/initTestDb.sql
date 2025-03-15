@@ -36,14 +36,6 @@ create table singleTestEntity (
                                   primary key (id)
 )
 
-
-create table transitiveSelfEntity (
-                                          id bigserial not null,
-                                          name varchar(255),
-                                          transitiveSelfTestEntity_id bigint,
-                                          primary key (id)
-)
-
 alter table if exists relationshipRootTestEntity_dependentTestEntity
     add constraint UK_7ja7meqt3ufwu9q0lup1mhajw unique (dependentTestEntityList_id)
 
@@ -64,10 +56,4 @@ alter table if exists relationshipRootTestEntity_dependentTestEntity
     add constraint FKccl9i2jjq596jlui41viojmea
     foreign key (RelationshipRootTestEntity_id)
     references employee
-
-
-alter table if exists transitiveSelfEntity
-    add constraint FKj3uwgx6fiysmcxsspvuiyr9cy
-    foreign key (transitiveSelfTestEntity_id)
-    references transitiveSelfEntity
 

@@ -1,4 +1,0 @@
-transitiveSelfEntity:
-  - name: "Parent"
-  - name: "Update Root"
-  - name: "Child"
