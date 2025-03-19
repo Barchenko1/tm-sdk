@@ -1,0 +1,29 @@
+[
+  {
+    "label": "Laptops and Computers",
+    "value": "Laptops and Computers",
+    "childList": [
+      {
+        "label": "Gaming Laptops & Accessories",
+        "value": "Gaming Laptops & Accessories",
+        "childList": [
+          {
+            "label": "Gaming Laptops",
+            "value": "Gaming Laptops",
+            "childList": []
+          },
+          {
+            "label": "Gaming Keyboards & Mice",
+            "value": "Gaming Keyboards & Mice",
+            "childList": []
+          },
+          {
+            "label": "Cooling Pads & Stands",
+            "value": "Cooling Pads & Stands",
+            "childList": []
+          }
+        ]
+      }
+    ]
+  }
+]

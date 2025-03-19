@@ -1,0 +1,27 @@
+category:
+  - id: 1
+    label: "Electronic"
+    value: "Electronic"
+  - id: 2
+    category_id: 1
+    label: "Laptop"
+    value: "Laptop"
+  - id: 3
+    label: "Laptops and Computers"
+    value: "Laptops and Computers"
+  - id: 4
+    label: "Gaming Laptops & Accessories"
+    value: "Gaming Laptops & Accessories"
+    category_id: 3
+  - id: 5
+    label: "Gaming Laptops"
+    value: "Gaming Laptops"
+    category_id: 4
+  - id: 6
+    label: "Gaming Keyboards & Mice"
+    value: "Gaming Keyboards & Mice"
+    category_id: 4
+  - id: 7
+    label: "Cooling Pads & Stands"
+    value: "Cooling Pads & Stands"
+    category_id: 4
