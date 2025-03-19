@@ -1,8 +1,0 @@
-category:
-  - id: 1
-    label: "Electronic"
-    value: "Electronic"
-  - id: 2
-    category_id: 1
-    label: "Laptop"
-    value: "Laptop"
