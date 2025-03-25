@@ -12,7 +12,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -97,6 +99,36 @@ public class QueryServiceTest extends AbstractDaoTest {
         assertFalse(entities.isEmpty());
         assertEquals(1, entities.size());
         checkEmployee(expectedEmployee, entities.get(0));
+    }
+
+    @Test
+    public void testGetNamedQueryEntityMap() {
+        loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
+        Map<String, List<?>> map = new HashMap<>() {{
+            put("ids", List.of(1L, 2L));
+        }};
+
+        List<Employee> entities =
+                queryService.getNamedQueryEntityMap(sessionFactory.openSession(), Employee.class, "Employee.findByIds", map);
+
+        assertNotNull(entities);
+        assertFalse(entities.isEmpty());
+        assertEquals(2, entities.size());
+    }
+
+    @Test
+    public void testGetNamedStringQueryEntityMap() {
+        loadDataSet("/datasets/relationship/testAllRelationshipTestEntityDataSet.yml");
+        Map<String, List<?>> map = new HashMap<>() {{
+            put("names", List.of("Relationship Root Entity"));
+        }};
+
+        List<Employee> entities =
+                queryService.getNamedQueryEntityMap(sessionFactory.openSession(), Employee.class, "Employee.findByNames", map);
+
+        assertNotNull(entities);
+        assertFalse(entities.isEmpty());
+        assertEquals(2, entities.size());
     }
 
     @Test

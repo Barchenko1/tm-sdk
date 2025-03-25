@@ -4,6 +4,9 @@ import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.finder.factory.ParameterFactory;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class ParameterFactoryTest {
@@ -80,6 +83,18 @@ class ParameterFactoryTest {
         assertNotNull(parameter);
         assertEquals(parameterName, parameter.getName());
         assertEquals(parameterValue, parameter.getValue());
+    }
+
+    @Test
+    void createParameterStringList_ShouldCreateParameterList() {
+        String parameterName = "param1";
+        List<String> paramValues = List.of("value1", "value1");
+
+        Parameter parameter = new Parameter(parameterName, paramValues);
+        Parameter multipleParam = parameterFactory.createStringParameterList(parameterName, paramValues);
+
+        assertEquals(parameter.getName(), multipleParam.getName());
+        assertEquals(parameter.getValue(), multipleParam.getValue());
     }
 
     @Test

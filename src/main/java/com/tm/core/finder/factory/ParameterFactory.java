@@ -3,6 +3,7 @@ package com.tm.core.finder.factory;
 import com.tm.core.finder.parameter.Parameter;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class ParameterFactory implements IParameterFactory {
 
@@ -34,6 +35,11 @@ public class ParameterFactory implements IParameterFactory {
     @Override
     public Parameter createBooleanParameter(String parameterName, Boolean parameterValue) {
         return createParameter(parameterName, parameterValue);
+    }
+
+    @Override
+    public Parameter createStringParameterList(String parameterName, List<String> parameterValues) {
+        return createParameter(parameterName, parameterValues);
     }
 
     @Override

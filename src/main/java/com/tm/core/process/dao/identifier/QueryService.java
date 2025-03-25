@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class QueryService implements IQueryService {
@@ -29,6 +30,12 @@ public class QueryService implements IQueryService {
     @Override
     public <E> List<E> getNamedQueryEntityList(Session session, Class<E> clazz, String namedQuery, Parameter... parameters) {
         Query<E> query = getNamedQuery(session, clazz, namedQuery, parameters);
+        return query.list();
+    }
+
+    @Override
+    public <E> List<E> getNamedQueryEntityMap(Session session, Class<E> clazz, String namedQuery, Map<String, List<?>> parameters) {
+        Query<E> query = getNamedQueryMap(session, clazz, namedQuery, parameters);
         return query.list();
     }
 
@@ -94,6 +101,27 @@ public class QueryService implements IQueryService {
             for (Parameter param : params) {
                 query.setParameter(param.getName(), param.getValue());
             }
+        }
+        return query;
+    }
+
+    private <E> Query<E> getNamedQueryMap(Session session, Class<E> clazz, String namedQuery, Map<String, List<?>> paramMap) {
+        EntityTable entityTable = entityMappingManager.getEntityTable(clazz);
+        if (entityTable == null) {
+            throw new RuntimeException("Invalid select class: " + clazz);
+        }
+        Query<E> query = session.createNamedQuery(namedQuery, clazz);
+        if (paramMap != null) {
+            paramMap.forEach((key, value) -> {
+                if (value == null || value.isEmpty()) {
+                    throw new IllegalArgumentException("Parameter '" + key + "' is null or empty.");
+                }
+                if (value.size() == 1) {
+                    query.setParameter(key, value.get(0));
+                } else {
+                    query.setParameterList(key, value);
+                }
+            });
         }
         return query;
     }

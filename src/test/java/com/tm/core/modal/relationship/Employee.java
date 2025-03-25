@@ -56,6 +56,16 @@ import java.util.Set;
                         "LEFT JOIN FETCH e.spouse " +
                         "LEFT JOIN FETCH e.dependentList " +
                         "LEFT JOIN FETCH e.itemSet "
+        ),
+        @NamedQuery(
+                name = "Employee.findByIds",
+                query = "SELECT e FROM Employee e " +
+                        "WHERE e.id IN : ids"
+        ),
+        @NamedQuery(
+                name = "Employee.findByNames",
+                query = "SELECT e FROM Employee e " +
+                        "WHERE e.name IN : names"
         )
 })
 public class Employee {
