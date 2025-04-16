@@ -11,7 +11,7 @@ public interface IParameterFactory {
     Parameter createDoubleParameter(String parameterName, Double parameterValue);
     Parameter createLongParameter(String parameterName, Long parameterValue);
     Parameter createBooleanParameter(String parameterName, Boolean parameterValue);
-
+    Parameter createEnumParameter(String parameterName, Enum<?> parameterValue);
     //
     Parameter createStringParameterList(String parameterName, List<String> parameterValues);
     Parameter[] createParameterArray(Parameter... parameters);

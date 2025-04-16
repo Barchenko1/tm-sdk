@@ -1,5 +1,7 @@
 package com.tm.core.test.finder;
 
+import com.tm.core.dao.basic.Option;
+import com.tm.core.finder.parameter.Operator;
 import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.finder.factory.ParameterFactory;
 import org.junit.jupiter.api.Test;
@@ -79,6 +81,18 @@ class ParameterFactoryTest {
         Boolean parameterValue = true;
 
         Parameter parameter = parameterFactory.createBooleanParameter(parameterName, parameterValue);
+
+        assertNotNull(parameter);
+        assertEquals(parameterName, parameter.getName());
+        assertEquals(parameterValue, parameter.getValue());
+    }
+
+    @Test
+    void createEnumParameter_ShouldCreateParameter() {
+        String parameterName = "option";
+        Option parameterValue = Option.RIGHT;
+
+        Parameter parameter = parameterFactory.createEnumParameter(parameterName, parameterValue);
 
         assertNotNull(parameter);
         assertEquals(parameterName, parameter.getName());

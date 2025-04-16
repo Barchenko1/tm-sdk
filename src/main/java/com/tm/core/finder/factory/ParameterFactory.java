@@ -38,6 +38,11 @@ public class ParameterFactory implements IParameterFactory {
     }
 
     @Override
+    public Parameter createEnumParameter(String parameterName, Enum<?> parameterValue) {
+        return createParameter(parameterName, parameterValue);
+    }
+
+    @Override
     public Parameter createStringParameterList(String parameterName, List<String> parameterValues) {
         return createParameter(parameterName, parameterValues);
     }
