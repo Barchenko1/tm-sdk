@@ -1,4 +1,4 @@
-package com.tm.core.configuration.manager;
+package com.tm.core.configuration.dbType;
 
 public class DatabaseTypeConfiguration {
 

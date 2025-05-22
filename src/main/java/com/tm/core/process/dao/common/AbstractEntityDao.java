@@ -45,7 +45,7 @@ public class AbstractEntityDao implements IEntityDao {
             session.persist(entity);
             transaction.commit();
         } catch (Exception e) {
-            LOGGER.warn("transaction error {}", e.getMessage());
+            LOGGER.warn("transaction error", e);
             if (transaction != null) {
                 transaction.rollback();
             }
@@ -62,7 +62,7 @@ public class AbstractEntityDao implements IEntityDao {
             session.merge(entity);
             transaction.commit();
         } catch (Exception e) {
-            LOGGER.warn("transaction error {}", e.getMessage());
+            LOGGER.warn("transaction error", e);
             if (transaction != null) {
                 transaction.rollback();
             }
@@ -79,7 +79,7 @@ public class AbstractEntityDao implements IEntityDao {
             session.remove(entity);
             transaction.commit();
         } catch (Exception e) {
-            LOGGER.warn("transaction error {}", e.getMessage());
+            LOGGER.warn("transaction error", e);
             if (transaction != null) {
                 transaction.rollback();
             }
@@ -99,7 +99,7 @@ public class AbstractEntityDao implements IEntityDao {
             session.merge(entity);
             transaction.commit();
         } catch (Exception e) {
-            LOGGER.warn("transaction error {}", e.getMessage());
+            LOGGER.warn("transaction error", e);
             if (transaction != null) {
                 transaction.rollback();
             }
@@ -118,7 +118,7 @@ public class AbstractEntityDao implements IEntityDao {
             session.remove(entity);
             transaction.commit();
         } catch (Exception e) {
-            LOGGER.warn("transaction error {}", e.getMessage());
+            LOGGER.warn("transaction error", e);
             if (transaction != null) {
                 transaction.rollback();
             }

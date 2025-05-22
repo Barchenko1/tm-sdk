@@ -2,6 +2,7 @@ package com.tm.core.configuration.cp;
 
 import com.tm.core.util.properties.ConfigurationFileProvider;
 import com.tm.core.util.properties.IConfigurationFileProvider;
+import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -24,6 +25,22 @@ public abstract class AbstractConnectionPullConfiguration implements IConnection
     }
 
     protected SessionFactory createSessionFactoryWithXMLConfiguration(String fileName) {
+        return buildSessionFactoryWithXMLConfiguration(fileName);
+    }
+
+    protected SessionFactory createSessionFactoryWithPropertiesConfiguration(Properties properties) {
+        return buildSessionFactoryWithPropertiesConfiguration(properties);
+    }
+
+    protected EntityManagerFactory createEntityManagerByXMLConfiguration(String fileName) {
+        return buildSessionFactoryWithXMLConfiguration(fileName);
+    }
+
+    protected EntityManagerFactory createEntityManagerByWithPropertiesConfiguration(Properties properties) {
+        return buildSessionFactoryWithPropertiesConfiguration(properties);
+    }
+
+    private SessionFactory buildSessionFactoryWithXMLConfiguration(String fileName) {
         synchronized (AbstractConnectionPullConfiguration.class) {
             try {
                 ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
@@ -42,11 +59,11 @@ public abstract class AbstractConnectionPullConfiguration implements IConnection
         }
     }
 
-    protected SessionFactory createSessionFactoryWithPropertiesConfiguration(Properties properties) {
+    private SessionFactory buildSessionFactoryWithPropertiesConfiguration(Properties properties) {
         synchronized (AbstractConnectionPullConfiguration.class) {
             try (ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
                     .applySettings(properties)
-                    .build()){
+                    .build()) {
 
                 Metadata metadata = new MetadataSources(serviceRegistry)
                         .addAnnotatedClasses(annotatedClasses)
@@ -61,5 +78,4 @@ public abstract class AbstractConnectionPullConfiguration implements IConnection
             }
         }
     }
-
 }

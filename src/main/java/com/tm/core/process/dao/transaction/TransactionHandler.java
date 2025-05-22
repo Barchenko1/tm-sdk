@@ -26,7 +26,7 @@ public class TransactionHandler implements ITransactionHandler {
             consumer.accept(session);
             transaction.commit();
         } catch (Exception e) {
-            LOGGER.warn("transaction error {}", e.getMessage());
+            LOGGER.warn("transaction error", e);
             if (transaction != null) {
                 transaction.rollback();
             }
@@ -43,7 +43,7 @@ public class TransactionHandler implements ITransactionHandler {
             session.persist(entity);
             transaction.commit();
         } catch (Exception e) {
-            LOGGER.warn("transaction error {}", e.getMessage());
+            LOGGER.warn("transaction error", e);
             if (transaction != null) {
                 transaction.rollback();
             }
@@ -60,7 +60,7 @@ public class TransactionHandler implements ITransactionHandler {
             session.merge(entity);
             transaction.commit();
         } catch (Exception e) {
-            LOGGER.warn("transaction error {}", e.getMessage());
+            LOGGER.warn("transaction error", e);
             if (transaction != null) {
                 transaction.rollback();
             }
@@ -77,7 +77,7 @@ public class TransactionHandler implements ITransactionHandler {
             session.remove(entity);
             transaction.commit();
         } catch (Exception e) {
-            LOGGER.warn("transaction error {}", e.getMessage());
+            LOGGER.warn("transaction error", e);
             if (transaction != null) {
                 transaction.rollback();
             }

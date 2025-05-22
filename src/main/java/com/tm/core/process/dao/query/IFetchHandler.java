@@ -16,7 +16,7 @@ public interface IFetchHandler {
     <E> E getNamedQueryEntity(Class<E> clazz, String namedQuery, Parameter... parameters);
     <E> Optional<E> getNamedQueryOptionalEntity(Class<E> clazz, String namedQuery, Parameter... parameters);
 
-    // test
+    // need to test
     <E> List<E> getTransactionEntityList(Function<Session, List<E>> function);
     <E> E getTransactionEntity(Function<Session, E> function);
     <E> Optional<E> getTransactionOptionalEntity(Function<Session, Optional<E>> function);

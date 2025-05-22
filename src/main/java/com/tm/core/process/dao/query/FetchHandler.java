@@ -2,6 +2,8 @@ package com.tm.core.process.dao.query;
 
 import com.tm.core.process.dao.identifier.IQueryService;
 import com.tm.core.finder.parameter.Parameter;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;

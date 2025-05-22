@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public abstract class AbstractGenericEntityOperationManager implements IGenericOperationManager{
+public abstract class AbstractGenericEntityOperationManager implements IGenericOperationManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGenericEntityOperationManager.class);
 
     private final IGenericEntityDao genericEntityDao;

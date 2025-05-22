@@ -1,15 +1,15 @@
-package com.tm.core.configuration.manager;
+package com.tm.core.configuration.factory;
 
-import com.tm.core.configuration.factory.ConfigurationSessionFactory;
-import com.tm.core.configuration.factory.IConfigurationSessionFactory;
+import com.tm.core.configuration.dbType.DatabaseConfigurationAnnotationClass;
+import com.tm.core.configuration.dbType.DatabaseType;
+import com.tm.core.configuration.dbType.DatabaseTypeConfiguration;
 import org.hibernate.SessionFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
-import static com.tm.core.configuration.manager.DatabaseType.READ;
-import static com.tm.core.configuration.manager.DatabaseType.WRITE;
+import static com.tm.core.configuration.dbType.DatabaseType.READ;
+import static com.tm.core.configuration.dbType.DatabaseType.WRITE;
 
 public class SessionFactoryManager implements ISessionFactoryManager {
 
@@ -48,22 +48,14 @@ public class SessionFactoryManager implements ISessionFactoryManager {
     }
 
     @Override
-    public Supplier<SessionFactory> getSessionFactorySupplier(DatabaseType databaseType, String configFileName) {
+    public SessionFactory getSessionFactory(DatabaseType databaseType, String configFileName) {
         if (READ.equals(databaseType)) {
-            return () -> this.configurationReadSessionFactoryMap.get(configFileName);
+            return this.configurationReadSessionFactoryMap.get(configFileName);
         }
         if (WRITE.equals(databaseType)) {
-            return () -> this.configurationWriteSessionFactoryMap.get(configFileName);
+            return this.configurationWriteSessionFactoryMap.get(configFileName);
         }
         throw new IllegalArgumentException("Unsupported database type: " + databaseType);
-    }
-
-    private IConfigurationSessionFactory createSessionFactory(String configFileName, Class<?>[] annotationClasses) {
-        if (annotationClasses != null) {
-            return new ConfigurationSessionFactory(configFileName, annotationClasses);
-        } else {
-            return new ConfigurationSessionFactory(configFileName);
-        }
     }
 
 }

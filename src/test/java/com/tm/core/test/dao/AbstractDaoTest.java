@@ -16,7 +16,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 
 import static com.tm.core.configuration.DataSourcePool.getHikariDataSource;
-import static com.tm.core.test.dao.ConfigureSessionFactoryTest.getSessionFactory;
+import static com.tm.core.configuration.ConfigureSessionFactoryTest.getSessionFactory;
 
 @ExtendWith(MockitoExtension.class)
 @DBRider
