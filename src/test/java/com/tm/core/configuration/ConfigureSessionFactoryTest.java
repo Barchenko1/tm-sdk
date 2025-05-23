@@ -1,8 +1,8 @@
 package com.tm.core.configuration;
 
 import com.tm.core.configuration.dbType.DatabaseType;
-import com.tm.core.configuration.factory.ISessionFactoryManager;
-import com.tm.core.configuration.factory.SessionFactoryManager;
+import com.tm.core.configuration.session.ISessionFactoryManager;
+import com.tm.core.configuration.session.SessionFactoryManager;
 import org.hibernate.SessionFactory;
 
 public class ConfigureSessionFactoryTest extends ConfigureAbstractDatabaseFactoryTest {

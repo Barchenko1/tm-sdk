@@ -1,4 +1,4 @@
-package com.tm.core.configuration.factory;
+package com.tm.core.configuration.session;
 
 import com.tm.core.configuration.dbType.DatabaseConfigurationAnnotationClass;
 import com.tm.core.configuration.dbType.DatabaseType;

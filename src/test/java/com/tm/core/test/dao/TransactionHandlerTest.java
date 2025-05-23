@@ -43,19 +43,19 @@ public class TransactionHandlerTest extends AbstractDaoTest {
     }
 
     @Test
-    void saveEntity_success() {
+    void persistSupplier_success() {
         loadDataSet("/datasets/single/emptyItemEntityDataSet.yml");
         Item Item = new Item();
         Item.setName("New Entity");
 
         Supplier<Item> ItemSupplier = () -> Item;
 
-        transactionHandler.saveEntity(ItemSupplier);
+        transactionHandler.persistSupplier(ItemSupplier);
         verifyExpectedData("/datasets/single/saveItemEntityDataSet.yml");
     }
 
     @Test
-    void saveEntity_transactionFailure() {
+    void persistSupplier_transactionFailure() {
         Item Item = new Item();
         Item.setName("New Entity");
 
@@ -78,7 +78,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         Supplier<Item> ItemSupplier = () -> Item;
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            transactionHandler.saveEntity(ItemSupplier);
+            transactionHandler.persistSupplier(ItemSupplier);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
@@ -88,7 +88,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
     }
 
     @Test
-    void saveEntityConsumer_success() {
+    void persistSupplierConsumer_success() {
         loadDataSet("/datasets/single/emptyItemEntityDataSet.yml");
         Consumer<Session> sessionConsumer = (Session s) -> {
             Item Item = new Item();
@@ -101,7 +101,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
     }
 
     @Test
-    void saveEntityConsumer_transactionFailure() {
+    void persistSupplierConsumer_transactionFailure() {
         SessionFactory sessionFactory = mock(SessionFactory.class);
         Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
@@ -133,19 +133,19 @@ public class TransactionHandlerTest extends AbstractDaoTest {
     }
 
     @Test
-    void updateEntity_success() {
+    void updateSupplier_success() {
         loadDataSet("/datasets/single/testItemEntityDataSet.yml");
         Item Item = new Item();
         Item.setId(1);
         Item.setName("Update Entity");
         Supplier<Item> ItemSupplier = () -> Item;
 
-        transactionHandler.updateEntity(ItemSupplier);
+        transactionHandler.updateSupplier(ItemSupplier);
         verifyExpectedData("/datasets/single/updateItemEntityDataSet.yml");
     }
 
     @Test
-    void updateEntity_transactionFailure() {
+    void updateSupplier_transactionFailure() {
         Item Item = new Item();
         Item.setId(100L);
         Item.setName("Update Entity");
@@ -169,7 +169,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         doThrow(new RuntimeException()).when(session).merge(Item);
 
         Exception exception =
-                assertThrows(RuntimeException.class, () -> transactionHandler.updateEntity(ItemSupplier));
+                assertThrows(RuntimeException.class, () -> transactionHandler.updateSupplier(ItemSupplier));
 
         assertEquals(RuntimeException.class, exception.getClass());
         verify(transaction).rollback();
@@ -178,7 +178,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
     }
 
     @Test
-    void updateEntityConsumer_success() {
+    void updateSupplierConsumer_success() {
         loadDataSet("/datasets/single/testItemEntityDataSet.yml");
         Consumer<Session> sessionConsumer = (Session s) -> {
             Item Item = new Item();
@@ -191,7 +191,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
     }
 
     @Test
-    void updateEntityConsumer_transactionFailure() {
+    void updateSupplierConsumer_transactionFailure() {
         SessionFactory sessionFactory = mock(SessionFactory.class);
         Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
@@ -226,18 +226,18 @@ public class TransactionHandlerTest extends AbstractDaoTest {
     }
 
     @Test
-    void deleteEntity_success() {
+    void deleteSupplier_success() {
         loadDataSet("/datasets/single/testItemEntityDataSet.yml");
         Item Item = new Item();
         Item.setId(1);
         Supplier<Item> ItemSupplier = () -> Item;
 
-        transactionHandler.deleteEntity(ItemSupplier);
+        transactionHandler.deleteSupplier(ItemSupplier);
         verifyExpectedData("/datasets/single/emptyItemEntityDataSet.yml");
     }
 
     @Test
-    void deleteEntity_transactionFailure() {
+    void deleteSupplier_transactionFailure() {
         loadDataSet("/datasets/single/testItemEntityDataSet.yml");
         Item Item = new Item();
         Item.setId(100);
@@ -260,7 +260,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         doThrow(new RuntimeException()).when(session).remove(Item);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            transactionHandler.deleteEntity(ItemSupplier);
+            transactionHandler.deleteSupplier(ItemSupplier);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());

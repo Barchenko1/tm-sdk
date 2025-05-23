@@ -1,4 +1,4 @@
-package com.tm.core.configuration.factory;
+package com.tm.core.configuration.session;
 
 import org.hibernate.SessionFactory;
 

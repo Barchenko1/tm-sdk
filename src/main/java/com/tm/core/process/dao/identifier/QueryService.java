@@ -3,7 +3,8 @@ package com.tm.core.process.dao.identifier;
 import com.tm.core.finder.manager.IEntityMappingManager;
 import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.finder.table.EntityTable;
-import org.hibernate.Session;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,55 +23,64 @@ public class QueryService implements IQueryService {
     }
 
     @Override
-    public <E> List<E> getGraphEntityList(Session session, Class<E> clazz, String namedQuery, Parameter... parameters) {
-        Query<E> query = getDynamicEntityGraphQuery(session, clazz, namedQuery, parameters);
+    public <E> List<E> getGraphEntityList(EntityManager entityManager, Class<E> clazz, String namedQuery, Parameter... parameters) {
+        LOGGER.info("getGraphEntityList func: {}, {}, {}", clazz, namedQuery, parameters);
+        Query<E> query = getDynamicEntityGraphQuery(entityManager, clazz, namedQuery, parameters);
         return query.list();
     }
 
     @Override
-    public <E> List<E> getNamedQueryEntityList(Session session, Class<E> clazz, String namedQuery, Parameter... parameters) {
-        Query<E> query = getNamedQuery(session, clazz, namedQuery, parameters);
+    public <E> List<E> getNamedQueryEntityList(EntityManager entityManager, Class<E> clazz, String namedQuery, Parameter... parameters) {
+        LOGGER.info("getNamedQueryEntityList func: {}, {}, {}", clazz, namedQuery, parameters);
+        Query<E> query = getNamedQuery(entityManager, clazz, namedQuery, parameters);
         return query.list();
     }
 
     @Override
-    public <E> List<E> getNamedQueryEntityMap(Session session, Class<E> clazz, String namedQuery, Map<String, List<?>> parameters) {
-        Query<E> query = getNamedQueryMap(session, clazz, namedQuery, parameters);
-        return query.list();
+    public <E> List<E> getNamedQueryEntityMap(EntityManager entityManager, Class<E> clazz, String namedQuery, Map<String, List<?>> parameters) {
+        LOGGER.info("getNamedQueryEntityMap func: {}, {}, {}", clazz, namedQuery, parameters);
+        TypedQuery<E> query = getNamedQueryMap(entityManager, clazz, namedQuery, parameters);
+        return query.getResultList();
     }
 
     @Override
-    public <E> E getGraphEntity(Session session, Class<E> clazz, String graph, Parameter... parameters) {
-        Query<E> query = getDynamicEntityGraphQuery(session, clazz, graph, parameters);
+    public <E> E getGraphEntity(EntityManager entityManager, Class<E> clazz, String graph, Parameter... parameters) {
+        LOGGER.info("getGraphEntity func: {}, {}, {}", clazz, graph, parameters);
+        Query<E> query = getDynamicEntityGraphQuery(entityManager, clazz, graph, parameters);
         return query.getSingleResult();
     }
 
     @Override
-    public <E> E getNamedQueryEntity(Session session, Class<E> clazz, String namedQuery, Parameter... parameters) {
-        Query<E> query = getNamedQuery(session, clazz, namedQuery, parameters);
+    public <E> E getNamedQueryEntity(EntityManager entityManager, Class<E> clazz, String namedQuery, Parameter... parameters) {
+        LOGGER.info("getNamedQueryEntity func: {}, {}, {}", clazz, namedQuery, parameters);
+        Query<E> query = getNamedQuery(entityManager, clazz, namedQuery, parameters);
         return query.getSingleResult();
     }
 
     @Override
-    public <E> Optional<E> getGraphOptionalEntity(Session session, Class<E> clazz, String graph, Parameter... parameters) {
-        Query<E> query = getDynamicEntityGraphQuery(session, clazz, graph, parameters);
-        return query.uniqueResultOptional();
+    public <E> Optional<E> getGraphOptionalEntity(EntityManager entityManager, Class<E> clazz, String graph, Parameter... parameters) {
+        LOGGER.info("getGraphOptionalEntity func: {}, {}, {}", clazz, graph, parameters);
+        TypedQuery<E> query = getDynamicEntityGraphQuery(entityManager, clazz, graph, parameters);
+        return Optional.of(query.getSingleResult());
     }
 
     @Override
-    public <E> Optional<E> getNamedQueryOptionalEntity(Session session, Class<E> clazz, String namedQuery, Parameter... parameters) {
-        Query<E> query = getNamedQuery(session, clazz, namedQuery, parameters);
-        return query.uniqueResultOptional();
+    public <E> Optional<E> getNamedQueryOptionalEntity(EntityManager entityManager, Class<E> clazz, String namedQuery, Parameter... parameters) {
+        LOGGER.info("getNamedQueryOptionalEntity func: {}, {}, {}", clazz, namedQuery, parameters);
+        TypedQuery<E> query = getNamedQuery(entityManager, clazz, namedQuery, parameters);
+        return Optional.of(query.getSingleResult());
     }
 
     @Override
-    public <E> E getEntityByDefaultNamedQuery(Session session, Class<E> clazz, Parameter... parameters) {
-        Query<E> query = getDefaultNamedQuery(session, clazz, parameters);
+    public <E> E getEntityByDefaultNamedQuery(EntityManager entityManager, Class<E> clazz, Parameter... parameters) {
+        LOGGER.info("getEntityByDefaultNamedQuery func: {}, {}", clazz, parameters);
+        TypedQuery<E> query = getDefaultNamedQuery(entityManager, clazz, parameters);
         return query.getSingleResult();
     }
 
     @SuppressWarnings("unchecked")
-    private <E> Query<E> getDynamicEntityGraphQuery(Session session, Class<E> clazz, String graphName, Parameter... params) {
+    private <E> Query<E> getDynamicEntityGraphQuery(EntityManager entityManager, Class<E> clazz, String graphName, Parameter... params) {
+        LOGGER.info("getDynamicEntityGraphQuery func: {}, {}", clazz, graphName);
         EntityTable entityTable = entityMappingManager.getEntityTable(clazz);
         if (entityTable == null) {
             throw new RuntimeException("Invalid select class: " + clazz);
@@ -79,7 +89,7 @@ public class QueryService implements IQueryService {
                 ? entityTable.getSelectAllJqlQuery()
                 : entityTable.createFindJqlQuery(params);
 
-        Query<E> query = (Query<E>) session.createQuery(jpql, entityTable.getClazz());
+        Query<E> query = (Query<E>) entityManager.createQuery(jpql, entityTable.getClazz());
 
         if (params != null) {
             for (Parameter param : params) {
@@ -87,16 +97,17 @@ public class QueryService implements IQueryService {
             }
         }
 
-        query.setHint("jakarta.persistence.loadgraph", session.getEntityGraph(graphName));
+        query.setHint("jakarta.persistence.loadgraph", entityManager.getEntityGraph(graphName));
         return query;
     }
 
-    private <E> Query<E> getNamedQuery(Session session, Class<E> clazz, String namedQuery, Parameter... params) {
+    private <E> Query<E> getNamedQuery(EntityManager entityManager, Class<E> clazz, String namedQuery, Parameter... params) {
+        LOGGER.info("getNamedQuery func: {}, {}", clazz, namedQuery);
         EntityTable entityTable = entityMappingManager.getEntityTable(clazz);
         if (entityTable == null) {
             throw new RuntimeException("Invalid select class: " + clazz);
         }
-        Query<E> query = session.createNamedQuery(namedQuery, clazz);
+        Query<E> query = (Query<E>) entityManager.createNamedQuery(namedQuery, clazz);
         if (params != null) {
             for (Parameter param : params) {
                 query.setParameter(param.getName(), param.getValue());
@@ -105,12 +116,13 @@ public class QueryService implements IQueryService {
         return query;
     }
 
-    private <E> Query<E> getNamedQueryMap(Session session, Class<E> clazz, String namedQuery, Map<String, List<?>> paramMap) {
+    private <E> TypedQuery<E> getNamedQueryMap(EntityManager session, Class<E> clazz, String namedQuery, Map<String, List<?>> paramMap) {
+        LOGGER.info("getNamedQueryMap func: {}, {}", clazz, namedQuery);
         EntityTable entityTable = entityMappingManager.getEntityTable(clazz);
         if (entityTable == null) {
             throw new RuntimeException("Invalid select class: " + clazz);
         }
-        Query<E> query = session.createNamedQuery(namedQuery, clazz);
+        Query<E> query = (Query<E>) session.createNamedQuery(namedQuery, clazz);
         if (paramMap != null) {
             paramMap.forEach((key, value) -> {
                 if (value == null || value.isEmpty()) {
@@ -126,12 +138,13 @@ public class QueryService implements IQueryService {
         return query;
     }
 
-    private <E> Query<E> getDefaultNamedQuery(Session session, Class<E> clazz, Parameter... params) {
+    private <E> TypedQuery<E> getDefaultNamedQuery(EntityManager entityManager, Class<E> clazz, Parameter... params) {
+        LOGGER.info("getDefaultNamedQuery func: {}", clazz);
         EntityTable entityTable = entityMappingManager.getEntityTable(clazz);
         if (entityTable == null) {
             throw new RuntimeException("Invalid select class: " + clazz);
         }
-        Query<E> query = session.createNamedQuery(entityTable.getDefaultNamedQuery(), clazz);
+        TypedQuery<E> query = entityManager.createNamedQuery(entityTable.getDefaultNamedQuery(), clazz);
         if (params != null) {
             for (Parameter param : params) {
                 query.setParameter(param.getName(), param.getValue());

@@ -1,7 +1,6 @@
 package com.tm.core.util;
 
 import com.tm.core.configuration.ConfigDbType;
-import com.tm.core.configuration.factory.ConfigurationSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

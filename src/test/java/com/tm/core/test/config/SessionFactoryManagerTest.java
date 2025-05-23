@@ -3,7 +3,7 @@ package com.tm.core.test.config;
 import com.tm.core.configuration.dbType.DatabaseConfigurationAnnotationClass;
 import com.tm.core.configuration.dbType.DatabaseType;
 import com.tm.core.configuration.dbType.DatabaseTypeConfiguration;
-import com.tm.core.configuration.factory.SessionFactoryManager;
+import com.tm.core.configuration.session.SessionFactoryManager;
 import com.tm.core.modal.relationship.Item;
 import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.BeforeEach;

@@ -6,8 +6,9 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public interface ITransactionHandler {
+    <E> void persistSupplier(Supplier<E> supplier);
+    <E> void updateSupplier(Supplier<E> supplier);
+    <E> void deleteSupplier(Supplier<E> supplier);
+
     void executeConsumer(Consumer<Session> consumer);
-    <E> void saveEntity(Supplier<E> supplier);
-    <E> void updateEntity(Supplier<E> supplier);
-    <E> void deleteEntity(Supplier<E> supplier);
 }

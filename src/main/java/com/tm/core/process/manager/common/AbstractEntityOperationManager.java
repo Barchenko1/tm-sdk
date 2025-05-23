@@ -22,21 +22,21 @@ public abstract class AbstractEntityOperationManager implements IEntityOperation
     }
 
     @Override
-    public <E> void saveEntity(Supplier<E> entitySupplier) {
+    public <E> void persistSupplier(Supplier<E> entitySupplier) {
         LOGGER.info("Saving entity");
-        dao.saveEntity(entitySupplier);
+        dao.persistSupplier(entitySupplier);
     }
 
     @Override
-    public <E> void updateEntity(Supplier<E> entitySupplier) {
+    public <E> void updateSupplier(Supplier<E> entitySupplier) {
         LOGGER.info("Updating entity");
-        dao.updateEntity(entitySupplier);
+        dao.updateSupplier(entitySupplier);
     }
 
     @Override
-    public <E> void deleteEntity(Supplier<E> entitySupplier) {
+    public <E> void deleteSupplier(Supplier<E> entitySupplier) {
         LOGGER.info("Deleting entity");
-        dao.deleteEntity(entitySupplier);
+        dao.deleteSupplier(entitySupplier);
     }
 
     @Override

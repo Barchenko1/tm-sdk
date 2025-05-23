@@ -35,7 +35,7 @@ public class TransactionHandler implements ITransactionHandler {
     }
 
     @Override
-    public <E> void saveEntity(Supplier<E> supplier) {
+    public <E> void persistSupplier(Supplier<E> supplier) {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
@@ -52,7 +52,7 @@ public class TransactionHandler implements ITransactionHandler {
     }
 
     @Override
-    public <E> void updateEntity(Supplier<E> supplier) {
+    public <E> void updateSupplier(Supplier<E> supplier) {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
@@ -69,7 +69,7 @@ public class TransactionHandler implements ITransactionHandler {
     }
 
     @Override
-    public <E> void deleteEntity(Supplier<E> supplier) {
+    public <E> void deleteSupplier(Supplier<E> supplier) {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();

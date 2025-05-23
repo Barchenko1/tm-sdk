@@ -211,7 +211,7 @@ class EntityOperationManagerTest extends AbstractDaoTest {
             return employee;
         };
 
-        entityOperationManager.saveEntity(supplier);
+        entityOperationManager.persistSupplier(supplier);
         verifyExpectedData("/datasets/relationship/saveSingleRelationshipTestEntityDataSet.yml");
     }
 
@@ -225,7 +225,7 @@ class EntityOperationManagerTest extends AbstractDaoTest {
         };
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            entityOperationManager.saveEntity(supplier);
+            entityOperationManager.persistSupplier(supplier);
         });
 
         assertEquals(IllegalStateException.class, exception.getClass());
@@ -306,7 +306,7 @@ class EntityOperationManagerTest extends AbstractDaoTest {
             employeeToUpdate.setId(oldRelationShipEntity.getId());
             return employeeToUpdate;
         };
-        entityOperationManager.updateEntity(relationshipEntitySupplier);
+        entityOperationManager.updateSupplier(relationshipEntitySupplier);
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
     }
 
@@ -320,7 +320,7 @@ class EntityOperationManagerTest extends AbstractDaoTest {
         };
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            entityOperationManager.updateEntity(relationshipRootTestEntitySupplier);
+            entityOperationManager.updateSupplier(relationshipRootTestEntitySupplier);
         });
 
         assertEquals(IllegalStateException.class, exception.getClass());
@@ -410,7 +410,7 @@ class EntityOperationManagerTest extends AbstractDaoTest {
     void deleteRelationshipEntityBySupplier_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Supplier<Employee> supplier = this::prepareRelationshipRootTestEntityDbMock;
-        entityOperationManager.deleteEntity(supplier);
+        entityOperationManager.deleteSupplier(supplier);
         verifyExpectedData("/datasets/relationship/deleteRelationshipTestEntityDataSet.yml");
     }
 
@@ -421,7 +421,7 @@ class EntityOperationManagerTest extends AbstractDaoTest {
             throw new RuntimeException();
         };
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            entityOperationManager.deleteEntity(supplier);
+            entityOperationManager.deleteSupplier(supplier);
         });
 
         assertEquals(IllegalStateException.class, exception.getClass());

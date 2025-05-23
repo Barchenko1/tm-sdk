@@ -1,11 +1,12 @@
 package com.tm.core.test.manager.generic;
+
 import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.modal.relationship.Dependent;
 import com.tm.core.modal.relationship.Employee;
 import com.tm.core.modal.relationship.Item;
-import com.tm.core.process.dao.generic.AbstractGenericEntityDao;
-import com.tm.core.process.dao.generic.GenericEntityDao;
-import com.tm.core.process.dao.generic.IGenericEntityDao;
+import com.tm.core.process.dao.generic.session.AbstractGenericSessionDao;
+import com.tm.core.process.dao.generic.session.GenericTransactionSessionDao;
+import com.tm.core.process.dao.generic.session.IGenericTransactionSessionDao;
 import com.tm.core.process.manager.generic.AbstractGenericEntityOperationManager;
 import com.tm.core.process.manager.generic.GenericEntityOperationManager;
 import com.tm.core.process.manager.generic.IGenericOperationManager;
@@ -42,7 +43,7 @@ class GenericEntityOperationManagerTest extends AbstractDaoTest {
     private final String NAMED_QUERY_NAME_ONE = "Employee.findByIdWithJoins";
     private final String NAMED_QUERY_NAME_ALL = "Employee.findAllWithJoins";
     private final String ENTITY_PACKAGE = "com.tm.core.modal.relationship";
-    private final IGenericEntityDao genericEntityDao = new GenericEntityDao(sessionFactory, ENTITY_PACKAGE);
+    private final IGenericTransactionSessionDao genericTransactionSessionDao = new GenericTransactionSessionDao(sessionFactory, ENTITY_PACKAGE);
     private IGenericOperationManager genericOperationManager;
 
     @BeforeEach
@@ -159,12 +160,12 @@ class GenericEntityOperationManagerTest extends AbstractDaoTest {
         Transaction transaction = mock(Transaction.class);
 
         try {
-            Field sessionFactoryField = AbstractGenericEntityDao.class.getDeclaredField("sessionFactory");
+            Field sessionFactoryField = AbstractGenericSessionDao.class.getDeclaredField("sessionFactory");
             sessionFactoryField.setAccessible(true);
-            sessionFactoryField.set(genericEntityDao, sessionFactory);
-            Field daoField = AbstractGenericEntityOperationManager.class.getDeclaredField("genericEntityDao");
+            sessionFactoryField.set(genericTransactionSessionDao, sessionFactory);
+            Field daoField = AbstractGenericEntityOperationManager.class.getDeclaredField("genericTransactionSessionDao");
             daoField.setAccessible(true);
-            daoField.set(genericOperationManager, genericEntityDao);
+            daoField.set(genericOperationManager, genericTransactionSessionDao);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -189,7 +190,7 @@ class GenericEntityOperationManagerTest extends AbstractDaoTest {
             return employee;
         };
 
-        genericOperationManager.saveEntity(supplier);
+        genericOperationManager.persistSupplier(supplier);
         verifyExpectedData("/datasets/relationship/saveSingleRelationshipTestEntityDataSet.yml");
     }
 
@@ -203,7 +204,7 @@ class GenericEntityOperationManagerTest extends AbstractDaoTest {
         };
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            genericOperationManager.saveEntity(supplier);
+            genericOperationManager.persistSupplier(supplier);
         });
 
         assertEquals(IllegalStateException.class, exception.getClass());
@@ -258,12 +259,12 @@ class GenericEntityOperationManagerTest extends AbstractDaoTest {
         Transaction transaction = mock(Transaction.class);
 
         try {
-            Field sessionFactoryField = AbstractGenericEntityDao.class.getDeclaredField("sessionFactory");
+            Field sessionFactoryField = AbstractGenericSessionDao.class.getDeclaredField("sessionFactory");
             sessionFactoryField.setAccessible(true);
-            sessionFactoryField.set(genericEntityDao, sessionFactory);
-            Field daoField = AbstractGenericEntityOperationManager.class.getDeclaredField("genericEntityDao");
+            sessionFactoryField.set(genericTransactionSessionDao, sessionFactory);
+            Field daoField = AbstractGenericEntityOperationManager.class.getDeclaredField("genericTransactionSessionDao");
             daoField.setAccessible(true);
-            daoField.set(genericOperationManager, genericEntityDao);
+            daoField.set(genericOperationManager, genericTransactionSessionDao);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -284,7 +285,7 @@ class GenericEntityOperationManagerTest extends AbstractDaoTest {
             employeeToUpdate.setId(oldRelationShipEntity.getId());
             return employeeToUpdate;
         };
-        genericOperationManager.updateEntity(relationshipEntitySupplier);
+        genericOperationManager.updateSupplier(relationshipEntitySupplier);
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
     }
 
@@ -298,7 +299,7 @@ class GenericEntityOperationManagerTest extends AbstractDaoTest {
         };
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            genericOperationManager.updateEntity(relationshipRootTestEntitySupplier);
+            genericOperationManager.updateSupplier(relationshipRootTestEntitySupplier);
         });
 
         assertEquals(IllegalStateException.class, exception.getClass());
@@ -347,7 +348,7 @@ class GenericEntityOperationManagerTest extends AbstractDaoTest {
     void deleteRelationshipEntityBySupplier_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Supplier<Employee> supplier = this::prepareRelationshipRootTestEntityDbMock;
-        genericOperationManager.deleteEntity(supplier);
+        genericOperationManager.deleteSupplier(supplier);
         verifyExpectedData("/datasets/relationship/deleteRelationshipTestEntityDataSet.yml");
     }
 
@@ -358,7 +359,7 @@ class GenericEntityOperationManagerTest extends AbstractDaoTest {
             throw new RuntimeException();
         };
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            genericOperationManager.deleteEntity(supplier);
+            genericOperationManager.deleteSupplier(supplier);
         });
 
         assertEquals(IllegalStateException.class, exception.getClass());
@@ -407,12 +408,12 @@ class GenericEntityOperationManagerTest extends AbstractDaoTest {
         Transaction transaction = mock(Transaction.class);
 
         try {
-            Field sessionFactoryField = AbstractGenericEntityDao.class.getDeclaredField("sessionFactory");
+            Field sessionFactoryField = AbstractGenericSessionDao.class.getDeclaredField("sessionFactory");
             sessionFactoryField.setAccessible(true);
-            sessionFactoryField.set(genericEntityDao, sessionFactory);
-            Field daoField = AbstractGenericEntityOperationManager.class.getDeclaredField("genericEntityDao");
+            sessionFactoryField.set(genericTransactionSessionDao, sessionFactory);
+            Field daoField = AbstractGenericEntityOperationManager.class.getDeclaredField("genericTransactionSessionDao");
             daoField.setAccessible(true);
-            daoField.set(genericOperationManager, genericEntityDao);
+            daoField.set(genericOperationManager, genericTransactionSessionDao);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -442,12 +443,12 @@ class GenericEntityOperationManagerTest extends AbstractDaoTest {
         Query<Employee> query = mock(Query.class);
 
         try {
-            Field sessionFactoryField = AbstractGenericEntityDao.class.getDeclaredField("sessionFactory");
+            Field sessionFactoryField = AbstractGenericSessionDao.class.getDeclaredField("sessionFactory");
             sessionFactoryField.setAccessible(true);
-            sessionFactoryField.set(genericEntityDao, sessionFactory);
-            Field daoField = AbstractGenericEntityOperationManager.class.getDeclaredField("genericEntityDao");
+            sessionFactoryField.set(genericTransactionSessionDao, sessionFactory);
+            Field daoField = AbstractGenericEntityOperationManager.class.getDeclaredField("genericTransactionSessionDao");
             daoField.setAccessible(true);
-            daoField.set(genericOperationManager, genericEntityDao);
+            daoField.set(genericOperationManager, genericTransactionSessionDao);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
