@@ -20,26 +20,26 @@ public class Operation {
     public String create2params(Parameter parameter1, Parameter parameter2, Operator operator) {
         return String.format("%s %s %s %s %s %s %s%s",
                 parameter1.getName(),
-                Operator.EQUAL,
+                Operator.EQUAL.getValue(),
                 parameter1.getValue(),
-                operator,
+                operator.getValue(),
                 parameter2.getName(),
-                Operator.EQUAL,
+                Operator.EQUAL.getValue(),
                 parameter2.getValue(),
-                Operator.END);
+                Operator.END.getValue());
     }
 
     public String createOperationParams(Parameter[] parameters, Operator operator) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < parameters.length; i++) {
             sb.append(parameters[i].getName());
-            sb.append(Operator.EQUAL);
+            sb.append(Operator.EQUAL.getValue());
             sb.append(parameters[i].getValue());
             if (i < parameters.length - 1) {
-                sb.append(operator);
+                sb.append(operator.getValue());
             }
         }
-        sb.append(Operator.END);
+        sb.append(Operator.END.getValue());
         return sb.toString();
     }
 
@@ -66,6 +66,10 @@ public class Operation {
 
         Operator(String value) {
             this.value = value;
+        }
+
+        public String getValue() {
+            return value;
         }
     }
 }
