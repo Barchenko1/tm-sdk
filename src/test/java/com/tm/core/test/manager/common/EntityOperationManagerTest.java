@@ -14,7 +14,6 @@ import com.tm.core.modal.relationship.Employee;
 import com.tm.core.modal.relationship.Item;
 import com.tm.core.process.dao.transaction.ITransactionHandler;
 import com.tm.core.process.dao.transaction.SessionTransactionHandler;
-import com.tm.core.process.manager.common.AbstractEntityOperationManager;
 import com.tm.core.process.manager.common.EntityOperationManager;
 import com.tm.core.process.manager.common.IEntityOperationManager;
 import com.tm.core.test.dao.AbstractDaoTest;
@@ -52,7 +51,6 @@ class EntityOperationManagerTest extends AbstractDaoTest {
 
     private final String GRAPH_PATH = "Employee.full";
     private final String NAMED_QUERY_NAME_ONE = "Employee.findByIdWithJoins";
-    private final String NAMED_QUERY_NAME_ALL = "Employee.findAllWithJoins";
     private TestSessionFactoryDao testEntityDao;
     private IEntityOperationManager entityOperationManager;
 

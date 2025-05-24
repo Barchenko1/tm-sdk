@@ -46,7 +46,6 @@ class GenericTransactionEntityOperationManagerTest extends AbstractDaoTest {
 
     private final String GRAPH_PATH = "Employee.full";
     private final String NAMED_QUERY_NAME_ONE = "Employee.findByIdWithJoins";
-    private final String NAMED_QUERY_NAME_ALL = "Employee.findAllWithJoins";
     private final String ENTITY_PACKAGE = "com.tm.core.modal.relationship";
     private final IGenericTransactionDao genericTransactionSessionDao = new GenericTransactionSessionDao(sessionFactory, ENTITY_PACKAGE);
     private IGenericOperationManager genericOperationManager;

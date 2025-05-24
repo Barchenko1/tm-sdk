@@ -14,7 +14,7 @@ public class ConfigureAbstractDatabaseFactoryTest {
     protected static DatabaseTypeConfiguration getDatabaseTypeConfiguration() {
         DatabaseConfigurationAnnotationClass[] databaseConfigurationAnnotationClass =
                 new DatabaseConfigurationAnnotationClass[] {
-                        new DatabaseConfigurationAnnotationClass("hikari.hibernate.cfg.xml")
+                        new DatabaseConfigurationAnnotationClass(CONFIGURATION_FILE_NAME)
         };
 
         return new DatabaseTypeConfiguration(DatabaseType.WRITE, databaseConfigurationAnnotationClass);
