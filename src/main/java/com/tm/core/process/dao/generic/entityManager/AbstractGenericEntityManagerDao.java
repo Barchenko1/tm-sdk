@@ -11,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class AbstractGenericEntityManagerDao {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGenericEntityManagerDao.class);
-
     protected final EntityManager entityManager;
     protected final IEntityFieldHelper entityFieldHelper;
     protected final IQueryService queryService;
@@ -28,9 +26,5 @@ public abstract class AbstractGenericEntityManagerDao {
         EntityMappingManager entityMappingManager = new EntityMappingManager();
         new EntityScanner(entityMappingManager, entityPackage);
         return new QueryService(entityMappingManager);
-    }
-
-    public EntityManager getEntityManager() {
-        return entityManager;
     }
 }

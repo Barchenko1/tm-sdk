@@ -1,7 +1,8 @@
 package com.tm.core.test.dao;
 
-import com.tm.core.process.dao.transaction.TransactionHandler;
+import com.tm.core.process.dao.transaction.SessionTransactionHandler;
 import com.tm.core.modal.relationship.Item;
+import jakarta.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -24,17 +25,17 @@ import static org.mockito.Mockito.when;
 
 public class TransactionHandlerTest extends AbstractDaoTest {
 
-    private static TransactionHandler transactionHandler;
+    private static SessionTransactionHandler transactionHandler;
 
     @BeforeAll
     public static void setupAll() {
-        transactionHandler = new TransactionHandler(sessionFactory);
+        transactionHandler = new SessionTransactionHandler(sessionFactory);
     }
 
     @BeforeEach
     public void setUp() {
         try {
-            Field sessionFactoryField = TransactionHandler.class.getDeclaredField("sessionFactory");
+            Field sessionFactoryField = SessionTransactionHandler.class.getDeclaredField("sessionFactory");
             sessionFactoryField.setAccessible(true);
             sessionFactoryField.set(transactionHandler, sessionFactory);
         } catch (Exception e) {
@@ -64,7 +65,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         Transaction transaction = mock(Transaction.class);
 
         try {
-            Field sessionFactoryField = TransactionHandler.class.getDeclaredField("sessionFactory");
+            Field sessionFactoryField = SessionTransactionHandler.class.getDeclaredField("sessionFactory");
             sessionFactoryField.setAccessible(true);
             sessionFactoryField.set(transactionHandler, sessionFactory);
         } catch (Exception e) {
@@ -90,10 +91,10 @@ public class TransactionHandlerTest extends AbstractDaoTest {
     @Test
     void persistSupplierConsumer_success() {
         loadDataSet("/datasets/single/emptyItemEntityDataSet.yml");
-        Consumer<Session> sessionConsumer = (Session s) -> {
+        Consumer<EntityManager> sessionConsumer = (EntityManager em) -> {
             Item Item = new Item();
             Item.setName("New Entity");
-            s.persist(Item);
+            em.persist(Item);
         };
 
         transactionHandler.executeConsumer(sessionConsumer);
@@ -107,7 +108,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         Transaction transaction = mock(Transaction.class);
 
         try {
-            Field sessionFactoryField = TransactionHandler.class.getDeclaredField("sessionFactory");
+            Field sessionFactoryField = SessionTransactionHandler.class.getDeclaredField("sessionFactory");
             sessionFactoryField.setAccessible(true);
             sessionFactoryField.set(transactionHandler, sessionFactory);
         } catch (Exception e) {
@@ -118,8 +119,8 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         when(session.beginTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(session).persist(any(Item.class));
 
-        Consumer<Session> sessionConsumer = (Session s) -> {
-            s.persist(new Item());
+        Consumer<EntityManager> sessionConsumer = (EntityManager em) -> {
+            em.persist(new Item());
         };
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
@@ -140,7 +141,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         Item.setName("Update Entity");
         Supplier<Item> ItemSupplier = () -> Item;
 
-        transactionHandler.updateSupplier(ItemSupplier);
+        transactionHandler.mergeSupplier(ItemSupplier);
         verifyExpectedData("/datasets/single/updateItemEntityDataSet.yml");
     }
 
@@ -155,7 +156,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         Transaction transaction = mock(Transaction.class);
 
         try {
-            Field sessionFactoryField = TransactionHandler.class.getDeclaredField("sessionFactory");
+            Field sessionFactoryField = SessionTransactionHandler.class.getDeclaredField("sessionFactory");
             sessionFactoryField.setAccessible(true);
             sessionFactoryField.set(transactionHandler, sessionFactory);
         } catch (Exception e) {
@@ -169,7 +170,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         doThrow(new RuntimeException()).when(session).merge(Item);
 
         Exception exception =
-                assertThrows(RuntimeException.class, () -> transactionHandler.updateSupplier(ItemSupplier));
+                assertThrows(RuntimeException.class, () -> transactionHandler.mergeSupplier(ItemSupplier));
 
         assertEquals(RuntimeException.class, exception.getClass());
         verify(transaction).rollback();
@@ -180,11 +181,11 @@ public class TransactionHandlerTest extends AbstractDaoTest {
     @Test
     void updateSupplierConsumer_success() {
         loadDataSet("/datasets/single/testItemEntityDataSet.yml");
-        Consumer<Session> sessionConsumer = (Session s) -> {
+        Consumer<EntityManager> sessionConsumer = (EntityManager em) -> {
             Item Item = new Item();
             Item.setId(1);
             Item.setName("Update Entity");
-            s.merge(Item);
+            em.merge(Item);
         };
         transactionHandler.executeConsumer(sessionConsumer);
         verifyExpectedData("/datasets/single/updateItemEntityDataSet.yml");
@@ -197,18 +198,18 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         Transaction transaction = mock(Transaction.class);
 
         try {
-            Field sessionFactoryField = TransactionHandler.class.getDeclaredField("sessionFactory");
+            Field sessionFactoryField = SessionTransactionHandler.class.getDeclaredField("sessionFactory");
             sessionFactoryField.setAccessible(true);
             sessionFactoryField.set(transactionHandler, sessionFactory);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        Consumer<Session> sessionConsumer = (Session s) -> {
+        Consumer<EntityManager> sessionConsumer = (EntityManager em) -> {
             Item Item = new Item();
             Item.setId(1L);
             Item.setName("Update Entity");
-            s.merge(Item);
+            em.merge(Item);
             throw new RuntimeException();
         };
 
@@ -248,7 +249,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         Transaction transaction = mock(Transaction.class);
 
         try {
-            Field sessionFactoryField = TransactionHandler.class.getDeclaredField("sessionFactory");
+            Field sessionFactoryField = SessionTransactionHandler.class.getDeclaredField("sessionFactory");
             sessionFactoryField.setAccessible(true);
             sessionFactoryField.set(transactionHandler, sessionFactory);
         } catch (Exception e) {
@@ -270,5 +271,5 @@ public class TransactionHandlerTest extends AbstractDaoTest {
 
         verifyExpectedData("/datasets/single/testItemEntityDataSet.yml");
     }
-    
+
 }

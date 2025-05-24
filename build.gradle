@@ -38,7 +38,7 @@ dependencies {
     implementation 'com.zaxxer:HikariCP:5.0.1'
 
     // Database Drivers
-    implementation 'org.postgresql:postgresql:42.6.0'
+    implementation 'org.postgresql:postgresql:42.7.2'
 
     // JSON Serialization
     implementation 'com.google.code.gson:gson:2.10.1'

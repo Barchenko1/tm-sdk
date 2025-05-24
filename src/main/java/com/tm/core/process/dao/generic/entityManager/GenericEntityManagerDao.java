@@ -1,12 +1,17 @@
 package com.tm.core.process.dao.generic.entityManager;
 
 import com.tm.core.finder.parameter.Parameter;
+import com.tm.core.process.dao.generic.IGenericDao;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-public class GenericEntityManagerDao extends AbstractGenericEntityManagerDao implements IGenericEntityManagerDao {
+public class GenericEntityManagerDao extends AbstractGenericEntityManagerDao implements IGenericDao {
+
     public GenericEntityManagerDao(EntityManager entityManager, String entityPackage) {
         super(entityManager, entityPackage);
     }
@@ -54,5 +59,28 @@ public class GenericEntityManagerDao extends AbstractGenericEntityManagerDao imp
     @Override
     public <E> Optional<E> getNamedQueryOptionalEntity(Class<E> clazz, String namedQuery, Parameter... parameters) {
         return queryService.getNamedQueryOptionalEntity(entityManager, clazz, namedQuery, parameters);
+    }
+
+    @Override
+    public <E> void persistSupplier(Supplier<E> supplier) {
+        E entity = supplier.get();
+        entityManager.persist(entity);
+    }
+
+    @Override
+    public <E> void updateSupplier(Supplier<E> supplier) {
+        E entity = supplier.get();
+        entityManager.merge(entity);
+    }
+
+    @Override
+    public <E> void deleteSupplier(Supplier<E> supplier) {
+        E entity = supplier.get();
+        entityManager.remove(entity);
+    }
+
+    @Override
+    public void executeConsumer(Consumer<EntityManager> consumer) {
+        consumer.accept(entityManager);
     }
 }

@@ -1,4 +1,4 @@
-package com.tm.core.process.manager.generic;
+package com.tm.core.process.manager;
 
 import com.tm.core.finder.parameter.Parameter;
 
@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-public interface IGenericEntityQuery {
+public interface IQuery {
 
     <E> E getGraphEntity(Class<E> clazz, String graph, Parameter parameter);
     <E> Optional<E> getGraphOptionalEntity(Class<E> clazz, String graph, Parameter parameter);

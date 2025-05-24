@@ -2,10 +2,11 @@ package com.tm.core.process.dao.common;
 
 import com.tm.core.process.dao.identifier.IQueryService;
 import com.tm.core.process.dao.transaction.ITransactionHandler;
-import com.tm.core.process.dao.transaction.TransactionHandler;
+import com.tm.core.process.dao.transaction.SessionTransactionHandler;
 import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.util.helper.EntityFieldHelper;
 import com.tm.core.util.helper.IEntityFieldHelper;
+import jakarta.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -17,8 +18,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public abstract class AbstractEntityDao implements IEntityDao {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractEntityDao.class);
+public abstract class AbstractSessionFactoryDao implements ISessionFactoryDao {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSessionFactoryDao.class);
 
     protected final Class<?> clazz;
     protected final SessionFactory sessionFactory;
@@ -26,65 +27,32 @@ public abstract class AbstractEntityDao implements IEntityDao {
     protected final IQueryService queryService;
     protected final ITransactionHandler transactionHandler;
 
-    public AbstractEntityDao(SessionFactory sessionFactory,
-                             IQueryService queryService,
-                             Class<?> clazz) {
+    public AbstractSessionFactoryDao(SessionFactory sessionFactory,
+                                     IQueryService queryService,
+                                     Class<?> clazz) {
         this.clazz = clazz;
         this.sessionFactory = sessionFactory;
         this.entityFieldHelper = new EntityFieldHelper();
         this.queryService = queryService;
-        this.transactionHandler = new TransactionHandler(sessionFactory);
+        this.transactionHandler = new SessionTransactionHandler(sessionFactory);
     }
 
     @Override
     public <E> void persistEntity(E entity) {
         classTypeChecker(entity);
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
-            session.persist(entity);
-            transaction.commit();
-        } catch (Exception e) {
-            LOGGER.warn("transaction error", e);
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw e;
-        }
+        transactionHandler.persistEntity(entity);
     }
 
     @Override
     public <E> void mergeEntity(E entity) {
         classTypeChecker(entity);
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
-            session.merge(entity);
-            transaction.commit();
-        } catch (Exception e) {
-            LOGGER.warn("transaction error", e);
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw e;
-        }
+        transactionHandler.mergeEntity(entity);
     }
 
     @Override
     public <E> void deleteEntity(E entity) {
         classTypeChecker(entity);
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
-            session.remove(entity);
-            transaction.commit();
-        } catch (Exception e) {
-            LOGGER.warn("transaction error", e);
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw e;
-        }
+        transactionHandler.deleteEntity(entity);
     }
 
     @Override
@@ -129,11 +97,12 @@ public abstract class AbstractEntityDao implements IEntityDao {
     @Override
     public <E> void persistSupplier(Supplier<E> supplier) {
         transactionHandler.persistSupplier(supplier);
+
     }
 
     @Override
     public <E> void updateSupplier(Supplier<E> supplier) {
-        transactionHandler.updateSupplier(supplier);
+        transactionHandler.mergeSupplier(supplier);
     }
 
     @Override
@@ -142,7 +111,7 @@ public abstract class AbstractEntityDao implements IEntityDao {
     }
 
     @Override
-    public void executeConsumer(Consumer<Session> consumer) {
+    public void executeConsumer(Consumer<EntityManager> consumer) {
         transactionHandler.executeConsumer(consumer);
     }
 

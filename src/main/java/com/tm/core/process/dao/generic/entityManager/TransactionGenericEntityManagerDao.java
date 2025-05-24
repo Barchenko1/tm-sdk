@@ -1,13 +1,16 @@
 package com.tm.core.process.dao.generic.entityManager;
 
 import com.tm.core.finder.parameter.Parameter;
+import com.tm.core.process.dao.generic.IGenericTransactionDao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-public class TransactionGenericEntityManagerDao extends AbstractGenericEntityManagerDao implements IGenericTransactionEntityManagerDao {
+public class TransactionGenericEntityManagerDao extends AbstractGenericTransactionEntityManagerDao implements IGenericTransactionDao {
 
     public TransactionGenericEntityManagerDao(EntityManager entityManager, String entityPackage) {
         super(entityManager, entityPackage);
@@ -15,53 +18,17 @@ public class TransactionGenericEntityManagerDao extends AbstractGenericEntityMan
 
     @Override
     public <E> void persistEntity(E entity) {
-        EntityTransaction transaction = entityManager.getTransaction();
-        try {
-            transaction.begin();
-            entityManager.persist(entity);
-            transaction.commit();
-        } catch (Exception e) {
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
-            throw new RuntimeException("Transaction failed", e);
-        } finally {
-            entityManager.clear();
-        }
+        transactionHandler.persistEntity(entity);
     }
 
     @Override
     public <E> void mergeEntity(E entity) {
-        EntityTransaction transaction = entityManager.getTransaction();
-        try {
-            transaction.begin();
-            entityManager.merge(entity);
-            transaction.commit();
-        } catch (Exception e) {
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
-            throw new RuntimeException("Transaction failed", e);
-        } finally {
-            entityManager.clear();
-        }
+        transactionHandler.mergeEntity(entity);
     }
 
     @Override
     public <E> void deleteEntity(E entity) {
-        EntityTransaction transaction = entityManager.getTransaction();
-        try {
-            transaction.begin();
-            entityManager.remove(entity);
-            transaction.commit();
-        } catch (Exception e) {
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
-            throw new RuntimeException("Transaction failed", e);
-        } finally {
-            entityManager.clear();
-        }
+        transactionHandler.deleteEntity(entity);
     }
 
     @Override
@@ -130,4 +97,25 @@ public class TransactionGenericEntityManagerDao extends AbstractGenericEntityMan
     public <E> Optional<E> getNamedQueryOptionalEntity(Class<E> clazz, String namedQuery, Parameter... parameters) {
         return queryService.getNamedQueryOptionalEntity(entityManager, clazz, namedQuery, parameters);
     }
+
+    @Override
+    public <E> void persistSupplier(Supplier<E> supplier) {
+        transactionHandler.persistSupplier(supplier);
+    }
+
+    @Override
+    public <E> void updateSupplier(Supplier<E> supplier) {
+        transactionHandler.mergeSupplier(supplier);
+    }
+
+    @Override
+    public <E> void deleteSupplier(Supplier<E> supplier) {
+        transactionHandler.deleteSupplier(supplier);
+    }
+
+    @Override
+    public void executeConsumer(Consumer<EntityManager> consumer) {
+        transactionHandler.executeConsumer(consumer);
+    }
+
 }

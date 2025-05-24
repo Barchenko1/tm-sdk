@@ -1,9 +1,10 @@
 package com.tm.core.process.dao.generic.session;
 
 import com.tm.core.finder.parameter.Parameter;
+import com.tm.core.process.dao.generic.IGenericDao;
+import jakarta.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +13,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class GenericSessionDao extends AbstractGenericSessionDao implements IGenericSessionDao {
+public class GenericSessionDao extends AbstractGenericSessionDao implements IGenericDao {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenericSessionDao.class);
 
     public GenericSessionDao(SessionFactory sessionFactory, String entityPackage) {
@@ -21,70 +22,75 @@ public class GenericSessionDao extends AbstractGenericSessionDao implements IGen
 
     @Override
     public <E> void persistEntity(E entity) {
-        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
             session.persist(entity);
-            transaction.commit();
         } catch (Exception e) {
             LOGGER.warn("transaction error", e);
-            if (transaction != null) {
-                transaction.rollback();
-            }
             throw e;
         }
     }
 
     @Override
     public <E> void mergeEntity(E entity) {
-        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
             session.merge(entity);
-            transaction.commit();
         } catch (Exception e) {
             LOGGER.warn("transaction error", e);
-            if (transaction != null) {
-                transaction.rollback();
-            }
             throw e;
         }
     }
 
     @Override
     public <E> void deleteEntity(E entity) {
-        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
             session.remove(entity);
-            transaction.commit();
         } catch (Exception e) {
             LOGGER.warn("transaction error", e);
-            if (transaction != null) {
-                transaction.rollback();
-            }
             throw e;
         }
     }
 
     @Override
     public <E> void persistSupplier(Supplier<E> supplier) {
-        transactionHandler.persistSupplier(supplier);
+        try (Session session = sessionFactory.openSession()) {
+            E entity = supplier.get();
+            session.persist(entity);
+        } catch (Exception e) {
+            LOGGER.warn("transaction error", e);
+            throw e;
+        }
     }
 
     @Override
     public <E> void updateSupplier(Supplier<E> supplier) {
-        transactionHandler.updateSupplier(supplier);
+        try (Session session = sessionFactory.openSession()) {
+            E entity = supplier.get();
+            session.merge(entity);
+        } catch (Exception e) {
+            LOGGER.warn("transaction error", e);
+            throw e;
+        }
     }
 
     @Override
     public <E> void deleteSupplier(Supplier<E> supplier) {
-        transactionHandler.deleteSupplier(supplier);
+        try (Session session = sessionFactory.openSession()) {
+            E entity = supplier.get();
+            session.remove(entity);
+        } catch (Exception e) {
+            LOGGER.warn("transaction error", e);
+            throw e;
+        }
     }
 
     @Override
-    public void executeConsumer(Consumer<Session> consumer) {
-        transactionHandler.executeConsumer(consumer);
+    public void executeConsumer(Consumer<EntityManager> consumer) {
+        try (Session session = sessionFactory.openSession()) {
+            consumer.accept(session);
+        } catch (Exception e) {
+            LOGGER.warn("transaction error", e);
+            throw e;
+        }
     }
 
     @Override

@@ -1,14 +1,18 @@
 package com.tm.core.process.dao.transaction;
 
-import org.hibernate.Session;
+import jakarta.persistence.EntityManager;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public interface ITransactionHandler {
+    <E> void persistEntity(E entity);
+    <E> void mergeEntity(E entity);
+    <E> void deleteEntity(E entity);
+
     <E> void persistSupplier(Supplier<E> supplier);
-    <E> void updateSupplier(Supplier<E> supplier);
+    <E> void mergeSupplier(Supplier<E> supplier);
     <E> void deleteSupplier(Supplier<E> supplier);
 
-    void executeConsumer(Consumer<Session> consumer);
+    void executeConsumer(Consumer<EntityManager> consumer);
 }

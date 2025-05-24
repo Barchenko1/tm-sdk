@@ -1,7 +1,8 @@
 package com.tm.core.process.manager.common;
 
-import com.tm.core.process.dao.common.IEntityDao;
+import com.tm.core.process.dao.common.ISessionFactoryDao;
 import com.tm.core.finder.parameter.Parameter;
+import jakarta.persistence.EntityManager;
 import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,9 +16,9 @@ import java.util.function.Supplier;
 public abstract class AbstractEntityOperationManager implements IEntityOperationManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractEntityOperationManager.class);
 
-    private final IEntityDao dao;
+    private final ISessionFactoryDao dao;
 
-    public AbstractEntityOperationManager(IEntityDao dao) {
+    public AbstractEntityOperationManager(ISessionFactoryDao dao) {
         this.dao = dao;
     }
 
@@ -40,7 +41,7 @@ public abstract class AbstractEntityOperationManager implements IEntityOperation
     }
 
     @Override
-    public void executeConsumer(Consumer<Session> consumer) {
+    public void executeConsumer(Consumer<EntityManager> consumer) {
         LOGGER.info("Saving entity");
         dao.executeConsumer(consumer);
     }
