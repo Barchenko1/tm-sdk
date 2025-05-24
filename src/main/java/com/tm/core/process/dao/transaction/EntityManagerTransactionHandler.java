@@ -26,7 +26,7 @@ public class EntityManagerTransactionHandler implements ITransactionHandler {
             transaction.commit();
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction.isActive()) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);
@@ -44,7 +44,7 @@ public class EntityManagerTransactionHandler implements ITransactionHandler {
             transaction.commit();
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction.isActive()) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);
@@ -62,7 +62,7 @@ public class EntityManagerTransactionHandler implements ITransactionHandler {
             transaction.commit();
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction.isActive()) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);
@@ -80,7 +80,7 @@ public class EntityManagerTransactionHandler implements ITransactionHandler {
             transaction.commit();
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction.isActive()) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);
@@ -99,7 +99,7 @@ public class EntityManagerTransactionHandler implements ITransactionHandler {
             transaction.commit();
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction.isActive()) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);
@@ -118,7 +118,7 @@ public class EntityManagerTransactionHandler implements ITransactionHandler {
             transaction.commit();
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction.isActive()) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);
@@ -137,7 +137,7 @@ public class EntityManagerTransactionHandler implements ITransactionHandler {
             transaction.commit();
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction.isActive()) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);

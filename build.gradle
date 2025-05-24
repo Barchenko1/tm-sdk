@@ -2,6 +2,10 @@ plugins {
     id 'java'
 }
 
+ext {
+    springVersion = '6.1.14'
+}
+
 group = 'com.tm.core'
 version = '1.0-SNAPSHOT'
 
@@ -44,7 +48,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.10.1'
 
     // DBRider for JUnit 5
-    testImplementation 'com.github.database-rider:rider-core:1.30.0'
+    testImplementation 'com.github.database-rider:rider-core:1.44.0'
     testImplementation 'com.github.database-rider:rider-junit5:1.39.0'
 
     // JUnit 5 (if not already included)
@@ -54,6 +58,11 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:5.5.0'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.5.0'
 
+    testImplementation "org.springframework:spring-context:$springVersion"
+    testImplementation "org.springframework:spring-tx:$springVersion"
+    testImplementation "org.springframework:spring-orm:$springVersion"
+    testImplementation "org.springframework:spring-test:$springVersion"
+    testImplementation 'com.github.database-rider:rider-spring:1.39.0'
 }
 
 test {

@@ -28,10 +28,10 @@ public class SessionTransactionHandler implements ITransactionHandler {
             transaction.commit();
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction != null) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            throw e;
+            throw new RuntimeException(e);
         }
     }
 
@@ -44,7 +44,7 @@ public class SessionTransactionHandler implements ITransactionHandler {
             transaction.commit();
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction != null) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             throw new RuntimeException(e);
@@ -60,7 +60,7 @@ public class SessionTransactionHandler implements ITransactionHandler {
             transaction.commit();
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction != null) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             throw new RuntimeException(e);
@@ -76,7 +76,7 @@ public class SessionTransactionHandler implements ITransactionHandler {
             transaction.commit();
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction != null) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             throw new RuntimeException(e);
@@ -93,7 +93,7 @@ public class SessionTransactionHandler implements ITransactionHandler {
             transaction.commit();
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction != null) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             throw new RuntimeException(e);
@@ -110,7 +110,7 @@ public class SessionTransactionHandler implements ITransactionHandler {
             transaction.commit();
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction != null) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             throw new RuntimeException(e);
@@ -127,7 +127,7 @@ public class SessionTransactionHandler implements ITransactionHandler {
             transaction.commit();
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction != null) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             throw new RuntimeException(e);

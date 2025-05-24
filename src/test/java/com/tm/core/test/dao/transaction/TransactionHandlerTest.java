@@ -1,7 +1,8 @@
-package com.tm.core.test.dao;
+package com.tm.core.test.dao.transaction;
 
 import com.tm.core.process.dao.transaction.SessionTransactionHandler;
 import com.tm.core.modal.relationship.Item;
+import com.tm.core.test.dao.AbstractDaoTest;
 import jakarta.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -17,6 +18,7 @@ import java.util.function.Supplier;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -75,6 +77,8 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(session).persist(Item);
+        when(transaction.isActive()).thenReturn(true);
+        doNothing().when(transaction).rollback();
 
         Supplier<Item> ItemSupplier = () -> Item;
 
@@ -118,6 +122,8 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(session).persist(any(Item.class));
+        when(transaction.isActive()).thenReturn(true);
+        doNothing().when(transaction).rollback();
 
         Consumer<EntityManager> sessionConsumer = (EntityManager em) -> {
             em.persist(new Item());
@@ -168,6 +174,8 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(session).merge(Item);
+        when(transaction.isActive()).thenReturn(true);
+        doNothing().when(transaction).rollback();
 
         Exception exception =
                 assertThrows(RuntimeException.class, () -> transactionHandler.mergeSupplier(ItemSupplier));
@@ -216,6 +224,8 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(session).merge(any(Item.class));
+        when(transaction.isActive()).thenReturn(true);
+        doNothing().when(transaction).rollback();
 
         Exception exception =
                 assertThrows(RuntimeException.class, () -> transactionHandler.executeConsumer(sessionConsumer));
@@ -259,6 +269,8 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(session).remove(Item);
+        when(transaction.isActive()).thenReturn(true);
+        doNothing().when(transaction).rollback();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             transactionHandler.deleteSupplier(ItemSupplier);

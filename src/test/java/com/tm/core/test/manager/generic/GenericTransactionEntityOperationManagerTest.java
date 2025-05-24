@@ -178,6 +178,7 @@ class GenericTransactionEntityOperationManagerTest extends AbstractDaoTest {
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(session).persist(employee);
+        when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -279,6 +280,7 @@ class GenericTransactionEntityOperationManagerTest extends AbstractDaoTest {
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(session).merge(employee);
+        when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
         assertThrows(RuntimeException.class, () -> genericOperationManager.updateEntity(employee));
@@ -430,6 +432,7 @@ class GenericTransactionEntityOperationManagerTest extends AbstractDaoTest {
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(session).remove(any(Object.class));
+        when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
         Employee employee = prepareRelationshipRootTestEntityDbMock();

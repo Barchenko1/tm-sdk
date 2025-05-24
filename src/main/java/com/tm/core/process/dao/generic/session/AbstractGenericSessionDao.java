@@ -1,5 +1,6 @@
 package com.tm.core.process.dao.generic.session;
 
+import com.tm.core.process.dao.generic.IGenericDao;
 import com.tm.core.process.dao.identifier.IQueryService;
 import com.tm.core.process.dao.identifier.QueryService;
 import com.tm.core.finder.manager.EntityMappingManager;
@@ -8,7 +9,7 @@ import com.tm.core.util.helper.EntityFieldHelper;
 import com.tm.core.util.helper.IEntityFieldHelper;
 import org.hibernate.SessionFactory;
 
-public abstract class AbstractGenericSessionDao {
+public abstract class AbstractGenericSessionDao implements IGenericDao {
 
     protected final SessionFactory sessionFactory;
     protected final IEntityFieldHelper entityFieldHelper;

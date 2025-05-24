@@ -1,7 +1,6 @@
 package com.tm.core.process.dao.generic.session;
 
 import com.tm.core.finder.parameter.Parameter;
-import com.tm.core.process.dao.generic.IGenericTransactionDao;
 import jakarta.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -14,7 +13,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class GenericTransactionSessionDao extends AbstractGenericTransactionSessionDao implements IGenericTransactionDao {
+public class GenericTransactionSessionDao extends AbstractGenericTransactionSessionDao {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenericTransactionSessionDao.class);
 
     public GenericTransactionSessionDao(SessionFactory sessionFactory, String entityPackage) {
@@ -77,7 +76,7 @@ public class GenericTransactionSessionDao extends AbstractGenericTransactionSess
     }
 
     @Override
-    public <E> void updateSupplier(Supplier<E> supplier) {
+    public <E> void mergeSupplier(Supplier<E> supplier) {
         transactionHandler.mergeSupplier(supplier);
     }
 

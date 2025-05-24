@@ -28,7 +28,7 @@ public class GenericTransactionEntityOperationManager extends AbstractGenericEnt
     @Override
     public <E> void updateSupplier(Supplier<E> entitySupplier) {
         LOGGER.info("Updating entity");
-        genericTransactionDao.updateSupplier(entitySupplier);
+        genericTransactionDao.mergeSupplier(entitySupplier);
     }
 
     @Override

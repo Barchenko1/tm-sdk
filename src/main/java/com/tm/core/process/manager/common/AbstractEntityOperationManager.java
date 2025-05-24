@@ -30,7 +30,7 @@ public abstract class AbstractEntityOperationManager implements IEntityOperation
     @Override
     public <E> void updateSupplier(Supplier<E> entitySupplier) {
         LOGGER.info("Updating entity");
-        dao.updateSupplier(entitySupplier);
+        dao.mergeSupplier(entitySupplier);
     }
 
     @Override

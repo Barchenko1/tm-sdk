@@ -2,7 +2,7 @@ package com.tm.core.test.manager.common;
 
 import com.tm.core.process.dao.AbstractEntityChecker;
 import com.tm.core.dao.basic.TestSessionFactoryDao;
-import com.tm.core.process.dao.common.AbstractSessionFactoryDao;
+import com.tm.core.process.dao.common.session.AbstractSessionFactoryDao;
 import com.tm.core.process.dao.identifier.QueryService;
 import com.tm.core.process.dao.identifier.IQueryService;
 import com.tm.core.finder.manager.EntityMappingManager;
@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -194,6 +195,7 @@ class EntityOperationManagerTest extends AbstractDaoTest {
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(session).persist(employee);
+        when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -292,6 +294,7 @@ class EntityOperationManagerTest extends AbstractDaoTest {
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(session).merge(employee);
+        when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
         assertThrows(RuntimeException.class, () -> entityOperationManager.updateEntity(employee));
@@ -481,6 +484,7 @@ class EntityOperationManagerTest extends AbstractDaoTest {
         when(sessionFactory.openSession()).thenReturn(session);
         when(session.beginTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(session).remove(any(Object.class));
+        when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
         Employee employee = prepareRelationshipRootTestEntityDbMock();
@@ -636,10 +640,13 @@ class EntityOperationManagerTest extends AbstractDaoTest {
         assertEquals(1, result.getSpouse().getId());
         assertEquals("Dependent Entity", result.getSpouse().getName());
 
-        assertEquals(2, result.getDependentList().get(0).getId());
-        assertEquals("Dependent Entity", result.getDependentList().get(0).getName());
-        assertEquals(3, result.getDependentList().get(1).getId());
-        assertEquals("Dependent Entity", result.getDependentList().get(1).getName());
+        List<Dependent> dependents = result.getDependentList();
+        int[] expectedIds = {2, 3};
+
+        for (int i = 0; i < expectedIds.length; i++) {
+            assertEquals(expectedIds[i], dependents.get(i).getId());
+            assertEquals("Dependent Entity", dependents.get(i).getName());
+        }
 
         assertEquals(1, result.getItemSet().iterator().next().getId());
         assertEquals("Item Entity", result.getItemSet().iterator().next().getName());
@@ -669,10 +676,14 @@ class EntityOperationManagerTest extends AbstractDaoTest {
         assertEquals(1, result.get(0).getSpouse().getId());
         assertEquals("Dependent Entity", result.get(0).getSpouse().getName());
 
-        assertEquals(2, result.get(0).getDependentList().get(0).getId());
-        assertEquals("Dependent Entity", result.get(0).getDependentList().get(0).getName());
-        assertEquals(3, result.get(0).getDependentList().get(1).getId());
-        assertEquals("Dependent Entity", result.get(0).getDependentList().get(1).getName());
+        List<Dependent> dependents = result.get(0).getDependentList();
+        dependents.sort(Comparator.comparingLong(Dependent::getId));
+        int[] expectedIds = {2, 3};
+
+        for (int i = 0; i < expectedIds.length; i++) {
+            assertEquals(expectedIds[i], dependents.get(i).getId());
+            assertEquals("Dependent Entity", dependents.get(i).getName());
+        }
 
         assertEquals(1, result.get(0).getItemSet().iterator().next().getId());
         assertEquals("Item Entity", result.get(0).getItemSet().iterator().next().getName());

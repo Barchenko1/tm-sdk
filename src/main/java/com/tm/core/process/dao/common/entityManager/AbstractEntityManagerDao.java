@@ -1,9 +1,10 @@
-package com.tm.core.process.dao.common;
+package com.tm.core.process.dao.common.entityManager;
 
+import com.tm.core.finder.parameter.Parameter;
+import com.tm.core.process.dao.common.ISessionFactoryDao;
 import com.tm.core.process.dao.identifier.IQueryService;
 import com.tm.core.process.dao.transaction.ITransactionHandler;
 import com.tm.core.process.dao.transaction.SessionTransactionHandler;
-import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.util.helper.EntityFieldHelper;
 import com.tm.core.util.helper.IEntityFieldHelper;
 import jakarta.persistence.EntityManager;
@@ -18,8 +19,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public abstract class AbstractSessionFactoryDao implements ISessionFactoryDao {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSessionFactoryDao.class);
+public abstract class AbstractEntityManagerDao implements ISessionFactoryDao {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractEntityManagerDao.class);
 
     protected final Class<?> clazz;
     protected final SessionFactory sessionFactory;
@@ -27,9 +28,9 @@ public abstract class AbstractSessionFactoryDao implements ISessionFactoryDao {
     protected final IQueryService queryService;
     protected final ITransactionHandler transactionHandler;
 
-    public AbstractSessionFactoryDao(SessionFactory sessionFactory,
-                                     IQueryService queryService,
-                                     Class<?> clazz) {
+    public AbstractEntityManagerDao(SessionFactory sessionFactory,
+                                           IQueryService queryService,
+                                           Class<?> clazz) {
         this.clazz = clazz;
         this.sessionFactory = sessionFactory;
         this.entityFieldHelper = new EntityFieldHelper();
@@ -101,7 +102,7 @@ public abstract class AbstractSessionFactoryDao implements ISessionFactoryDao {
     }
 
     @Override
-    public <E> void updateSupplier(Supplier<E> supplier) {
+    public <E> void mergeSupplier(Supplier<E> supplier) {
         transactionHandler.mergeSupplier(supplier);
     }
 

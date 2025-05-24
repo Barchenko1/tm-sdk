@@ -4,6 +4,7 @@ import com.github.database.rider.core.api.connection.ConnectionHolder;
 import com.github.database.rider.core.api.dataset.DataSetExecutor;
 import com.github.database.rider.core.dataset.DataSetExecutorImpl;
 import com.github.database.rider.junit5.api.DBRider;
+import jakarta.persistence.EntityManager;
 import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.Statement;
 
+import static com.tm.core.configuration.ConfigureSessionFactoryTest.getEntityManager;
 import static com.tm.core.configuration.DataSourcePool.getHikariDataSource;
 import static com.tm.core.configuration.ConfigureSessionFactoryTest.getSessionFactory;
 
@@ -25,6 +27,7 @@ public abstract class AbstractDaoTest extends DataBaseLoader {
     protected static ConnectionHolder connectionHolder;
     private static DataSetExecutor executor;
     protected static SessionFactory sessionFactory;
+    protected static EntityManager entityManager;
 
     public AbstractDaoTest() {
         super(connectionHolder, executor);
@@ -36,6 +39,7 @@ public abstract class AbstractDaoTest extends DataBaseLoader {
         connectionHolder = dataSource::getConnection;
         executor = DataSetExecutorImpl.instance("executor-name", connectionHolder);
 
+        entityManager = getEntityManager();
         sessionFactory = getSessionFactory();
     }
 

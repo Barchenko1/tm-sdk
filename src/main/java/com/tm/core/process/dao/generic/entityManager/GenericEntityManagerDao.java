@@ -67,7 +67,7 @@ public class GenericEntityManagerDao extends AbstractGenericEntityManagerDao imp
     }
 
     @Override
-    public <E> void updateSupplier(Supplier<E> supplier) {
+    public <E> void mergeSupplier(Supplier<E> supplier) {
         E entity = supplier.get();
         entityManager.merge(entity);
     }
