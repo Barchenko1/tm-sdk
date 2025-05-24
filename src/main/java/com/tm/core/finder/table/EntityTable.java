@@ -63,12 +63,5 @@ public class EntityTable implements IEntityTable {
         return defaultNamedQuery;
     }
 
-    private String capitalizeFirstLetter(String input) {
-        if (input == null || input.isEmpty()) {
-            throw new IllegalArgumentException("Input cannot be null or empty");
-        }
-        return input.substring(0, 1).toUpperCase() + input.substring(1);
-    }
-
 
 }

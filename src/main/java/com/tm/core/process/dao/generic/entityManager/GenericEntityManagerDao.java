@@ -3,7 +3,6 @@ package com.tm.core.process.dao.generic.entityManager;
 import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.process.dao.generic.IGenericDao;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
 
 import java.util.List;
 import java.util.Optional;

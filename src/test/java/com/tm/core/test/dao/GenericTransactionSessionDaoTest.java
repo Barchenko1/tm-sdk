@@ -350,8 +350,7 @@ public class GenericTransactionSessionDaoTest extends AbstractDaoTest {
         SessionFactory sessionFactory = mock(SessionFactory.class);
         Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
-        @SuppressWarnings("unchecked")
-        Query<Employee> query = (Query<Employee>) mock(Query.class);
+        Query<Employee> query = mock(Query.class);
 
         try {
             Field sessionFactoryField = AbstractGenericSessionDao.class.getDeclaredField("sessionFactory");
@@ -477,8 +476,7 @@ public class GenericTransactionSessionDaoTest extends AbstractDaoTest {
         SessionFactory sessionFactory = mock(SessionFactory.class);
         Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
-        @SuppressWarnings("unchecked")
-        Query<Employee> query = (Query<Employee>) mock(Query.class);
+        Query<Employee> query = mock(Query.class);
 
         try {
             Field sessionFactoryField = AbstractGenericSessionDao.class.getDeclaredField("sessionFactory");

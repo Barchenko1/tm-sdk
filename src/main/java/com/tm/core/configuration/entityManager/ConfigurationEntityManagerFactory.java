@@ -29,6 +29,7 @@ public class ConfigurationEntityManagerFactory implements IConfigurationEntityMa
 
     @Override
     public EntityManagerFactory configureEntityManagerFactory() {
+        LOGGER.info("Configuring entity manager factory for file: {}", fileName);
         EntityManagerFactory entityManagerFactory = null;
         ConfigDbType configDbType = getFileType(fileName);
         if (ConfigDbType.XML.equals(configDbType)) {

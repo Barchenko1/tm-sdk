@@ -3,7 +3,6 @@ package com.tm.core.process.manager.common;
 import com.tm.core.process.dao.common.ISessionFactoryDao;
 import com.tm.core.finder.parameter.Parameter;
 import jakarta.persistence.EntityManager;
-import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

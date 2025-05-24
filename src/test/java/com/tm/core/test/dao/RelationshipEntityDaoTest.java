@@ -3,7 +3,6 @@ package com.tm.core.test.dao;
 import com.tm.core.process.dao.AbstractEntityChecker;
 import com.tm.core.dao.basic.TestSessionFactoryDao;
 import com.tm.core.process.dao.common.AbstractSessionFactoryDao;
-import com.tm.core.process.dao.generic.session.AbstractGenericTransactionSessionDao;
 import com.tm.core.process.dao.identifier.QueryService;
 import com.tm.core.process.dao.identifier.IQueryService;
 import com.tm.core.modal.relationship.Dependent;
@@ -48,7 +47,6 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
 
     private final String GRAPH_PATH = "Employee.full";
     private final String NAMED_QUERY_NAME_ONE = "Employee.findByIdWithJoins";
-    private final String NAMED_QUERY_NAME_ALL = "Employee.findAllWithJoins";
     private TestSessionFactoryDao testEntityDao;
 
     @BeforeEach

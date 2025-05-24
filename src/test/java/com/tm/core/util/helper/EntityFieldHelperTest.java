@@ -25,6 +25,7 @@ class EntityFieldHelperTest {
     static class InheritedEntity extends TestEntityId {}
 
     static class NoIdEntity {
+        @SuppressWarnings("unused")
         private String name = "Test";
     }
 
@@ -107,6 +108,7 @@ class EntityFieldHelperTest {
     @Test
     void testSetIdThrowsExceptionWhenFieldIsNotAccessible() {
         class TestEntity {
+            @SuppressWarnings("unused")
             private Long id;
         }
 

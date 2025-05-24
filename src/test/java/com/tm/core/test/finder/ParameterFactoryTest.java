@@ -1,12 +1,10 @@
 package com.tm.core.test.finder;
 
 import com.tm.core.dao.basic.Option;
-import com.tm.core.finder.parameter.Operator;
 import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.finder.factory.ParameterFactory;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;

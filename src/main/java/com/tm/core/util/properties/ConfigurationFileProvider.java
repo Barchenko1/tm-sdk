@@ -14,6 +14,7 @@ public class ConfigurationFileProvider implements IConfigurationFileProvider {
 
     @Override
     public Properties loadHibernateConfigurationFile(String fileName) {
+        LOGGER.info("Loading hibernate configuration file: {}", fileName);
         Path filePath = Path.of(fileName);
         if (Files.exists(filePath)) {
             try (InputStream input = Files.newInputStream(filePath)) {
@@ -21,9 +22,11 @@ public class ConfigurationFileProvider implements IConfigurationFileProvider {
                 properties.load(input);
                 return properties;
             } catch (IOException ex) {
+                LOGGER.error("Error loading properties file: {}", ex.getMessage(), ex);
                 throw new RuntimeException("Error loading properties file: " + ex.getMessage(), ex);
             }
         } else {
+            LOGGER.error("File not found: {}", fileName);
             throw new RuntimeException("File not found: " + fileName);
         }
     }

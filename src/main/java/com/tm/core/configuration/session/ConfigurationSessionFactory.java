@@ -29,6 +29,7 @@ public class ConfigurationSessionFactory implements IConfigurationSessionFactory
 
     @Override
     public SessionFactory configureSessionFactory() {
+        LOGGER.info("Configuring session factory for file: {}", fileName);
         SessionFactory sessionFactory = null;
         ConfigDbType configDbType = getFileType(fileName);
         if (ConfigDbType.XML.equals(configDbType)) {

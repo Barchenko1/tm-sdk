@@ -3,9 +3,6 @@ package com.tm.core.configuration;
 import com.tm.core.configuration.dbType.DatabaseConfigurationAnnotationClass;
 import com.tm.core.configuration.dbType.DatabaseType;
 import com.tm.core.configuration.dbType.DatabaseTypeConfiguration;
-import com.tm.core.configuration.entityManager.EntityManagerFactoryManager;
-import com.tm.core.configuration.entityManager.IEntityManagerFactoryManager;
-import jakarta.persistence.EntityManagerFactory;
 
 public class ConfigureAbstractDatabaseFactoryTest {
 

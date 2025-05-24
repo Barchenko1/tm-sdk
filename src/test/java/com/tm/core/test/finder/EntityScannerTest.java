@@ -5,7 +5,6 @@ import com.tm.core.modal.relationship.Employee;
 import com.tm.core.modal.relationship.Item;
 import com.tm.core.finder.manager.IEntityMappingManager;
 import com.tm.core.finder.scanner.EntityScanner;
-import com.tm.core.finder.scanner.IEntityScanner;
 import com.tm.core.finder.table.EntityTable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
