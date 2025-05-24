@@ -29,8 +29,6 @@ public class EntityScannerTest {
     @Mock
     private IEntityMappingManager entityMappingManager;
 
-    private IEntityScanner entityScanner;
-
     @Captor
     private ArgumentCaptor<EntityTable> entityTableCaptor;
 
@@ -42,7 +40,7 @@ public class EntityScannerTest {
 
     @Test
     public void testGetEntityTables() {
-        entityScanner = new EntityScanner(entityMappingManager, ENTITY_PACKAGE);
+        new EntityScanner(entityMappingManager, ENTITY_PACKAGE);
         verify(entityMappingManager, times(3)).addEntityTable(entityTableCaptor.capture());
 
         assertEquals(3, entityTableCaptor.getAllValues().size());

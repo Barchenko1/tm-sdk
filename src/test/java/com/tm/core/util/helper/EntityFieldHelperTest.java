@@ -73,11 +73,11 @@ class EntityFieldHelperTest {
     @Test
     void testFindIdThrowsExceptionWhenFieldIsNotAccessible() {
         class TestEntity {
+            @SuppressWarnings("unused")
             private Long id;
         }
 
         TestEntity testEntity = new TestEntity();
-
 
         Field idField = TestEntity.class.getDeclaredFields()[0];
         idField.setAccessible(false); // Simulate field not being accessible
