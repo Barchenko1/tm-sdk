@@ -31,10 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = TestJpaConfig.class)
@@ -47,7 +45,6 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Autowired
     private IGenericDao genericDao;
 
     @Autowired
@@ -85,7 +82,9 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
         loadDataSet("/datasets/relationship/emptyRelationshipTestEntityDataSet.yml");
         Employee employee = prepareToSaveRelationshipRootTestEntity();
 
-        genericDao.persistEntity(employee);
+        transactionManager.executeWithoutResult(transactionStatus -> {
+            genericDao.persistEntity(employee);
+        });
         verifyExpectedData("/datasets/relationship/saveMultipleRelationshipTestEntityDataSet.yml");
     }
 
@@ -121,7 +120,9 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
             return employee;
         };
 
-        genericDao.persistSupplier(supplier);
+        transactionManager.executeWithoutResult(transactionStatus -> {
+            genericDao.persistSupplier(supplier);
+        });
         verifyExpectedData("/datasets/relationship/saveSingleRelationshipTestEntityDataSet.yml");
     }
 
@@ -156,7 +157,9 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
             em.persist(employee);
         };
 
-        genericDao.executeConsumer(consumer);
+        transactionManager.executeWithoutResult(transactionStatus -> {
+            genericDao.executeConsumer(consumer);
+        });
         verifyExpectedData("/datasets/relationship/saveSingleRelationshipTestEntityDataSet.yml");
     }
 
@@ -171,7 +174,9 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
         };
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            genericDao.executeConsumer(consumer);
+            transactionManager.executeWithoutResult(transactionStatus -> {
+                genericDao.executeConsumer(consumer);
+            });
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
@@ -181,7 +186,9 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
     void updateEntity_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Employee employee = prepareToUpdateRelationshipRootTestEntity();
-        genericDao.mergeEntity(employee);
+        transactionManager.executeWithoutResult(transactionStatus -> {
+            genericDao.mergeEntity(employee);
+        });
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
     }
 
@@ -215,7 +222,9 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
             employeeToUpdate.setId(oldRelationShipEntity.getId());
             return employeeToUpdate;
         };
-        genericDao.mergeSupplier(relationshipEntitySupplier);
+        transactionManager.executeWithoutResult(transactionStatus -> {
+            genericDao.mergeSupplier(relationshipEntitySupplier);
+        });
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
     }
 
@@ -250,7 +259,9 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
             employeeToUpdate.setId(oldRelationShipEntity.getId());
             em.merge(employeeToUpdate);
         };
-        genericDao.executeConsumer(consumer);
+        transactionManager.executeWithoutResult(transactionStatus -> {
+            genericDao.executeConsumer(consumer);
+        });
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
     }
 
@@ -283,8 +294,11 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
     @Test
     void deleteRelationshipEntityBySupplier_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Supplier<Employee> supplier = this::prepareRelationshipRootTestEntityDbMock;
-        genericDao.deleteSupplier(supplier);
+        transactionManager.executeWithoutResult(transactionStatus -> {
+            Employee employee = entityManager.find(Employee.class, 1L);
+            Supplier<Employee> supplier2 = () -> employee;
+            genericDao.deleteSupplier(supplier2);
+        });
         verifyExpectedData("/datasets/relationship/deleteRelationshipTestEntityDataSet.yml");
     }
 
@@ -313,12 +327,14 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
     @Test
     void deleteRelationshipEntityByConsumer_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Consumer<EntityManager> consumer = (EntityManager em) -> {
-            Employee employee = prepareRelationshipRootTestEntityDbMock();
-            em.remove(employee);
-        };
 
-        genericDao.executeConsumer(consumer);
+        transactionManager.executeWithoutResult(transactionStatus -> {
+            Consumer<EntityManager> consumer = (EntityManager em) -> {
+                Employee employee = em.find(Employee.class, 1L);
+                em.remove(employee);
+            };
+            genericDao.executeConsumer(consumer);
+        });
         verifyExpectedData("/datasets/relationship/deleteRelationshipTestEntityDataSet.yml");
     }
 
@@ -330,7 +346,9 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
         };
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            genericDao.executeConsumer(consumer);
+            transactionManager.executeWithoutResult(transactionStatus -> {
+                genericDao.executeConsumer(consumer);
+            });
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
@@ -339,9 +357,12 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
     @Test
     void deleteRelationshipEntityByGeneralEntity_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Employee employee = prepareRelationshipRootTestEntityDbMock();
 
-        genericDao.deleteEntity(employee);
+        transactionManager.executeWithoutResult(transactionStatus -> {
+            Employee employee = entityManager.find(Employee.class, 1L);
+            genericDao.deleteEntity(employee);
+        });
+
         verifyExpectedData("/datasets/relationship/deleteRelationshipTestEntityDataSet.yml");
     }
 
