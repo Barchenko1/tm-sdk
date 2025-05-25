@@ -1,30 +1,26 @@
 package com.tm.core.test.dao.generic.entityManager;
 
+import com.github.database.rider.core.api.connection.ConnectionHolder;
 import com.tm.core.configuration.dbType.DatabaseConfigurationAnnotationClass;
 import com.tm.core.configuration.dbType.DatabaseType;
 import com.tm.core.configuration.dbType.DatabaseTypeConfiguration;
-import com.tm.core.configuration.entityManager.EntityManagerFactoryManager;
 import com.tm.core.process.dao.generic.IGenericDao;
 import com.tm.core.process.dao.generic.entityManager.GenericEntityManagerDao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
-import jakarta.persistence.PersistenceContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.SharedEntityManagerCreator;
 import org.springframework.orm.jpa.support.SharedEntityManagerBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Properties;
 
@@ -48,11 +44,10 @@ public class TestJpaConfig {
         return getHikariDataSource();
     }
 
-//    @Bean
-//    public EntityManagerFactory entityManagerFactory() {
-//        EntityManagerFactoryManager instance = EntityManagerFactoryManager.getInstance(DATABASE_TYPE_CONFIGURATION);
-//        return instance.getEntityManagerFactory(WRITE, CONFIGURATION_FILE_NAME);
-//    }
+    @Bean
+    public ConnectionHolder connectionHolder(DataSource dataSource) {
+        return dataSource::getConnection;
+    }
 
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
@@ -85,38 +80,51 @@ public class TestJpaConfig {
         props.setProperty("hibernate.hikari.maximumPoolSize", "50");
         props.setProperty("hibernate.hikari.idleTimeout", "300000");
 
-        // Isolation level (TRANSACTION_READ_COMMITTED)
+        // Transaction settings
+        props.setProperty("hibernate.current_session_context_class", "org.springframework.orm.hibernate5.SpringSessionContext");
+        props.setProperty("hibernate.transaction.jta.platform", "org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform");
         props.setProperty("hibernate.connection.isolation", "2");
-
-        // Optional: disable auto-commit
         props.setProperty("hibernate.connection.autocommit", "false");
+        props.setProperty("hibernate.transaction.flush_before_completion", "true");
+        props.setProperty("hibernate.transaction.auto_close_session", "false");
 
         factory.setJpaProperties(props);
-
         return factory;
     }
 
     @Bean
     public EntityManager entityManager(EntityManagerFactory entityManagerFactory) {
-        SharedEntityManagerBean proxy = new SharedEntityManagerBean();
-        proxy.setEntityManagerFactory(entityManagerFactory);
-        proxy.afterPropertiesSet(); // initialize
-        return proxy.getObject();   // this EntityManager is transaction-aware
+        SharedEntityManagerBean sharedEntityManagerBean = new SharedEntityManagerBean();
+        sharedEntityManagerBean.setEntityManagerFactory(entityManagerFactory);
+        try {
+            sharedEntityManagerBean.afterPropertiesSet();
+            return sharedEntityManagerBean.getObject();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create shared EntityManager bean", e);
+        }
+    }
 
-//        EntityManager entityManager = entityManagerFactory.createEntityManager();
-//        return entityManager;
+    @Bean
+    public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
+        JpaTransactionManager transactionManager = new JpaTransactionManager();
+        transactionManager.setEntityManagerFactory(entityManagerFactory);
+        transactionManager.setDataSource(dataSource());
+        transactionManager.setNestedTransactionAllowed(true);
+        transactionManager.setRollbackOnCommitFailure(true);
+        return transactionManager;
+    }
+
+    @Bean
+    public TransactionTemplate transactionTemplate(PlatformTransactionManager transactionManager) {
+        TransactionTemplate template = new TransactionTemplate(transactionManager);
+        template.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
+        template.setIsolationLevel(TransactionTemplate.ISOLATION_READ_COMMITTED);
+        return template;
     }
 
     @Bean
     public IGenericDao genericDao(EntityManager entityManager) {
         return new GenericEntityManagerDao(entityManager, "com.tm.core.modal.relationship");
-    }
-
-    @Bean
-    public PlatformTransactionManager transactionManager() {
-        var txManager = new JpaTransactionManager();
-        txManager.setEntityManagerFactory(entityManagerFactory().getObject());
-        return txManager;
     }
 
     @Bean

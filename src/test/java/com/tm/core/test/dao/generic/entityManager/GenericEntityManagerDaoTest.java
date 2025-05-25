@@ -1,7 +1,5 @@
 package com.tm.core.test.dao.generic.entityManager;
 
-import com.github.database.rider.core.api.configuration.DBUnit;
-import com.github.database.rider.junit5.api.DBRider;
 import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.modal.relationship.Dependent;
 import com.tm.core.modal.relationship.Employee;
@@ -11,19 +9,14 @@ import com.tm.core.process.dao.generic.entityManager.AbstractGenericEntityManage
 import com.tm.core.process.dao.generic.entityManager.GenericEntityManagerDao;
 import com.tm.core.test.dao.AbstractDaoTest;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.test.annotation.Commit;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -45,10 +38,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = TestJpaConfig.class)
-@ActiveProfiles("test")
-@Transactional
-@Rollback(value = false)
-//@DBUnit(transactionPerTest = true)
 public class GenericEntityManagerDaoTest extends AbstractDaoTest {
 
     private final String GRAPH_PATH = "Employee.full";
@@ -61,91 +50,23 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
     @Autowired
     private IGenericDao genericDao;
 
-//    @BeforeEach
-//    public void setupAll() {
-//        genericDao = new GenericEntityManagerDao(entityManager, ENTITY_PACKAGE);
-//    }
+    @Autowired
+    private TransactionTemplate transactionManager;
 
-    private Employee prepareToSaveRelationshipRootTestEntity() {
-        Item item = new Item();
-        item.setName("Item Entity");
-
-        Dependent dependent1 = new Dependent();
-        dependent1.setName("Dependent Entity");
-        Dependent dependent2 = new Dependent();
-        dependent2.setName("Dependent Entity");
-        Dependent dependent3 = new Dependent();
-        dependent3.setName("Dependent Entity");
-
-        Employee employee = new Employee();
-        employee.setName("Relationship Root Entity");
-        employee.setSpouse(dependent1);
-        employee.addItem(item);
-        employee.setDependentList(Arrays.asList(dependent2, dependent3));
-
-        return employee;
-    }
-
-    private Employee prepareToUpdateRelationshipRootTestEntity() {
-        Item item = new Item();
-        item.setId(1L);
-        item.setName("Updated Item Entity");
-
-        Dependent dependent1 = new Dependent();
-        dependent1.setId(1L);
-        dependent1.setName("Updated Dependent Entity");
-        Dependent dependent2 = new Dependent();
-        dependent2.setId(2L);
-        dependent2.setName("Updated Dependent Entity");
-        Dependent dependent3 = new Dependent();
-        dependent3.setId(3L);
-        dependent3.setName("Updated Dependent Entity");
-
-        Employee employee = new Employee();
-        employee.setId(1L);
-        employee.setName("Updated Relationship Root Entity");
-        employee.setSpouse(dependent1);
-        employee.addItem(item);
-        employee.setDependentList(Arrays.asList(dependent2, dependent3));
-
-        return employee;
-    }
-
-    private Employee prepareRelationshipRootTestEntityDbMock() {
-        Item item = new Item();
-        item.setId(1L);
-        item.setName("Single Dependent Entity");
-
-        Dependent dependent1 = new Dependent();
-        dependent1.setId(1L);
-        dependent1.setName("Dependent Entity");
-        Dependent dependent2 = new Dependent();
-        dependent2.setId(2L);
-        dependent2.setName("Dependent Entity");
-        Dependent dependent3 = new Dependent();
-        dependent3.setId(3L);
-        dependent3.setName("Dependent Entity");
-
-        Employee employee = new Employee();
-        employee.setId(1L);
-        employee.setName("Relationship Root Entity");
-        employee.setSpouse(dependent1);
-        employee.addItem(item);
-        employee.setDependentList(Arrays.asList(dependent2, dependent3));
-
-        return employee;
+    @BeforeEach
+    public void setupAll() {
+        genericDao = new GenericEntityManagerDao(entityManager, ENTITY_PACKAGE);
     }
 
     @Test
-    @Transactional
-    @Rollback(false)
-    @Commit
     void saveRelationshipEntity_success() {
         loadDataSet("/datasets/relationship/emptyRelationshipTestEntityDataSet.yml");
-        Employee employee = new Employee();
-        employee.setName("Relationship Root Entity");
-
-        genericDao.persistEntity(employee);
+        transactionManager.executeWithoutResult(transactionStatus -> {
+            Employee employee = new Employee();
+            employee.setName("Relationship Root Entity");
+            genericDao.persistEntity(employee);
+            entityManager.flush();
+        });
 
         verifyExpectedData("/datasets/relationship/saveSingleRelationshipTestEntityDataSet.yml");
     }
@@ -671,5 +592,75 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
             });
             return mapEmployee;
         };
+    }
+
+    private Employee prepareToSaveRelationshipRootTestEntity() {
+        Item item = new Item();
+        item.setName("Item Entity");
+
+        Dependent dependent1 = new Dependent();
+        dependent1.setName("Dependent Entity");
+        Dependent dependent2 = new Dependent();
+        dependent2.setName("Dependent Entity");
+        Dependent dependent3 = new Dependent();
+        dependent3.setName("Dependent Entity");
+
+        Employee employee = new Employee();
+        employee.setName("Relationship Root Entity");
+        employee.setSpouse(dependent1);
+        employee.addItem(item);
+        employee.setDependentList(Arrays.asList(dependent2, dependent3));
+
+        return employee;
+    }
+
+    private Employee prepareToUpdateRelationshipRootTestEntity() {
+        Item item = new Item();
+        item.setId(1L);
+        item.setName("Updated Item Entity");
+
+        Dependent dependent1 = new Dependent();
+        dependent1.setId(1L);
+        dependent1.setName("Updated Dependent Entity");
+        Dependent dependent2 = new Dependent();
+        dependent2.setId(2L);
+        dependent2.setName("Updated Dependent Entity");
+        Dependent dependent3 = new Dependent();
+        dependent3.setId(3L);
+        dependent3.setName("Updated Dependent Entity");
+
+        Employee employee = new Employee();
+        employee.setId(1L);
+        employee.setName("Updated Relationship Root Entity");
+        employee.setSpouse(dependent1);
+        employee.addItem(item);
+        employee.setDependentList(Arrays.asList(dependent2, dependent3));
+
+        return employee;
+    }
+
+    private Employee prepareRelationshipRootTestEntityDbMock() {
+        Item item = new Item();
+        item.setId(1L);
+        item.setName("Single Dependent Entity");
+
+        Dependent dependent1 = new Dependent();
+        dependent1.setId(1L);
+        dependent1.setName("Dependent Entity");
+        Dependent dependent2 = new Dependent();
+        dependent2.setId(2L);
+        dependent2.setName("Dependent Entity");
+        Dependent dependent3 = new Dependent();
+        dependent3.setId(3L);
+        dependent3.setName("Dependent Entity");
+
+        Employee employee = new Employee();
+        employee.setId(1L);
+        employee.setName("Relationship Root Entity");
+        employee.setSpouse(dependent1);
+        employee.addItem(item);
+        employee.setDependentList(Arrays.asList(dependent2, dependent3));
+
+        return employee;
     }
 }
