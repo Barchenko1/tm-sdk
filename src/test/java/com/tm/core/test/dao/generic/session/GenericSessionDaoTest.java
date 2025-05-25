@@ -10,7 +10,6 @@ import com.tm.core.process.dao.generic.session.GenericSessionDao;
 import com.tm.core.process.dao.transaction.ITransactionHandler;
 import com.tm.core.process.dao.transaction.SessionTransactionHandler;
 import com.tm.core.test.dao.AbstractDaoTest;
-import com.tm.core.test.dao.generic.entityManager.TestJpaConfig;
 import jakarta.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -22,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.lang.reflect.Field;
@@ -579,23 +577,6 @@ public class GenericSessionDaoTest extends AbstractDaoTest {
         assertThrows(RuntimeException.class, () -> {
             genericDao.getNamedQueryEntityList(Employee.class, NAMED_QUERY_NAME_ONE, parameter);
         });
-    }
-
-    private Function<Employee, Employee> employeeFunction() {
-        return employee -> {
-            Employee mapEmployee = new Employee();
-            mapEmployee.setId(employee.getId());
-            mapEmployee.setName(employee.getName());
-            employee.getSpouse().getId();
-            mapEmployee.setSpouse(employee.getSpouse());
-            employee.getDependentList().forEach(dependent -> {
-                mapEmployee.getDependentList().add(dependent);
-            });
-            employee.getItemSet().forEach(item -> {
-                mapEmployee.getItemSet().add(item);
-            });
-            return mapEmployee;
-        };
     }
 
     private Employee prepareToSaveRelationshipRootTestEntity() {

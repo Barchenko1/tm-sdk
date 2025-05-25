@@ -605,23 +605,6 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
         });
     }
 
-    private Function<Employee, Employee> employeeFunction() {
-        return employee -> {
-            Employee mapEmployee = new Employee();
-            mapEmployee.setId(employee.getId());
-            mapEmployee.setName(employee.getName());
-            employee.getSpouse().getId();
-            mapEmployee.setSpouse(employee.getSpouse());
-            employee.getDependentList().forEach(dependent -> {
-                mapEmployee.getDependentList().add(dependent);
-            });
-            employee.getItemSet().forEach(item -> {
-                mapEmployee.getItemSet().add(item);
-            });
-            return mapEmployee;
-        };
-    }
-
     private Employee prepareToSaveRelationshipRootTestEntity() {
         Item item = new Item();
         item.setName("Item Entity");

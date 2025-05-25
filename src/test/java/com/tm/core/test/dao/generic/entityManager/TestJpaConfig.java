@@ -4,13 +4,10 @@ import com.tm.core.configuration.dbType.DatabaseConfigurationAnnotationClass;
 import com.tm.core.configuration.dbType.DatabaseType;
 import com.tm.core.configuration.dbType.DatabaseTypeConfiguration;
 import com.tm.core.configuration.entityManager.EntityManagerFactoryManager;
-import com.tm.core.configuration.session.ISessionFactoryManager;
-import com.tm.core.configuration.session.SessionFactoryManager;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
