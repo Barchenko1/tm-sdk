@@ -54,6 +54,13 @@ public abstract class AbstractDaoTest extends DataBaseLoader {
             statement.execute("DELETE FROM dependent");
             statement.execute("DELETE FROM employee_item");
             statement.execute("DELETE FROM item");
+
+            statement.execute("ALTER SEQUENCE item_id_seq RESTART WITH 1");
+            statement.execute("ALTER SEQUENCE employee_id_seq RESTART WITH 1");
+            statement.execute("ALTER SEQUENCE dependent_id_seq RESTART WITH 1");
+            statement.execute("ALTER SEQUENCE employee_id_seq RESTART WITH 1");
+//            statement.execute("ALTER SEQUENCE employee_item_id_seq RESTART WITH 1");
+//            statement.execute("ALTER SEQUENCE employee_dependent_id_seq RESTART WITH 1");
             connection.commit();
         } catch (Exception e) {
             throw new RuntimeException("Failed to clean table:", e);

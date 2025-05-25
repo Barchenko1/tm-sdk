@@ -667,10 +667,14 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
         assertEquals(1, result.getSpouse().getId());
         assertEquals("Dependent Entity", result.getSpouse().getName());
 
-        assertEquals(2, result.getDependentList().get(0).getId());
-        assertEquals("Dependent Entity", result.getDependentList().get(0).getName());
-        assertEquals(3, result.getDependentList().get(1).getId());
-        assertEquals("Dependent Entity", result.getDependentList().get(1).getName());
+        List<Dependent> dependents = result.getDependentList();
+        dependents.sort(Comparator.comparing(Dependent::getId));
+        int[] expectedIds = {2, 3};
+
+        for (int i = 0; i < expectedIds.length; i++) {
+            assertEquals(expectedIds[i], dependents.get(i).getId());
+            assertEquals("Dependent Entity", dependents.get(i).getName());
+        }
 
         assertEquals(1, result.getItemSet().iterator().next().getId());
         assertEquals("Item Entity", result.getItemSet().iterator().next().getName());
@@ -702,10 +706,14 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
         assertEquals(1, result.getSpouse().getId());
         assertEquals("Dependent Entity", result.getSpouse().getName());
 
-        assertEquals(2, result.getDependentList().get(0).getId());
-        assertEquals("Dependent Entity", result.getDependentList().get(0).getName());
-        assertEquals(3, result.getDependentList().get(1).getId());
-        assertEquals("Dependent Entity", result.getDependentList().get(1).getName());
+        List<Dependent> dependents = result.getDependentList();
+        dependents.sort(Comparator.comparing(Dependent::getId));
+        int[] expectedIds = {2, 3};
+
+        for (int i = 0; i < expectedIds.length; i++) {
+            assertEquals(expectedIds[i], dependents.get(i).getId());
+            assertEquals("Dependent Entity", dependents.get(i).getName());
+        }
 
         assertEquals(1, result.getItemSet().iterator().next().getId());
         assertEquals("Item Entity", result.getItemSet().iterator().next().getName());
