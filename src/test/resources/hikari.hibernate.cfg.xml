@@ -23,6 +23,9 @@
         <property name="hibernate.hikari.idleTimeout">300000</property>
         <property name="hibernate.connection.provider_class">org.hibernate.hikaricp.internal.HikariCPConnectionProvider</property>
         <property name="hibernate.connection.isolation">2</property>
+
+<!--        add property-->
+        <property name="hibernate.current_session_context_class">org.springframework.orm.hibernate5.SpringSessionContext</property>
         <!-- add annotated resources here -->
         <mapping class="com.tm.core.modal.relationship.Employee" />
         <mapping class="com.tm.core.modal.relationship.Dependent" />

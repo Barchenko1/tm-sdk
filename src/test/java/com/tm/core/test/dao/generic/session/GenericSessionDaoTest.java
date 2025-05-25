@@ -10,12 +10,20 @@ import com.tm.core.process.dao.generic.session.GenericSessionDao;
 import com.tm.core.process.dao.transaction.ITransactionHandler;
 import com.tm.core.process.dao.transaction.SessionTransactionHandler;
 import com.tm.core.test.dao.AbstractDaoTest;
+import com.tm.core.test.dao.generic.entityManager.TestJpaConfig;
 import jakarta.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -30,92 +38,31 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = TestSessionJpaConfig.class)
 public class GenericSessionDaoTest extends AbstractDaoTest {
 
     private final String GRAPH_PATH = "Employee.full";
     private final String NAMED_QUERY_NAME_ONE = "Employee.findByIdWithJoins";
     private final String ENTITY_PACKAGE = "com.tm.core.modal.relationship";
+
+    @Autowired
+    @Qualifier("hibernateSessionFactory")
+    private SessionFactory sessionFactory;
+
     private IGenericDao genericDao;
+
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     @BeforeEach
     public void setupAll() {
         genericDao = new GenericSessionDao(sessionFactory, ENTITY_PACKAGE);
-    }
-
-    private Employee prepareToSaveRelationshipRootTestEntity() {
-        Item item = new Item();
-        item.setName("Item Entity");
-
-        Dependent dependent1 = new Dependent();
-        dependent1.setName("Dependent Entity");
-        Dependent dependent2 = new Dependent();
-        dependent2.setName("Dependent Entity");
-        Dependent dependent3 = new Dependent();
-        dependent3.setName("Dependent Entity");
-
-        Employee employee = new Employee();
-        employee.setName("Relationship Root Entity");
-        employee.setSpouse(dependent1);
-        employee.addItem(item);
-        employee.setDependentList(Arrays.asList(dependent2, dependent3));
-
-        return employee;
-    }
-
-    private Employee prepareToUpdateRelationshipRootTestEntity() {
-        Item item = new Item();
-        item.setId(1L);
-        item.setName("Updated Item Entity");
-
-        Dependent dependent1 = new Dependent();
-        dependent1.setId(1L);
-        dependent1.setName("Updated Dependent Entity");
-        Dependent dependent2 = new Dependent();
-        dependent2.setId(2L);
-        dependent2.setName("Updated Dependent Entity");
-        Dependent dependent3 = new Dependent();
-        dependent3.setId(3L);
-        dependent3.setName("Updated Dependent Entity");
-
-        Employee employee = new Employee();
-        employee.setId(1L);
-        employee.setName("Updated Relationship Root Entity");
-        employee.setSpouse(dependent1);
-        employee.addItem(item);
-        employee.setDependentList(Arrays.asList(dependent2, dependent3));
-
-        return employee;
-    }
-
-    private Employee prepareRelationshipRootTestEntityDbMock() {
-        Item item = new Item();
-        item.setId(1L);
-        item.setName("Single Dependent Entity");
-
-        Dependent dependent1 = new Dependent();
-        dependent1.setId(1L);
-        dependent1.setName("Dependent Entity");
-        Dependent dependent2 = new Dependent();
-        dependent2.setId(2L);
-        dependent2.setName("Dependent Entity");
-        Dependent dependent3 = new Dependent();
-        dependent3.setId(3L);
-        dependent3.setName("Dependent Entity");
-
-        Employee employee = new Employee();
-        employee.setId(1L);
-        employee.setName("Relationship Root Entity");
-        employee.setSpouse(dependent1);
-        employee.addItem(item);
-        employee.setDependentList(Arrays.asList(dependent2, dependent3));
-
-        return employee;
     }
 
     @Test
@@ -123,8 +70,10 @@ public class GenericSessionDaoTest extends AbstractDaoTest {
         loadDataSet("/datasets/relationship/emptyRelationshipTestEntityDataSet.yml");
         Employee employee = new Employee();
         employee.setName("Relationship Root Entity");
-
         genericDao.persistEntity(employee);
+        transactionTemplate.executeWithoutResult(transactionStatus -> {
+            genericDao.persistEntity(employee);
+        });
         verifyExpectedData("/datasets/relationship/saveSingleRelationshipTestEntityDataSet.yml");
     }
 
@@ -241,7 +190,9 @@ public class GenericSessionDaoTest extends AbstractDaoTest {
     void updateEntity_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Employee employee = prepareToUpdateRelationshipRootTestEntity();
-        genericDao.mergeEntity(employee);
+        transactionTemplate.executeWithoutResult(transactionStatus -> {
+            genericDao.mergeEntity(employee);
+        });
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
     }
 
@@ -639,4 +590,75 @@ public class GenericSessionDaoTest extends AbstractDaoTest {
             return mapEmployee;
         };
     }
+
+    private Employee prepareToSaveRelationshipRootTestEntity() {
+        Item item = new Item();
+        item.setName("Item Entity");
+
+        Dependent dependent1 = new Dependent();
+        dependent1.setName("Dependent Entity");
+        Dependent dependent2 = new Dependent();
+        dependent2.setName("Dependent Entity");
+        Dependent dependent3 = new Dependent();
+        dependent3.setName("Dependent Entity");
+
+        Employee employee = new Employee();
+        employee.setName("Relationship Root Entity");
+        employee.setSpouse(dependent1);
+        employee.addItem(item);
+        employee.setDependentList(Arrays.asList(dependent2, dependent3));
+
+        return employee;
+    }
+
+    private Employee prepareToUpdateRelationshipRootTestEntity() {
+        Item item = new Item();
+        item.setId(1L);
+        item.setName("Updated Item Entity");
+
+        Dependent dependent1 = new Dependent();
+        dependent1.setId(1L);
+        dependent1.setName("Updated Dependent Entity");
+        Dependent dependent2 = new Dependent();
+        dependent2.setId(2L);
+        dependent2.setName("Updated Dependent Entity");
+        Dependent dependent3 = new Dependent();
+        dependent3.setId(3L);
+        dependent3.setName("Updated Dependent Entity");
+
+        Employee employee = new Employee();
+        employee.setId(1L);
+        employee.setName("Updated Relationship Root Entity");
+        employee.setSpouse(dependent1);
+        employee.addItem(item);
+        employee.setDependentList(Arrays.asList(dependent2, dependent3));
+
+        return employee;
+    }
+
+    private Employee prepareRelationshipRootTestEntityDbMock() {
+        Item item = new Item();
+        item.setId(1L);
+        item.setName("Single Dependent Entity");
+
+        Dependent dependent1 = new Dependent();
+        dependent1.setId(1L);
+        dependent1.setName("Dependent Entity");
+        Dependent dependent2 = new Dependent();
+        dependent2.setId(2L);
+        dependent2.setName("Dependent Entity");
+        Dependent dependent3 = new Dependent();
+        dependent3.setId(3L);
+        dependent3.setName("Dependent Entity");
+
+        Employee employee = new Employee();
+        employee.setId(1L);
+        employee.setName("Relationship Root Entity");
+        employee.setSpouse(dependent1);
+        employee.addItem(item);
+        employee.setDependentList(Arrays.asList(dependent2, dependent3));
+
+        return employee;
+    }
+
 }

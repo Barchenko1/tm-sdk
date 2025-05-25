@@ -48,7 +48,7 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
     private IGenericDao genericDao;
 
     @Autowired
-    private TransactionTemplate transactionManager;
+    private TransactionTemplate transactionTemplate;
 
     @BeforeEach
     public void setupAll() {
@@ -58,7 +58,7 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
     @Test
     void saveRelationshipEntity_success() {
         loadDataSet("/datasets/relationship/emptyRelationshipTestEntityDataSet.yml");
-        transactionManager.executeWithoutResult(transactionStatus -> {
+        transactionTemplate.executeWithoutResult(transactionStatus -> {
             Employee employee = new Employee();
             employee.setName("Relationship Root Entity");
             genericDao.persistEntity(employee);
@@ -82,7 +82,7 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
         loadDataSet("/datasets/relationship/emptyRelationshipTestEntityDataSet.yml");
         Employee employee = prepareToSaveRelationshipRootTestEntity();
 
-        transactionManager.executeWithoutResult(transactionStatus -> {
+        transactionTemplate.executeWithoutResult(transactionStatus -> {
             genericDao.persistEntity(employee);
         });
         verifyExpectedData("/datasets/relationship/saveMultipleRelationshipTestEntityDataSet.yml");
@@ -120,7 +120,7 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
             return employee;
         };
 
-        transactionManager.executeWithoutResult(transactionStatus -> {
+        transactionTemplate.executeWithoutResult(transactionStatus -> {
             genericDao.persistSupplier(supplier);
         });
         verifyExpectedData("/datasets/relationship/saveSingleRelationshipTestEntityDataSet.yml");
@@ -157,7 +157,7 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
             em.persist(employee);
         };
 
-        transactionManager.executeWithoutResult(transactionStatus -> {
+        transactionTemplate.executeWithoutResult(transactionStatus -> {
             genericDao.executeConsumer(consumer);
         });
         verifyExpectedData("/datasets/relationship/saveSingleRelationshipTestEntityDataSet.yml");
@@ -174,7 +174,7 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
         };
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            transactionManager.executeWithoutResult(transactionStatus -> {
+            transactionTemplate.executeWithoutResult(transactionStatus -> {
                 genericDao.executeConsumer(consumer);
             });
         });
@@ -186,7 +186,7 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
     void updateEntity_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Employee employee = prepareToUpdateRelationshipRootTestEntity();
-        transactionManager.executeWithoutResult(transactionStatus -> {
+        transactionTemplate.executeWithoutResult(transactionStatus -> {
             genericDao.mergeEntity(employee);
         });
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
@@ -222,7 +222,7 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
             employeeToUpdate.setId(oldRelationShipEntity.getId());
             return employeeToUpdate;
         };
-        transactionManager.executeWithoutResult(transactionStatus -> {
+        transactionTemplate.executeWithoutResult(transactionStatus -> {
             genericDao.mergeSupplier(relationshipEntitySupplier);
         });
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
@@ -259,7 +259,7 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
             employeeToUpdate.setId(oldRelationShipEntity.getId());
             em.merge(employeeToUpdate);
         };
-        transactionManager.executeWithoutResult(transactionStatus -> {
+        transactionTemplate.executeWithoutResult(transactionStatus -> {
             genericDao.executeConsumer(consumer);
         });
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
@@ -294,7 +294,7 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
     @Test
     void deleteRelationshipEntityBySupplier_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        transactionManager.executeWithoutResult(transactionStatus -> {
+        transactionTemplate.executeWithoutResult(transactionStatus -> {
             Employee employee = entityManager.find(Employee.class, 1L);
             Supplier<Employee> supplier2 = () -> employee;
             genericDao.deleteSupplier(supplier2);
@@ -328,7 +328,7 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
     void deleteRelationshipEntityByConsumer_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
 
-        transactionManager.executeWithoutResult(transactionStatus -> {
+        transactionTemplate.executeWithoutResult(transactionStatus -> {
             Consumer<EntityManager> consumer = (EntityManager em) -> {
                 Employee employee = em.find(Employee.class, 1L);
                 em.remove(employee);
@@ -346,7 +346,7 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
         };
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            transactionManager.executeWithoutResult(transactionStatus -> {
+            transactionTemplate.executeWithoutResult(transactionStatus -> {
                 genericDao.executeConsumer(consumer);
             });
         });
@@ -358,7 +358,7 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
     void deleteRelationshipEntityByGeneralEntity_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
 
-        transactionManager.executeWithoutResult(transactionStatus -> {
+        transactionTemplate.executeWithoutResult(transactionStatus -> {
             Employee employee = entityManager.find(Employee.class, 1L);
             genericDao.deleteEntity(employee);
         });

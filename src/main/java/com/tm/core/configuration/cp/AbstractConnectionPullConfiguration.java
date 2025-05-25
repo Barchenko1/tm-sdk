@@ -71,7 +71,6 @@ public abstract class AbstractConnectionPullConfiguration implements IConnection
                         .build();
 
                 return metadata.getSessionFactoryBuilder().build();
-
             } catch (Exception e) {
                 LOGGER.warn("SessionFactory creation failed: {}", e.getMessage());
                 throw new RuntimeException(e);

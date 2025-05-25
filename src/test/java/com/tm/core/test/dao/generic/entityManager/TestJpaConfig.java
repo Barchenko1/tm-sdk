@@ -4,24 +4,24 @@ import com.tm.core.configuration.dbType.DatabaseConfigurationAnnotationClass;
 import com.tm.core.configuration.dbType.DatabaseType;
 import com.tm.core.configuration.dbType.DatabaseTypeConfiguration;
 import com.tm.core.configuration.entityManager.EntityManagerFactoryManager;
+import com.tm.core.configuration.session.ISessionFactoryManager;
+import com.tm.core.configuration.session.SessionFactoryManager;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.support.SharedEntityManagerBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.Properties;
-
 import static com.tm.core.configuration.DataSourcePool.getHikariDataSource;
-import static com.tm.core.configuration.dbType.DatabaseType.WRITE;
 
 @Configuration
 @EnableTransactionManagement
@@ -84,14 +84,14 @@ public class TestJpaConfig {
 //    }
 
     @Bean
+    @Primary
     public EntityManagerFactory entityManagerFactory() {
         EntityManagerFactoryManager emfm = EntityManagerFactoryManager.getInstance(DATABASE_TYPE_CONFIGURATION);
-        EntityManagerFactory emf = emfm.getEntityManagerFactory(WRITE, CONFIGURATION_FILE_NAME);
-        return emf;
+        return emfm.getEntityManagerFactory(DatabaseType.WRITE, CONFIGURATION_FILE_NAME);
     }
 
     @Bean
-    public EntityManager entityManager(EntityManagerFactory entityManagerFactory) {
+    public EntityManager entityManager(@Qualifier("entityManagerFactory") EntityManagerFactory entityManagerFactory) {
 //        SharedEntityManagerBean sharedEntityManagerBean = new SharedEntityManagerBean();
 //        sharedEntityManagerBean.setEntityManagerFactory(entityManagerFactory);
 //        try {
@@ -104,7 +104,19 @@ public class TestJpaConfig {
         return entityManagerFactory.createEntityManager();
     }
 
-    @Bean
+//    @Bean(name = "hibernateSessionFactory")
+//    public SessionFactory sessionFactory() {
+//        ISessionFactoryManager sessionFactoryManager = SessionFactoryManager.getInstance(DATABASE_TYPE_CONFIGURATION);
+//        return sessionFactoryManager.getSessionFactory(DatabaseType.WRITE, CONFIGURATION_FILE_NAME);
+//    }
+
+//    @Bean(name = "hibernateTransactionManager")
+//    public PlatformTransactionManager transactionManager(SessionFactory sessionFactory) {
+//        return new HibernateTransactionManager(sessionFactory);
+//    }
+
+    @Bean(name = "jpaTransactionManager")
+    @Primary
     public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(entityManagerFactory);
@@ -113,7 +125,7 @@ public class TestJpaConfig {
     }
 
     @Bean
-    public TransactionTemplate transactionTemplate(PlatformTransactionManager transactionManager) {
+    public TransactionTemplate transactionTemplate(@Qualifier("jpaTransactionManager") PlatformTransactionManager transactionManager) {
         return new TransactionTemplate(transactionManager);
     }
 
