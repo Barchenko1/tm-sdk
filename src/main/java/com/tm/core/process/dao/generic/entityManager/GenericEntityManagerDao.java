@@ -1,7 +1,6 @@
 package com.tm.core.process.dao.generic.entityManager;
 
 import com.tm.core.finder.parameter.Parameter;
-import com.tm.core.process.dao.generic.IGenericDao;
 import jakarta.persistence.EntityManager;
 
 import java.util.List;
