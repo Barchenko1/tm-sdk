@@ -69,32 +69,56 @@ public class GenericTransactionEntityManagerDao extends AbstractGenericTransacti
 
     @Override
     public <E> List<E> getGraphEntityList(Class<E> clazz, String graphName, Parameter... parameters) {
-        return queryService.getGraphEntityList(entityManager, clazz, graphName, parameters);
+        try {
+            return queryService.getGraphEntityList(entityManager, clazz, graphName, parameters);
+        } finally {
+            entityManager.clear();
+        }
     }
 
     @Override
     public <E> List<E> getNamedQueryEntityList(Class<E> clazz, String namedQuery, Parameter... parameters) {
-        return queryService.getNamedQueryEntityList(entityManager, clazz, namedQuery, parameters);
+        try {
+            return queryService.getNamedQueryEntityList(entityManager, clazz, namedQuery, parameters);
+        } finally {
+            entityManager.clear();
+        }
     }
 
     @Override
     public <E> E getGraphEntity(Class<E> clazz, String graphName, Parameter... parameters) {
-        return queryService.getGraphEntity(entityManager, clazz, graphName, parameters);
+        try {
+            return queryService.getGraphEntity(entityManager, clazz, graphName, parameters);
+        } finally {
+            entityManager.clear();
+        }
     }
 
     @Override
     public <E> E getNamedQueryEntity(Class<E> clazz, String namedQuery, Parameter... parameters) {
-        return queryService.getNamedQueryEntity(entityManager, clazz, namedQuery, parameters);
+        try {
+            return queryService.getNamedQueryEntity(entityManager, clazz, namedQuery, parameters);
+        } finally {
+            entityManager.clear();
+        }
     }
 
     @Override
     public <E> Optional<E> getGraphOptionalEntity(Class<E> clazz, String graph, Parameter... parameters) {
-        return queryService.getGraphOptionalEntity(entityManager, clazz, graph, parameters);
+        try {
+            return queryService.getGraphOptionalEntity(entityManager, clazz, graph, parameters);
+        } finally {
+            entityManager.clear();
+        }
     }
 
     @Override
     public <E> Optional<E> getNamedQueryOptionalEntity(Class<E> clazz, String namedQuery, Parameter... parameters) {
-        return queryService.getNamedQueryOptionalEntity(entityManager, clazz, namedQuery, parameters);
+        try {
+            return queryService.getNamedQueryOptionalEntity(entityManager, clazz, namedQuery, parameters);
+        } finally {
+            entityManager.clear();
+        }
     }
 
     @Override

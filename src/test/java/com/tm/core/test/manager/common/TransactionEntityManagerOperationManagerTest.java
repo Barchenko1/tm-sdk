@@ -54,7 +54,6 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
 
     @BeforeEach
     public void setupAll() {
-        entityManager.clear();
         IEntityMappingManager entityMappingManager = getEntityMappingManager();
         IQueryService queryService = new QueryService(entityMappingManager);
         transactionEntityDao = new TestTransactionEntityManagerDao(entityManager, queryService);

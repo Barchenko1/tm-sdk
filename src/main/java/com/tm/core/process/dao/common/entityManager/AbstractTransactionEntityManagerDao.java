@@ -98,7 +98,6 @@ public abstract class AbstractTransactionEntityManagerDao implements ITransactio
     @Override
     public <E> void persistSupplier(Supplier<E> supplier) {
         transactionHandler.persistSupplier(supplier);
-
     }
 
     @Override
@@ -119,37 +118,61 @@ public abstract class AbstractTransactionEntityManagerDao implements ITransactio
     @Override
     @SuppressWarnings("unchecked")
     public <E> List<E> getGraphEntityList(String graphName, Parameter... parameters) {
-        return (List<E>) queryService.getGraphEntityList(entityManager, clazz, graphName, parameters);
+        try {
+            return (List<E>) queryService.getGraphEntityList(entityManager, clazz, graphName, parameters);
+        } finally {
+            entityManager.clear();
+        }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <E> List<E> getNamedQueryEntityList(String namedQuery, Parameter... parameters) {
-        return (List<E>) queryService.getNamedQueryEntityList(entityManager, clazz, namedQuery, parameters);
+        try {
+            return (List<E>) queryService.getNamedQueryEntityList(entityManager, clazz, namedQuery, parameters);
+        } finally {
+            entityManager.clear();
+        }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <E> E getGraphEntity(String graphName, Parameter... parameters) {
-        return (E) queryService.getGraphEntity(entityManager, clazz, graphName, parameters);
+        try {
+            return (E) queryService.getGraphEntity(entityManager, clazz, graphName, parameters);
+        } finally {
+            entityManager.clear();
+        }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <E> E getNamedQueryEntity(String namedQuery, Parameter... parameters) {
-        return (E) queryService.getNamedQueryEntity(entityManager, clazz, namedQuery, parameters);
+        try {
+            return (E) queryService.getNamedQueryEntity(entityManager, clazz, namedQuery, parameters);
+        } finally {
+            entityManager.clear();
+        }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <E> Optional<E> getGraphOptionalEntity(String graph, Parameter... parameters) {
-        return (Optional<E>) queryService.getGraphOptionalEntity(entityManager, clazz, graph, parameters);
+        try {
+            return (Optional<E>) queryService.getGraphOptionalEntity(entityManager, clazz, graph, parameters);
+        } finally {
+            entityManager.clear();
+        }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <E> Optional<E> getNamedQueryOptionalEntity(String namedQuery, Parameter... parameters) {
-        return (Optional<E>) queryService.getNamedQueryOptionalEntity(entityManager, clazz, namedQuery, parameters);
+        try {
+            return (Optional<E>) queryService.getNamedQueryOptionalEntity(entityManager, clazz, namedQuery, parameters);
+        } finally {
+            entityManager.clear();
+        }
     }
 
     private <E> void classTypeChecker(E entity) {

@@ -45,7 +45,6 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
 
     @BeforeEach
     public void setupAll() {
-        entityManager.clear();
         genericTransactionDao = new GenericTransactionEntityManagerDao(entityManager, ENTITY_PACKAGE);
     }
 

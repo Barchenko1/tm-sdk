@@ -163,9 +163,13 @@ public abstract class AbstractTransactionEntityOperationManager implements IEnti
     @Override
     public <E, R> Optional<R> getNamedQueryOptionalEntityDto(String namedQuery, Parameter parameter, Function<E, R> mapToDtoFunction) {
         LOGGER.info("Getting entity dto");
-        E entity = dao.getNamedQueryEntity(namedQuery, parameter);
-        return Optional.ofNullable(entity)
-                .map(o -> transformEntityToDto(o, mapToDtoFunction));
+        try {
+            E entity = dao.getNamedQueryEntity(namedQuery, parameter);
+            return Optional.ofNullable(entity)
+                    .map(o -> transformEntityToDto(o, mapToDtoFunction));
+        } finally {
+
+        }
     }
 
     @Override
