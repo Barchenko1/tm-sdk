@@ -12,12 +12,12 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public abstract class AbstractEntityOperationManager implements IEntityOperationManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractEntityOperationManager.class);
+public abstract class AbstractTransactionEntityOperationManager implements IEntityOperationManager {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTransactionEntityOperationManager.class);
 
     private final ITransactionEntityDao dao;
 
-    public AbstractEntityOperationManager(ITransactionEntityDao dao) {
+    public AbstractTransactionEntityOperationManager(ITransactionEntityDao dao) {
         this.dao = dao;
     }
 

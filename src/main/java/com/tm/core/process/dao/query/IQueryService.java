@@ -1,4 +1,4 @@
-package com.tm.core.process.dao.identifier;
+package com.tm.core.process.dao.query;
 
 import com.tm.core.finder.parameter.Parameter;
 import jakarta.persistence.EntityManager;

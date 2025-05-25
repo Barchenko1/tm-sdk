@@ -1,11 +1,10 @@
 package com.tm.core.test.dao.transaction;
 
-import com.tm.core.process.dao.transaction.SessionTransactionHandler;
 import com.tm.core.modal.relationship.Item;
+import com.tm.core.process.dao.transaction.EntityManagerTransactionHandler;
+import com.tm.core.process.dao.transaction.ITransactionHandler;
 import com.tm.core.test.dao.AbstractDaoTest;
 import jakarta.persistence.EntityManager;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,21 +24,21 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class TransactionHandlerTest extends AbstractDaoTest {
+public class EntityManagerTransactionHandlerTest extends AbstractDaoTest {
 
-    private static SessionTransactionHandler transactionHandler;
+    private static ITransactionHandler transactionHandler;
 
     @BeforeAll
     public static void setupAll() {
-        transactionHandler = new SessionTransactionHandler(sessionFactory);
+        transactionHandler = new EntityManagerTransactionHandler(entityManager);
     }
 
     @BeforeEach
     public void setUp() {
         try {
-            Field sessionFactoryField = SessionTransactionHandler.class.getDeclaredField("sessionFactory");
-            sessionFactoryField.setAccessible(true);
-            sessionFactoryField.set(transactionHandler, sessionFactory);
+            Field entityManagerField = EntityManagerTransactionHandler.class.getDeclaredField("entityManager");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(transactionHandler, entityManager);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -62,21 +61,19 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         Item Item = new Item();
         Item.setName("New Entity");
 
-        SessionFactory sessionFactory = mock(SessionFactory.class);
-        Session session = mock(Session.class);
+        EntityManager entityManager = mock(EntityManager.class);
         Transaction transaction = mock(Transaction.class);
 
         try {
-            Field sessionFactoryField = SessionTransactionHandler.class.getDeclaredField("sessionFactory");
-            sessionFactoryField.setAccessible(true);
-            sessionFactoryField.set(transactionHandler, sessionFactory);
+            Field entityManagerField = EntityManagerTransactionHandler.class.getDeclaredField("entityManager");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(transactionHandler, entityManager);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        when(sessionFactory.openSession()).thenReturn(session);
-        when(session.beginTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(session).persist(Item);
+        when(entityManager.getTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(entityManager).persist(Item);
         when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
@@ -89,7 +86,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         assertEquals(RuntimeException.class, exception.getClass());
         verify(transaction).rollback();
         verify(transaction, never()).commit();
-        verify(session).close();
+        verify(entityManager).clear();
     }
 
     @Test
@@ -107,21 +104,19 @@ public class TransactionHandlerTest extends AbstractDaoTest {
 
     @Test
     void persistSupplierConsumer_transactionFailure() {
-        SessionFactory sessionFactory = mock(SessionFactory.class);
-        Session session = mock(Session.class);
+        EntityManager entityManager = mock(EntityManager.class);
         Transaction transaction = mock(Transaction.class);
 
         try {
-            Field sessionFactoryField = SessionTransactionHandler.class.getDeclaredField("sessionFactory");
-            sessionFactoryField.setAccessible(true);
-            sessionFactoryField.set(transactionHandler, sessionFactory);
+            Field entityManagerField = EntityManagerTransactionHandler.class.getDeclaredField("entityManager");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(transactionHandler, entityManager);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        when(sessionFactory.openSession()).thenReturn(session);
-        when(session.beginTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(session).persist(any(Item.class));
+        when(entityManager.getTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(entityManager).persist(any(Item.class));
         when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
@@ -136,7 +131,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         assertEquals(RuntimeException.class, exception.getClass());
         verify(transaction).rollback();
         verify(transaction, never()).commit();
-        verify(session).close();
+        verify(entityManager).clear();
     }
 
     @Test
@@ -157,23 +152,21 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         Item.setId(100L);
         Item.setName("Update Entity");
 
-        SessionFactory sessionFactory = mock(SessionFactory.class);
-        Session session = mock(Session.class);
+        EntityManager entityManager = mock(EntityManager.class);
         Transaction transaction = mock(Transaction.class);
 
         try {
-            Field sessionFactoryField = SessionTransactionHandler.class.getDeclaredField("sessionFactory");
-            sessionFactoryField.setAccessible(true);
-            sessionFactoryField.set(transactionHandler, sessionFactory);
+            Field entityManagerField = EntityManagerTransactionHandler.class.getDeclaredField("entityManager");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(transactionHandler, entityManager);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
         Supplier<Item> ItemSupplier = () -> Item;
 
-        when(sessionFactory.openSession()).thenReturn(session);
-        when(session.beginTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(session).merge(Item);
+        when(entityManager.getTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(entityManager).merge(Item);
         when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
@@ -183,7 +176,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         assertEquals(RuntimeException.class, exception.getClass());
         verify(transaction).rollback();
         verify(transaction, never()).commit();
-        verify(session).close();
+        verify(entityManager).clear();
     }
 
     @Test
@@ -201,14 +194,13 @@ public class TransactionHandlerTest extends AbstractDaoTest {
 
     @Test
     void updateSupplierConsumer_transactionFailure() {
-        SessionFactory sessionFactory = mock(SessionFactory.class);
-        Session session = mock(Session.class);
+        EntityManager entityManager = mock(EntityManager.class);
         Transaction transaction = mock(Transaction.class);
 
         try {
-            Field sessionFactoryField = SessionTransactionHandler.class.getDeclaredField("sessionFactory");
-            sessionFactoryField.setAccessible(true);
-            sessionFactoryField.set(transactionHandler, sessionFactory);
+            Field entityManagerField = EntityManagerTransactionHandler.class.getDeclaredField("entityManager");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(transactionHandler, entityManager);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -221,9 +213,8 @@ public class TransactionHandlerTest extends AbstractDaoTest {
             throw new RuntimeException();
         };
 
-        when(sessionFactory.openSession()).thenReturn(session);
-        when(session.beginTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(session).merge(any(Item.class));
+        when(entityManager.getTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(entityManager).merge(any(Item.class));
         when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
@@ -233,7 +224,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         assertEquals(RuntimeException.class, exception.getClass());
         verify(transaction).rollback();
         verify(transaction, never()).commit();
-        verify(session).close();
+        verify(entityManager).clear();
     }
 
     @Test
@@ -254,21 +245,19 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         Item.setId(100);
         Supplier<Item> ItemSupplier = () -> Item;
 
-        SessionFactory sessionFactory = mock(SessionFactory.class);
-        Session session = mock(Session.class);
+        EntityManager entityManager = mock(EntityManager.class);
         Transaction transaction = mock(Transaction.class);
 
         try {
-            Field sessionFactoryField = SessionTransactionHandler.class.getDeclaredField("sessionFactory");
-            sessionFactoryField.setAccessible(true);
-            sessionFactoryField.set(transactionHandler, sessionFactory);
+            Field entityManagerField = EntityManagerTransactionHandler.class.getDeclaredField("entityManager");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(transactionHandler, entityManager);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        when(sessionFactory.openSession()).thenReturn(session);
-        when(session.beginTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(session).remove(Item);
+        when(entityManager.getTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(entityManager).remove(Item);
         when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
@@ -279,7 +268,7 @@ public class TransactionHandlerTest extends AbstractDaoTest {
         assertEquals(RuntimeException.class, exception.getClass());
         verify(transaction).rollback();
         verify(transaction, never()).commit();
-        verify(session).close();
+        verify(entityManager).clear();
 
         verifyExpectedData("/datasets/single/testItemEntityDataSet.yml");
     }

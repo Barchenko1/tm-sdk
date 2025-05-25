@@ -1,7 +1,7 @@
 package com.tm.core.process.dao.common.session;
 
 import com.tm.core.process.dao.common.ITransactionEntityDao;
-import com.tm.core.process.dao.identifier.IQueryService;
+import com.tm.core.process.dao.query.IQueryService;
 import com.tm.core.process.dao.transaction.ITransactionHandler;
 import com.tm.core.process.dao.transaction.SessionTransactionHandler;
 import com.tm.core.finder.parameter.Parameter;

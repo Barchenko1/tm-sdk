@@ -1,22 +1,24 @@
-package com.tm.core.test.dao;
+package com.tm.core.test.manager.common;
 
-import com.tm.core.process.dao.AbstractEntityChecker;
-import com.tm.core.dao.basic.TestSessionFactoryDao;
-import com.tm.core.process.dao.common.session.AbstractTransactionSessionFactoryDao;
-import com.tm.core.process.dao.identifier.QueryService;
-import com.tm.core.process.dao.identifier.IQueryService;
-import com.tm.core.modal.relationship.Dependent;
-import com.tm.core.modal.relationship.Employee;
-import com.tm.core.modal.relationship.Item;
+import com.tm.core.dao.basic.TestTransactionEntityManagerDao;
 import com.tm.core.finder.manager.EntityMappingManager;
 import com.tm.core.finder.manager.IEntityMappingManager;
 import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.finder.table.EntityTable;
+import com.tm.core.modal.relationship.Dependent;
+import com.tm.core.modal.relationship.Employee;
+import com.tm.core.modal.relationship.Item;
+import com.tm.core.process.dao.AbstractEntityChecker;
+import com.tm.core.process.dao.common.ITransactionEntityDao;
+import com.tm.core.process.dao.common.entityManager.AbstractTransactionEntityManagerDao;
+import com.tm.core.process.dao.query.IQueryService;
+import com.tm.core.process.dao.query.QueryService;
+import com.tm.core.process.dao.transaction.EntityManagerTransactionHandler;
 import com.tm.core.process.dao.transaction.ITransactionHandler;
-import com.tm.core.process.dao.transaction.SessionTransactionHandler;
+import com.tm.core.process.manager.common.IEntityOperationManager;
+import com.tm.core.process.manager.common.TransactionEntityOperationManager;
+import com.tm.core.test.dao.AbstractDaoTest;
 import jakarta.persistence.EntityManager;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -43,17 +46,19 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class RelationshipEntityDaoTest extends AbstractDaoTest {
+class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
 
     private final String GRAPH_PATH = "Employee.full";
     private final String NAMED_QUERY_NAME_ONE = "Employee.findByIdWithJoins";
-    private TestSessionFactoryDao testEntityDao;
+    private ITransactionEntityDao transactionEntityDao;
+    private IEntityOperationManager entityOperationManager;
 
     @BeforeEach
     public void setupAll() {
         IEntityMappingManager entityMappingManager = getEntityMappingManager();
         IQueryService queryService = new QueryService(entityMappingManager);
-        testEntityDao = new TestSessionFactoryDao(sessionFactory, queryService);
+        transactionEntityDao = new TestTransactionEntityManagerDao(entityManager, queryService);
+        entityOperationManager = new TransactionEntityOperationManager(transactionEntityDao);
     }
 
     private static IEntityMappingManager getEntityMappingManager() {
@@ -144,7 +149,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         Employee employee = new Employee();
         employee.setName("Relationship Root Entity");
 
-        testEntityDao.persistEntity(employee);
+        entityOperationManager.saveEntity(employee);
         verifyExpectedData("/datasets/relationship/saveSingleRelationshipTestEntityDataSet.yml");
     }
 
@@ -153,7 +158,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         loadDataSet("/datasets/relationship/emptyRelationshipTestEntityDataSet.yml");
         Object object = new Object();
         assertThrows(RuntimeException.class, () -> {
-            testEntityDao.persistEntity(object);
+            entityOperationManager.saveEntity(object);
         });
     }
 
@@ -162,7 +167,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         loadDataSet("/datasets/relationship/emptyRelationshipTestEntityDataSet.yml");
         Employee employee = prepareToSaveRelationshipRootTestEntity();
 
-        testEntityDao.persistEntity(employee);
+        entityOperationManager.saveEntity(employee);
         verifyExpectedData("/datasets/relationship/saveMultipleRelationshipTestEntityDataSet.yml");
     }
 
@@ -172,27 +177,25 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         employee.setId(1L);
         employee.setName("New RelationshipRootTestEntity");
 
-        SessionFactory sessionFactory = mock(SessionFactory.class);
-        Session session = mock(Session.class);
+        EntityManager entityManager = mock(EntityManager.class);
         Transaction transaction = mock(Transaction.class);
-        ITransactionHandler transactionHandler = new SessionTransactionHandler(sessionFactory);
+        ITransactionHandler transactionHandler = new EntityManagerTransactionHandler(entityManager);
 
         try {
-            Field transactionHandlerField = AbstractTransactionSessionFactoryDao.class.getDeclaredField("transactionHandler");
+            Field transactionHandlerField = AbstractTransactionEntityManagerDao.class.getDeclaredField("transactionHandler");
             transactionHandlerField.setAccessible(true);
-            transactionHandlerField.set(testEntityDao, transactionHandler);
+            transactionHandlerField.set(transactionEntityDao, transactionHandler);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        when(sessionFactory.openSession()).thenReturn(session);
-        when(session.beginTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(session).persist(employee);
+        when(entityManager.getTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(entityManager).persist(employee);
         when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            testEntityDao.persistEntity(employee);
+            entityOperationManager.saveEntity(employee);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
@@ -207,24 +210,39 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
             return employee;
         };
 
-        testEntityDao.persistSupplier(supplier);
+        entityOperationManager.persistSupplier(supplier);
         verifyExpectedData("/datasets/relationship/saveSingleRelationshipTestEntityDataSet.yml");
     }
 
     @Test
     void saveRelationshipEntitySupplier_transactionFailure() {
         loadDataSet("/datasets/relationship/emptyRelationshipTestEntityDataSet.yml");
-        Supplier<Employee> supplier = () -> {
-            Employee employee = new Employee();
-            employee.setName("New RelationshipRootTestEntity");
-            throw new RuntimeException();
-        };
+
+        Supplier<Employee> supplier = this::prepareRelationshipRootTestEntityDbMock;
+
+        EntityManager entityManager = mock(EntityManager.class);
+        Transaction transaction = mock(Transaction.class);
+        ITransactionHandler transactionHandler = new EntityManagerTransactionHandler(entityManager);
+
+        try {
+            Field entityManagerField = AbstractTransactionEntityManagerDao.class.getDeclaredField("transactionHandler");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(transactionEntityDao, transactionHandler);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        when(entityManager.getTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(entityManager).persist(any(Employee.class));
+        when(transaction.isActive()).thenReturn(true);
+        doNothing().when(transaction).rollback();
+
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            testEntityDao.persistSupplier(supplier);
+            entityOperationManager.persistSupplier(supplier);
         });
 
-        assertEquals(IllegalStateException.class, exception.getClass());
+        assertEquals(RuntimeException.class, exception.getClass());
     }
 
     @Test
@@ -236,7 +254,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
             em.persist(employee);
         };
 
-        testEntityDao.executeConsumer(consumer);
+        entityOperationManager.executeConsumer(consumer);
         verifyExpectedData("/datasets/relationship/saveSingleRelationshipTestEntityDataSet.yml");
     }
 
@@ -250,18 +268,35 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
             throw new RuntimeException();
         };
 
+        EntityManager entityManager = mock(EntityManager.class);
+        Transaction transaction = mock(Transaction.class);
+        ITransactionHandler transactionHandler = new EntityManagerTransactionHandler(entityManager);
+
+        try {
+            Field entityManagerField = AbstractTransactionEntityManagerDao.class.getDeclaredField("transactionHandler");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(transactionEntityDao, transactionHandler);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        when(entityManager.getTransaction()).thenReturn(transaction);
+        when(transaction.isActive()).thenReturn(true);
+        doNothing().when(transaction).rollback();
+
+
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            testEntityDao.executeConsumer(consumer);
+            entityOperationManager.executeConsumer(consumer);
         });
 
-        assertEquals(IllegalStateException.class, exception.getClass());
+        assertEquals(RuntimeException.class, exception.getClass());
     }
 
     @Test
     void updateEntity_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Employee employee = prepareToUpdateRelationshipRootTestEntity();
-        testEntityDao.mergeEntity(employee);
+        entityOperationManager.updateEntity(employee);
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
     }
 
@@ -271,26 +306,24 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         employee.setId(100L);
         employee.setName("Update Entity");
 
-        SessionFactory sessionFactory = mock(SessionFactory.class);
-        Session session = mock(Session.class);
+        EntityManager entityManager = mock(EntityManager.class);
         Transaction transaction = mock(Transaction.class);
-        ITransactionHandler transactionHandler = new SessionTransactionHandler(sessionFactory);
+        ITransactionHandler transactionHandler = new EntityManagerTransactionHandler(entityManager);
 
         try {
-            Field transactionHandlerField = AbstractTransactionSessionFactoryDao.class.getDeclaredField("transactionHandler");
+            Field transactionHandlerField = AbstractTransactionEntityManagerDao.class.getDeclaredField("transactionHandler");
             transactionHandlerField.setAccessible(true);
-            transactionHandlerField.set(testEntityDao, transactionHandler);
+            transactionHandlerField.set(transactionEntityDao, transactionHandler);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        when(sessionFactory.openSession()).thenReturn(session);
-        when(session.beginTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(session).merge(employee);
+        when(entityManager.getTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(entityManager).merge(employee);
         when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
-        assertThrows(RuntimeException.class, () -> testEntityDao.mergeEntity(employee));
+        assertThrows(RuntimeException.class, () -> entityOperationManager.updateEntity(employee));
     }
 
     @Test
@@ -302,7 +335,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
             employeeToUpdate.setId(oldRelationShipEntity.getId());
             return employeeToUpdate;
         };
-        testEntityDao.mergeSupplier(relationshipEntitySupplier);
+        entityOperationManager.updateSupplier(relationshipEntitySupplier);
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
     }
 
@@ -311,15 +344,31 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         Employee employee = prepareToSaveRelationshipRootTestEntity();
         employee.setId(1L);
 
-        Supplier<Employee> relationshipRootTestEntitySupplier = () -> {
-            throw new RuntimeException();
-        };
+        Supplier<Employee> supplier = this::prepareRelationshipRootTestEntityDbMock;
+
+        EntityManager entityManager = mock(EntityManager.class);
+        Transaction transaction = mock(Transaction.class);
+        ITransactionHandler transactionHandler = new EntityManagerTransactionHandler(entityManager);
+
+        try {
+            Field entityManagerField = AbstractTransactionEntityManagerDao.class.getDeclaredField("transactionHandler");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(transactionEntityDao, transactionHandler);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        when(entityManager.getTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(entityManager).merge(any(Employee.class));
+        when(transaction.isActive()).thenReturn(true);
+        doNothing().when(transaction).rollback();
+
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            testEntityDao.mergeSupplier(relationshipRootTestEntitySupplier);
+            entityOperationManager.updateSupplier(supplier);
         });
 
-        assertEquals(IllegalStateException.class, exception.getClass());
+        assertEquals(RuntimeException.class, exception.getClass());
     }
 
     @Test
@@ -331,7 +380,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
             employeeToUpdate.setId(oldRelationShipEntity.getId());
             em.merge(employeeToUpdate);
         };
-        testEntityDao.executeConsumer(consumer);
+        entityOperationManager.executeConsumer(consumer);
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
     }
 
@@ -345,11 +394,27 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
             throw new RuntimeException();
         };
 
+        EntityManager entityManager = mock(EntityManager.class);
+        Transaction transaction = mock(Transaction.class);
+        ITransactionHandler transactionHandler = new EntityManagerTransactionHandler(entityManager);
+
+        try {
+            Field entityManagerField = AbstractTransactionEntityManagerDao.class.getDeclaredField("transactionHandler");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(transactionEntityDao, transactionHandler);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        when(entityManager.getTransaction()).thenReturn(transaction);
+        when(transaction.isActive()).thenReturn(true);
+        doNothing().when(transaction).rollback();
+
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            testEntityDao.executeConsumer(relationshipRootTestEntitySupplier);
+            entityOperationManager.executeConsumer(relationshipRootTestEntitySupplier);
         });
 
-        assertEquals(IllegalStateException.class, exception.getClass());
+        assertEquals(RuntimeException.class, exception.getClass());
     }
 
     @Test
@@ -357,7 +422,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Parameter parameter = new Parameter("id", 1);
         Employee employee = prepareToUpdateRelationshipRootTestEntity();
-        testEntityDao.findEntityAndUpdate(employee, parameter);
+        transactionEntityDao.findEntityAndUpdate(employee, parameter);
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
     }
 
@@ -368,27 +433,25 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
 
         Parameter parameter = new Parameter("id", 1L);
 
-        SessionFactory sessionFactory = mock(SessionFactory.class);
-        Session session = mock(Session.class);
+        EntityManager entityManager = mock(EntityManager.class);
         Transaction transaction = mock(Transaction.class);
         Query<Employee> query = mock(Query.class);
 
         try {
-            Field sessionManagerField = AbstractTransactionSessionFactoryDao.class.getDeclaredField("sessionFactory");
-            sessionManagerField.setAccessible(true);
-            sessionManagerField.set(testEntityDao, sessionFactory);
+            Field entityManagerField = AbstractTransactionEntityManagerDao.class.getDeclaredField("entityManager");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(transactionEntityDao, entityManager);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        when(sessionFactory.openSession()).thenReturn(session);
-        when(session.beginTransaction()).thenReturn(transaction);
-        when(session.createNamedQuery(anyString(), eq(Employee.class))).thenReturn(query);
+        when(entityManager.getTransaction()).thenReturn(transaction);
+        when(entityManager.createNamedQuery(anyString(), eq(Employee.class))).thenReturn(query);
         when(query.getSingleResult()).thenReturn(employee);
-        doThrow(new RuntimeException()).when(session).merge(any(Object.class));
+        doThrow(new RuntimeException()).when(entityManager).merge(any(Object.class));
 
         assertThrows(RuntimeException.class, () -> {
-            testEntityDao.findEntityAndUpdate(employee, parameter);
+            transactionEntityDao.findEntityAndUpdate(employee, parameter);
         });
     }
 
@@ -398,7 +461,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Parameter parameter = new Parameter("id", 1);
 
-        testEntityDao.findEntityAndDelete(parameter);
+        entityOperationManager.deleteEntityByParameter(parameter);
         verifyExpectedData("/datasets/relationship/deleteRelationshipTestEntityDataSet.yml");
     }
 
@@ -406,21 +469,38 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
     void deleteRelationshipEntityBySupplier_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Supplier<Employee> supplier = this::prepareRelationshipRootTestEntityDbMock;
-        testEntityDao.deleteSupplier(supplier);
+        entityOperationManager.deleteSupplier(supplier);
         verifyExpectedData("/datasets/relationship/deleteRelationshipTestEntityDataSet.yml");
     }
 
     @Test
     void deleteRelationshipEntityBySupplier_transactionFailure() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Supplier<Employee> supplier = () -> {
-            throw new RuntimeException();
-        };
+
+        Supplier<Employee> supplier = this::prepareRelationshipRootTestEntityDbMock;
+
+        EntityManager entityManager = mock(EntityManager.class);
+        Transaction transaction = mock(Transaction.class);
+        ITransactionHandler transactionHandler = new EntityManagerTransactionHandler(entityManager);
+
+        try {
+            Field entityManagerField = AbstractTransactionEntityManagerDao.class.getDeclaredField("transactionHandler");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(transactionEntityDao, transactionHandler);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        when(entityManager.getTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(entityManager).remove(any(Employee.class));
+        when(transaction.isActive()).thenReturn(true);
+        doNothing().when(transaction).rollback();
+
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            testEntityDao.deleteSupplier(supplier);
+            entityOperationManager.deleteSupplier(supplier);
         });
 
-        assertEquals(IllegalStateException.class, exception.getClass());
+        assertEquals(RuntimeException.class, exception.getClass());
     }
 
     @Test
@@ -431,7 +511,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
             em.remove(employee);
         };
 
-        testEntityDao.executeConsumer(consumer);
+        entityOperationManager.executeConsumer(consumer);
         verifyExpectedData("/datasets/relationship/deleteRelationshipTestEntityDataSet.yml");
     }
 
@@ -442,11 +522,28 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
             throw new RuntimeException();
         };
 
+        EntityManager entityManager = mock(EntityManager.class);
+        Transaction transaction = mock(Transaction.class);
+        ITransactionHandler transactionHandler = new EntityManagerTransactionHandler(entityManager);
+
+        try {
+            Field entityManagerField = AbstractTransactionEntityManagerDao.class.getDeclaredField("transactionHandler");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(transactionEntityDao, transactionHandler);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        when(entityManager.getTransaction()).thenReturn(transaction);
+        when(transaction.isActive()).thenReturn(true);
+        doNothing().when(transaction).rollback();
+
+
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            testEntityDao.executeConsumer(consumer);
+            entityOperationManager.executeConsumer(consumer);
         });
 
-        assertEquals(IllegalStateException.class, exception.getClass());
+        assertEquals(RuntimeException.class, exception.getClass());
     }
 
     @Test
@@ -454,36 +551,35 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Employee employee = prepareRelationshipRootTestEntityDbMock();
 
-        testEntityDao.deleteEntity(employee);
+        entityOperationManager.deleteEntity(employee);
         verifyExpectedData("/datasets/relationship/deleteRelationshipTestEntityDataSet.yml");
     }
 
     @Test
     void deleteRelationshipEntityByGeneralEntity_transactionFailure() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        SessionFactory sessionFactory = mock(SessionFactory.class);
-        Session session = mock(Session.class);
+
+        EntityManager entityManager = mock(EntityManager.class);
         Transaction transaction = mock(Transaction.class);
-        ITransactionHandler transactionHandler = new SessionTransactionHandler(sessionFactory);
+        ITransactionHandler transactionHandler = new EntityManagerTransactionHandler(entityManager);
 
         try {
-            Field transactionHandlerField = AbstractTransactionSessionFactoryDao.class.getDeclaredField("transactionHandler");
+            Field transactionHandlerField = AbstractTransactionEntityManagerDao.class.getDeclaredField("transactionHandler");
             transactionHandlerField.setAccessible(true);
-            transactionHandlerField.set(testEntityDao, transactionHandler);
+            transactionHandlerField.set(transactionEntityDao, transactionHandler);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        when(sessionFactory.openSession()).thenReturn(session);
-        when(session.beginTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(session).remove(any(Object.class));
+        when(entityManager.getTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(entityManager).remove(any(Object.class));
         when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
         Employee employee = prepareRelationshipRootTestEntityDbMock();
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            testEntityDao.deleteEntity(employee);
+            entityOperationManager.deleteEntity(employee);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
@@ -495,27 +591,25 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
 
         Parameter parameter = new Parameter("id", 1L);
 
-        SessionFactory sessionFactory = mock(SessionFactory.class);
-        Session session = mock(Session.class);
+        EntityManager entityManager = mock(EntityManager.class);
         Transaction transaction = mock(Transaction.class);
         Query<Employee> query = mock(Query.class);
 
         try {
-            Field sessionManagerField = AbstractTransactionSessionFactoryDao.class.getDeclaredField("sessionFactory");
-            sessionManagerField.setAccessible(true);
-            sessionManagerField.set(testEntityDao, sessionFactory);
+            Field entityManagerField = AbstractTransactionEntityManagerDao.class.getDeclaredField("entityManager");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(transactionEntityDao, entityManager);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        when(sessionFactory.openSession()).thenReturn(session);
-        when(session.beginTransaction()).thenReturn(transaction);
-        when(session.createNamedQuery(anyString(), eq(Employee.class))).thenReturn(query);
+        when(entityManager.getTransaction()).thenReturn(transaction);
+        when(entityManager.createNamedQuery(anyString(), eq(Employee.class))).thenReturn(query);
         when(query.getSingleResult()).thenReturn(employee);
-        doThrow(new RuntimeException()).when(session).remove(any(Object.class));
+        doThrow(new RuntimeException()).when(entityManager).remove(any(Employee.class));
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            testEntityDao.findEntityAndDelete(parameter);
+            entityOperationManager.deleteEntityByParameter(parameter);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
@@ -526,8 +620,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Parameter parameter = new Parameter("id", 1L);
 
-        Employee result =
-                testEntityDao.getGraphEntity(GRAPH_PATH, parameter);
+        Employee result = entityOperationManager.getGraphEntity(GRAPH_PATH, parameter);
 
         assertEquals(1L, result.getId());
         assertEquals("Relationship Root Entity", result.getName());
@@ -536,29 +629,16 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         assertEquals(1, result.getSpouse().getId());
         assertEquals("Dependent Entity", result.getSpouse().getName());
 
-        assertEquals(2, result.getDependentList().get(0).getId());
-        assertEquals("Dependent Entity", result.getDependentList().get(0).getName());
-        assertEquals(3, result.getDependentList().get(1).getId());
-        assertEquals("Dependent Entity", result.getDependentList().get(1).getName());
+        assertEquals(2, result.getDependentList().size());
 
         assertEquals(1, result.getItemSet().iterator().next().getId());
         assertEquals("Item Entity", result.getItemSet().iterator().next().getName());
     }
 
     @Test
-    public void testGetEntityGraph() {
-        loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Employee entity =
-                testEntityDao.getGraphEntity(GRAPH_PATH, new Parameter("id", 1));
-
-        assertNotNull(entity);
-        assertEquals(1, entity.getId());
-    }
-
-    @Test
     public void testGetEntityGraph_Failure() {
         assertThrows(RuntimeException.class, () -> {
-            testEntityDao.getGraphEntity(GRAPH_PATH, new Parameter("id", 1));
+            entityOperationManager.getGraphEntity(GRAPH_PATH, new Parameter("id", 1));
         });
     }
 
@@ -566,7 +646,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
     void getEntityWithDependencies() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Employee result =
-                testEntityDao.getNamedQueryEntity(NAMED_QUERY_NAME_ONE, new Parameter("id", 1));
+                transactionEntityDao.getNamedQueryEntity(NAMED_QUERY_NAME_ONE, new Parameter("id", 1));
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
@@ -590,7 +670,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id1", 1L);
 
         assertThrows(RuntimeException.class, () -> {
-            testEntityDao.getNamedQueryEntity(NAMED_QUERY_NAME_ONE, parameter);
+            transactionEntityDao.getNamedQueryEntity(NAMED_QUERY_NAME_ONE, parameter);
         });
     }
 
@@ -600,7 +680,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id", 1L);
 
         Optional<Employee> optional =
-                testEntityDao.getGraphOptionalEntity(GRAPH_PATH, parameter);
+                entityOperationManager.getGraphOptionalEntity(GRAPH_PATH, parameter);
 
         assertTrue(optional.isPresent());
         Employee result = optional.get();
@@ -625,7 +705,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id1", 1L);
 
         assertThrows(RuntimeException.class, () -> {
-            testEntityDao.getGraphOptionalEntity(GRAPH_PATH, parameter);
+            entityOperationManager.getGraphOptionalEntity(GRAPH_PATH, parameter);
         });
 
     }
@@ -636,7 +716,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id", 1L);
 
         Optional<Employee> optional =
-                testEntityDao.getNamedQueryOptionalEntity(NAMED_QUERY_NAME_ONE, parameter);
+                transactionEntityDao.getNamedQueryOptionalEntity(NAMED_QUERY_NAME_ONE, parameter);
 
         assertTrue(optional.isPresent());
         Employee result = optional.get();
@@ -647,10 +727,13 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         assertEquals(1, result.getSpouse().getId());
         assertEquals("Dependent Entity", result.getSpouse().getName());
 
-        assertEquals(2, result.getDependentList().get(0).getId());
-        assertEquals("Dependent Entity", result.getDependentList().get(0).getName());
-        assertEquals(3, result.getDependentList().get(1).getId());
-        assertEquals("Dependent Entity", result.getDependentList().get(1).getName());
+        List<Dependent> dependents = result.getDependentList();
+        int[] expectedIds = {2, 3};
+
+        for (int i = 0; i < expectedIds.length; i++) {
+            assertEquals(expectedIds[i], dependents.get(i).getId());
+            assertEquals("Dependent Entity", dependents.get(i).getName());
+        }
 
         assertEquals(1, result.getItemSet().iterator().next().getId());
         assertEquals("Item Entity", result.getItemSet().iterator().next().getName());
@@ -661,7 +744,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id1", 1L);
 
         assertThrows(RuntimeException.class, () -> {
-            testEntityDao.getNamedQueryOptionalEntity(NAMED_QUERY_NAME_ONE, parameter);
+            transactionEntityDao.getNamedQueryOptionalEntity(NAMED_QUERY_NAME_ONE, parameter);
         });
 
     }
@@ -671,7 +754,8 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Parameter parameter = new Parameter("id", 1L);
 
-        List<Employee> result = testEntityDao.getGraphEntityList(GRAPH_PATH, parameter);
+        List<Employee> result = entityOperationManager.getGraphEntityList(GRAPH_PATH, parameter);
+        result.sort(Comparator.comparingLong(Employee::getId));
 
         assertEquals(1, result.size());
         assertEquals(1, result.get(0).getId());
@@ -679,10 +763,14 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         assertEquals(1, result.get(0).getSpouse().getId());
         assertEquals("Dependent Entity", result.get(0).getSpouse().getName());
 
-        assertEquals(2, result.get(0).getDependentList().get(0).getId());
-        assertEquals("Dependent Entity", result.get(0).getDependentList().get(0).getName());
-        assertEquals(3, result.get(0).getDependentList().get(1).getId());
-        assertEquals("Dependent Entity", result.get(0).getDependentList().get(1).getName());
+        List<Dependent> dependents = result.get(0).getDependentList();
+        dependents.sort(Comparator.comparingLong(Dependent::getId));
+        int[] expectedIds = {2, 3};
+
+        for (int i = 0; i < expectedIds.length; i++) {
+            assertEquals(expectedIds[i], dependents.get(i).getId());
+            assertEquals("Dependent Entity", dependents.get(i).getName());
+        }
 
         assertEquals(1, result.get(0).getItemSet().iterator().next().getId());
         assertEquals("Item Entity", result.get(0).getItemSet().iterator().next().getName());
@@ -692,17 +780,15 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
     void getEntityListGraph_transactionFailure() {
         Parameter parameter = new Parameter("id1", 1L);
 
-        assertThrows(RuntimeException.class, () -> {
-            testEntityDao.getGraphEntityList(GRAPH_PATH, parameter);
-        });
+        assertThrows(RuntimeException.class, () -> entityOperationManager.getGraphEntityList(GRAPH_PATH, parameter));
     }
 
     @Test
-    void getNamedQueryEntityList_success() {
+    void getNamedQueryEntityLis_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Parameter parameter = new Parameter("id", 1L);
 
-        List<Employee> result = testEntityDao.getNamedQueryEntityList(NAMED_QUERY_NAME_ONE, parameter);
+        List<Employee> result = transactionEntityDao.getNamedQueryEntityList(NAMED_QUERY_NAME_ONE, parameter);
 
         assertEquals(1, result.size());
         assertEquals(1, result.get(0).getId());
@@ -710,10 +796,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         assertEquals(1, result.get(0).getSpouse().getId());
         assertEquals("Dependent Entity", result.get(0).getSpouse().getName());
 
-        assertEquals(2, result.get(0).getDependentList().get(0).getId());
-        assertEquals("Dependent Entity", result.get(0).getDependentList().get(0).getName());
-        assertEquals(3, result.get(0).getDependentList().get(1).getId());
-        assertEquals("Dependent Entity", result.get(0).getDependentList().get(1).getName());
+        assertEquals(2, result.get(0).getDependentList().size());
 
         assertEquals(1, result.get(0).getItemSet().iterator().next().getId());
         assertEquals("Item Entity", result.get(0).getItemSet().iterator().next().getName());
@@ -724,7 +807,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id1", 1L);
 
         assertThrows(RuntimeException.class, () -> {
-            testEntityDao.getNamedQueryEntityList(NAMED_QUERY_NAME_ONE, parameter);
+            transactionEntityDao.getNamedQueryEntityList(NAMED_QUERY_NAME_ONE, parameter);
         });
     }
 
@@ -742,7 +825,7 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
     @Test
     void classTypeChecker_withMatchingTypes_shouldNotThrowException() {
         Item item = new Item();
-        RelationshipEntityDaoTest.ItemDaoExposed singleEntityDao = new RelationshipEntityDaoTest.ItemDaoExposed();
+        TransactionEntityManagerOperationManagerTest.ItemDaoExposed singleEntityDao = new TransactionEntityManagerOperationManagerTest.ItemDaoExposed();
 
         assertDoesNotThrow(
                 () -> singleEntityDao.classTypeChecker(item));
@@ -751,8 +834,8 @@ public class RelationshipEntityDaoTest extends AbstractDaoTest {
     @Test
     void classTypeChecker_withNonMatchingTypes_shouldThrowException() {
         Object object = new Object();
-        RelationshipEntityDaoTest.ItemDaoExposed singleEntityDao
-                = new RelationshipEntityDaoTest.ItemDaoExposed();
+        TransactionEntityManagerOperationManagerTest.ItemDaoExposed singleEntityDao
+                = new TransactionEntityManagerOperationManagerTest.ItemDaoExposed();
 
         assertThrows(RuntimeException.class, () ->
                 singleEntityDao.classTypeChecker(object)

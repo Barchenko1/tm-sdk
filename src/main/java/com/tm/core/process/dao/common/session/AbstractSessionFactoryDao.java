@@ -2,7 +2,7 @@ package com.tm.core.process.dao.common.session;
 
 import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.process.dao.common.IEntityDao;
-import com.tm.core.process.dao.identifier.IQueryService;
+import com.tm.core.process.dao.query.IQueryService;
 import com.tm.core.util.helper.EntityFieldHelper;
 import com.tm.core.util.helper.IEntityFieldHelper;
 import jakarta.persistence.EntityManager;

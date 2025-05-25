@@ -1,7 +1,7 @@
-package com.tm.core.process.dao.query;
+package com.tm.core.process.dao.fetch;
 
-import com.tm.core.process.dao.identifier.IQueryService;
 import com.tm.core.finder.parameter.Parameter;
+import com.tm.core.process.dao.query.IQueryService;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;

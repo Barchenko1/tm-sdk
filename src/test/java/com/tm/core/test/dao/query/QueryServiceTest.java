@@ -1,6 +1,6 @@
-package com.tm.core.test.dao;
+package com.tm.core.test.dao.query;
 
-import com.tm.core.process.dao.identifier.QueryService;
+import com.tm.core.process.dao.query.QueryService;
 import com.tm.core.modal.relationship.Dependent;
 import com.tm.core.modal.relationship.Employee;
 import com.tm.core.modal.relationship.Item;
@@ -8,6 +8,7 @@ import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.finder.manager.EntityMappingManager;
 import com.tm.core.finder.manager.IEntityMappingManager;
 import com.tm.core.finder.table.EntityTable;
+import com.tm.core.test.dao.AbstractDaoTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;

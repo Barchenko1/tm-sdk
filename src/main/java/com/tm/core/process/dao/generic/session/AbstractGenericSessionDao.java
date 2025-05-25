@@ -1,8 +1,8 @@
 package com.tm.core.process.dao.generic.session;
 
 import com.tm.core.process.dao.generic.IGenericDao;
-import com.tm.core.process.dao.identifier.IQueryService;
-import com.tm.core.process.dao.identifier.QueryService;
+import com.tm.core.process.dao.query.IQueryService;
+import com.tm.core.process.dao.query.QueryService;
 import com.tm.core.finder.manager.EntityMappingManager;
 import com.tm.core.finder.scanner.EntityScanner;
 import com.tm.core.util.helper.EntityFieldHelper;

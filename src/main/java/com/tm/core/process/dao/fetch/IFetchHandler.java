@@ -1,4 +1,4 @@
-package com.tm.core.process.dao.query;
+package com.tm.core.process.dao.fetch;
 
 import com.tm.core.finder.parameter.Parameter;
 import org.hibernate.Session;

@@ -1,8 +1,8 @@
 package com.tm.core.process.manager.generic;
 
 import com.tm.core.finder.parameter.Parameter;
+import com.tm.core.process.dao.generic.IGenericTransactionDao;
 import jakarta.persistence.EntityManager;
-import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,11 +12,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class GenericTransactionEntityOperationManager extends AbstractGenericEntityOperationManager implements IGenericOperationManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(GenericTransactionEntityOperationManager.class);
+public class GenericTransactionOperationManager extends AbstractGenericTransactionOperationManager implements IGenericOperationManager {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GenericTransactionOperationManager.class);
 
-    public GenericTransactionEntityOperationManager(SessionFactory sessionFactory, String entityPackage) {
-        super(sessionFactory, entityPackage);
+    public GenericTransactionOperationManager(IGenericTransactionDao genericTransactionDao) {
+        super(genericTransactionDao);
     }
 
     @Override

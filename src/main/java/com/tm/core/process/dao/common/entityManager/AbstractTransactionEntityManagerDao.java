@@ -2,7 +2,7 @@ package com.tm.core.process.dao.common.entityManager;
 
 import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.process.dao.common.ITransactionEntityDao;
-import com.tm.core.process.dao.identifier.IQueryService;
+import com.tm.core.process.dao.query.IQueryService;
 import com.tm.core.process.dao.transaction.EntityManagerTransactionHandler;
 import com.tm.core.process.dao.transaction.ITransactionHandler;
 import com.tm.core.util.helper.EntityFieldHelper;
