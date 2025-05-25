@@ -1,7 +1,7 @@
 package com.tm.core.process.manager.common;
 
-import com.tm.core.process.dao.common.ISessionFactoryDao;
 import com.tm.core.finder.parameter.Parameter;
+import com.tm.core.process.dao.common.ITransactionEntityDao;
 import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,9 +15,9 @@ import java.util.function.Supplier;
 public abstract class AbstractEntityOperationManager implements IEntityOperationManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractEntityOperationManager.class);
 
-    private final ISessionFactoryDao dao;
+    private final ITransactionEntityDao dao;
 
-    public AbstractEntityOperationManager(ISessionFactoryDao dao) {
+    public AbstractEntityOperationManager(ITransactionEntityDao dao) {
         this.dao = dao;
     }
 

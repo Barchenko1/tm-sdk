@@ -5,7 +5,7 @@ import com.tm.core.finder.parameter.Parameter;
 import java.util.List;
 import java.util.Optional;
 
-public interface IQueryDao {
+public interface IEntityQueryDao {
     <E> List<E> getGraphEntityList(String graphName, Parameter... parameters);
     <E> List<E> getNamedQueryEntityList(String namedQuery, Parameter... parameters);
     <E> E getGraphEntity(String graphName, Parameter... parameters);

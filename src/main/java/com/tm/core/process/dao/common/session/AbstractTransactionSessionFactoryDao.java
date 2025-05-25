@@ -1,13 +1,16 @@
 package com.tm.core.process.dao.common.session;
 
-import com.tm.core.finder.parameter.Parameter;
-import com.tm.core.process.dao.common.IEntityDao;
+import com.tm.core.process.dao.common.ITransactionEntityDao;
 import com.tm.core.process.dao.identifier.IQueryService;
+import com.tm.core.process.dao.transaction.ITransactionHandler;
+import com.tm.core.process.dao.transaction.SessionTransactionHandler;
+import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.util.helper.EntityFieldHelper;
 import com.tm.core.util.helper.IEntityFieldHelper;
 import jakarta.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,97 +19,101 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public abstract class AbstractSessionFactoryDao implements IEntityDao {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSessionFactoryDao.class);
+public abstract class AbstractTransactionSessionFactoryDao implements ITransactionEntityDao {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTransactionSessionFactoryDao.class);
 
     protected final Class<?> clazz;
     protected final SessionFactory sessionFactory;
     protected final IEntityFieldHelper entityFieldHelper;
     protected final IQueryService queryService;
+    protected final ITransactionHandler transactionHandler;
 
-    public AbstractSessionFactoryDao(SessionFactory sessionFactory,
-                                     IQueryService queryService,
-                                     Class<?> clazz) {
+    public AbstractTransactionSessionFactoryDao(SessionFactory sessionFactory,
+                                                IQueryService queryService,
+                                                Class<?> clazz) {
         this.clazz = clazz;
         this.sessionFactory = sessionFactory;
         this.entityFieldHelper = new EntityFieldHelper();
         this.queryService = queryService;
+        this.transactionHandler = new SessionTransactionHandler(sessionFactory);
     }
 
     @Override
     public <E> void persistEntity(E entity) {
         classTypeChecker(entity);
-        try (Session session = sessionFactory.openSession()) {
-            session.persist(entity);
-        } catch (Exception e) {
-            LOGGER.warn("transaction error", e);
-            throw new RuntimeException(e);
-        }
+        transactionHandler.persistEntity(entity);
     }
 
     @Override
     public <E> void mergeEntity(E entity) {
         classTypeChecker(entity);
-        try (Session session = sessionFactory.openSession()) {
-            session.merge(entity);
-        } catch (Exception e) {
-            LOGGER.warn("transaction error", e);
-            throw new RuntimeException(e);
-        }
+        transactionHandler.mergeEntity(entity);
     }
 
     @Override
     public <E> void deleteEntity(E entity) {
         classTypeChecker(entity);
+        transactionHandler.deleteEntity(entity);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E> void findEntityAndUpdate(E entity, Parameter... parameters) {
+        classTypeChecker(entity);
+        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            session.remove(entity);
+            transaction = session.beginTransaction();
+            E oldEntity = (E) queryService.getEntityByDefaultNamedQuery(session, this.clazz, parameters);
+            entityFieldHelper.setId(entity, entityFieldHelper.findId(oldEntity));
+            session.merge(entity);
+            transaction.commit();
         } catch (Exception e) {
             LOGGER.warn("transaction error", e);
-            throw new RuntimeException(e);
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E> void findEntityAndDelete(Parameter... parameters) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            E entity = (E) queryService.getEntityByDefaultNamedQuery(session, this.clazz, parameters);
+            classTypeChecker(entity);
+            session.remove(entity);
+            transaction.commit();
+        } catch (Exception e) {
+            LOGGER.warn("transaction error", e);
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
         }
     }
 
     @Override
     public <E> void persistSupplier(Supplier<E> supplier) {
-        try (Session session = sessionFactory.openSession()) {
-            E entity = supplier.get();
-            session.persist(entity);
-        } catch (Exception e) {
-            LOGGER.warn("transaction error", e);
-            throw new RuntimeException(e);
-        }
+        transactionHandler.persistSupplier(supplier);
+
     }
 
     @Override
     public <E> void mergeSupplier(Supplier<E> supplier) {
-        try (Session session = sessionFactory.openSession()) {
-            E entity = supplier.get();
-            session.merge(entity);
-        } catch (Exception e) {
-            LOGGER.warn("transaction error", e);
-            throw new RuntimeException(e);
-        }
+        transactionHandler.mergeSupplier(supplier);
     }
 
     @Override
     public <E> void deleteSupplier(Supplier<E> supplier) {
-        try (Session session = sessionFactory.openSession()) {
-            E entity = supplier.get();
-            session.remove(entity);
-        } catch (Exception e) {
-            LOGGER.warn("transaction error", e);
-            throw new RuntimeException(e);
-        }
+        transactionHandler.deleteSupplier(supplier);
     }
 
     @Override
     public void executeConsumer(Consumer<EntityManager> consumer) {
-        try (Session session = sessionFactory.openSession()) {
-            consumer.accept(session);
-        } catch (Exception e) {
-            LOGGER.warn("transaction error", e);
-            throw new RuntimeException(e);
-        }
+        transactionHandler.executeConsumer(consumer);
     }
 
     @Override

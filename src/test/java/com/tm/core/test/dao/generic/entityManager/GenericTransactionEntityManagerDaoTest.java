@@ -5,7 +5,6 @@ import com.tm.core.modal.relationship.Dependent;
 import com.tm.core.modal.relationship.Employee;
 import com.tm.core.modal.relationship.Item;
 import com.tm.core.process.dao.generic.IGenericTransactionDao;
-import com.tm.core.process.dao.generic.entityManager.AbstractGenericEntityManagerDao;
 import com.tm.core.process.dao.generic.entityManager.AbstractGenericTransactionEntityManagerDao;
 import com.tm.core.process.dao.generic.entityManager.GenericTransactionEntityManagerDao;
 import com.tm.core.process.dao.transaction.EntityManagerTransactionHandler;
@@ -19,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -366,7 +366,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
         Query<Employee> query = mock(Query.class);
 
         try {
-            Field transactionHandlerField = AbstractGenericEntityManagerDao.class.getDeclaredField("entityManager");
+            Field transactionHandlerField = AbstractGenericTransactionEntityManagerDao.class.getDeclaredField("entityManager");
             transactionHandlerField.setAccessible(true);
             transactionHandlerField.set(genericTransactionDao, entityManager);
         } catch (Exception e) {
@@ -506,7 +506,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
         Query<Employee> query = mock(Query.class);
 
         try {
-            Field transactionHandlerField = AbstractGenericEntityManagerDao.class.getDeclaredField("entityManager");
+            Field transactionHandlerField = AbstractGenericTransactionEntityManagerDao.class.getDeclaredField("entityManager");
             transactionHandlerField.setAccessible(true);
             transactionHandlerField.set(genericTransactionDao, entityManager);
         } catch (Exception e) {
@@ -582,10 +582,14 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
         assertEquals(1, result.getSpouse().getId());
         assertEquals("Dependent Entity", result.getSpouse().getName());
 
-        assertEquals(2, result.getDependentList().get(0).getId());
-        assertEquals("Dependent Entity", result.getDependentList().get(0).getName());
-        assertEquals(3, result.getDependentList().get(1).getId());
-        assertEquals("Dependent Entity", result.getDependentList().get(1).getName());
+        List<Dependent> dependents = result.getDependentList();
+        dependents.sort(Comparator.comparing(Dependent::getId));
+        int[] expectedIds = {2, 3};
+
+        for (int i = 0; i < expectedIds.length; i++) {
+            assertEquals(expectedIds[i], dependents.get(i).getId());
+            assertEquals("Dependent Entity", dependents.get(i).getName());
+        }
 
         assertEquals(1, result.getItemSet().iterator().next().getId());
         assertEquals("Item Entity", result.getItemSet().iterator().next().getName());
@@ -716,10 +720,14 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
         assertEquals(1, result.get(0).getSpouse().getId());
         assertEquals("Dependent Entity", result.get(0).getSpouse().getName());
 
-        assertEquals(2, result.get(0).getDependentList().get(0).getId());
-        assertEquals("Dependent Entity", result.get(0).getDependentList().get(0).getName());
-        assertEquals(3, result.get(0).getDependentList().get(1).getId());
-        assertEquals("Dependent Entity", result.get(0).getDependentList().get(1).getName());
+        List<Dependent> dependents = result.get(0).getDependentList();
+        dependents.sort(Comparator.comparing(Dependent::getId));
+        int[] expectedIds = {2, 3};
+
+        for (int i = 0; i < expectedIds.length; i++) {
+            assertEquals(expectedIds[i], dependents.get(i).getId());
+            assertEquals("Dependent Entity", dependents.get(i).getName());
+        }
 
         assertEquals(1, result.get(0).getItemSet().iterator().next().getId());
         assertEquals("Item Entity", result.get(0).getItemSet().iterator().next().getName());

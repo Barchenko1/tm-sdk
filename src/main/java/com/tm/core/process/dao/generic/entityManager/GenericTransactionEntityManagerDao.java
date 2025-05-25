@@ -1,7 +1,6 @@
 package com.tm.core.process.dao.generic.entityManager;
 
 import com.tm.core.finder.parameter.Parameter;
-import com.tm.core.process.dao.generic.IGenericTransactionDao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 
@@ -10,7 +9,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class GenericTransactionEntityManagerDao extends AbstractGenericTransactionEntityManagerDao implements IGenericTransactionDao {
+public class GenericTransactionEntityManagerDao extends AbstractGenericTransactionEntityManagerDao {
 
     public GenericTransactionEntityManagerDao(EntityManager entityManager, String entityPackage) {
         super(entityManager, entityPackage);

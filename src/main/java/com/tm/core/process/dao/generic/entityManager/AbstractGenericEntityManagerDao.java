@@ -2,13 +2,14 @@ package com.tm.core.process.dao.generic.entityManager;
 
 import com.tm.core.finder.manager.EntityMappingManager;
 import com.tm.core.finder.scanner.EntityScanner;
+import com.tm.core.process.dao.generic.IGenericDao;
 import com.tm.core.process.dao.identifier.IQueryService;
 import com.tm.core.process.dao.identifier.QueryService;
 import com.tm.core.util.helper.EntityFieldHelper;
 import com.tm.core.util.helper.IEntityFieldHelper;
 import jakarta.persistence.EntityManager;
 
-public abstract class AbstractGenericEntityManagerDao {
+public abstract class AbstractGenericEntityManagerDao implements IGenericDao {
     protected final EntityManager entityManager;
     protected final IEntityFieldHelper entityFieldHelper;
     protected final IQueryService queryService;

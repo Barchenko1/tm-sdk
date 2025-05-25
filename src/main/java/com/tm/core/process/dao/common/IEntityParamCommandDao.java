@@ -2,7 +2,7 @@ package com.tm.core.process.dao.common;
 
 import com.tm.core.finder.parameter.Parameter;
 
-public interface IParamCommandDao extends ICommandDao {
+public interface IEntityParamCommandDao extends IEntityCommandDao {
     <E> void findEntityAndUpdate(E entity, Parameter... parameters);
     <E> void findEntityAndDelete(Parameter... parameters);
 }

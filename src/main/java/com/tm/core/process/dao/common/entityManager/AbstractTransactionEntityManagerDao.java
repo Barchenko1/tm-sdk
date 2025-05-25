@@ -1,11 +1,14 @@
 package com.tm.core.process.dao.common.entityManager;
 
 import com.tm.core.finder.parameter.Parameter;
-import com.tm.core.process.dao.common.IEntityDao;
+import com.tm.core.process.dao.common.ITransactionEntityDao;
 import com.tm.core.process.dao.identifier.IQueryService;
+import com.tm.core.process.dao.transaction.EntityManagerTransactionHandler;
+import com.tm.core.process.dao.transaction.ITransactionHandler;
 import com.tm.core.util.helper.EntityFieldHelper;
 import com.tm.core.util.helper.IEntityFieldHelper;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,62 +17,103 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public abstract class AbstractEntityManagerDao implements IEntityDao {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractEntityManagerDao.class);
+public abstract class AbstractTransactionEntityManagerDao implements ITransactionEntityDao {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTransactionEntityManagerDao.class);
 
     protected final Class<?> clazz;
     protected final EntityManager entityManager;
     protected final IEntityFieldHelper entityFieldHelper;
     protected final IQueryService queryService;
+    protected final ITransactionHandler transactionHandler;
 
-    public AbstractEntityManagerDao(EntityManager entityManager,
-                                    IQueryService queryService,
-                                    Class<?> clazz) {
+    public AbstractTransactionEntityManagerDao(EntityManager entityManager,
+                                               IQueryService queryService,
+                                               Class<?> clazz) {
         this.clazz = clazz;
         this.entityManager = entityManager;
         this.entityFieldHelper = new EntityFieldHelper();
         this.queryService = queryService;
+        this.transactionHandler = new EntityManagerTransactionHandler(entityManager);
     }
 
     @Override
     public <E> void persistEntity(E entity) {
         classTypeChecker(entity);
-        entityManager.persist(entity);
+        transactionHandler.persistEntity(entity);
     }
 
     @Override
     public <E> void mergeEntity(E entity) {
         classTypeChecker(entity);
-        entityManager.merge(entity);
+        transactionHandler.mergeEntity(entity);
     }
 
     @Override
     public <E> void deleteEntity(E entity) {
         classTypeChecker(entity);
-        entityManager.remove(entity);
+        transactionHandler.deleteEntity(entity);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E> void findEntityAndUpdate(E entity, Parameter... parameters) {
+        classTypeChecker(entity);
+        EntityTransaction transaction = entityManager.getTransaction();
+        try {
+            transaction.begin();
+            E oldEntity = (E) queryService.getEntityByDefaultNamedQuery(entityManager, clazz, parameters);
+            entityFieldHelper.setId(entity, entityFieldHelper.findId(oldEntity));
+            entityManager.merge(entity);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new RuntimeException("Transaction failed", e);
+        } finally {
+            entityManager.clear();
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E> void findEntityAndDelete(Parameter... parameters) {
+        EntityTransaction transaction = entityManager.getTransaction();
+        try {
+            transaction.begin();
+            E entity = (E) queryService.getEntityByDefaultNamedQuery(entityManager, this.clazz, parameters);
+            classTypeChecker(entity);
+            entityManager.remove(entity);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new RuntimeException("Transaction failed", e);
+        } finally {
+            entityManager.clear();
+        }
     }
 
     @Override
     public <E> void persistSupplier(Supplier<E> supplier) {
-        E entity = supplier.get();
-        entityManager.persist(entity);
+        transactionHandler.persistSupplier(supplier);
+
     }
 
     @Override
     public <E> void mergeSupplier(Supplier<E> supplier) {
-        E entity = supplier.get();
-        entityManager.merge(entity);
+        transactionHandler.mergeSupplier(supplier);
     }
 
     @Override
     public <E> void deleteSupplier(Supplier<E> supplier) {
-        E entity = supplier.get();
-        entityManager.remove(entity);
+        transactionHandler.deleteSupplier(supplier);
     }
 
     @Override
     public void executeConsumer(Consumer<EntityManager> consumer) {
-        consumer.accept(entityManager);
+        transactionHandler.executeConsumer(consumer);
     }
 
     @Override

@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class GenericEntityManagerDao extends AbstractGenericEntityManagerDao implements IGenericDao {
+public class GenericEntityManagerDao extends AbstractGenericEntityManagerDao {
 
     public GenericEntityManagerDao(EntityManager entityManager, String entityPackage) {
         super(entityManager, entityPackage);
