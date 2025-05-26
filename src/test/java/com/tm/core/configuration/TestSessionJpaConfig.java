@@ -1,4 +1,4 @@
-package com.tm.core.test.dao.generic.session;
+package com.tm.core.configuration;
 
 import com.tm.core.configuration.dbType.DatabaseConfigurationAnnotationClass;
 import com.tm.core.configuration.dbType.DatabaseType;

@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Function;
 
-public abstract class AbstractGenericTransactionOperationManager {
+public abstract class AbstractGenericTransactionOperationManager implements IGenericOperationManager{
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGenericTransactionOperationManager.class);
 
     protected final IGenericTransactionDao genericTransactionDao;

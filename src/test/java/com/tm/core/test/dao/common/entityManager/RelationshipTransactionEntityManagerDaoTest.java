@@ -292,13 +292,13 @@ public class RelationshipTransactionEntityManagerDaoTest extends AbstractDaoTest
     @Test
     void updateRelationshipEntity_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Supplier<Employee> relationshipEntitySupplier = () -> {
+        Supplier<Employee> supplier = () -> {
             Employee oldRelationShipEntity = prepareRelationshipRootTestEntityDbMock();
             Employee employeeToUpdate = prepareToUpdateRelationshipRootTestEntity();
             employeeToUpdate.setId(oldRelationShipEntity.getId());
             return employeeToUpdate;
         };
-        transactionEntityDao.mergeSupplier(relationshipEntitySupplier);
+        transactionEntityDao.mergeSupplier(supplier);
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
     }
 
@@ -504,6 +504,8 @@ public class RelationshipTransactionEntityManagerDaoTest extends AbstractDaoTest
         when(entityManager.createNamedQuery(anyString(), eq(Employee.class))).thenReturn(query);
         when(query.getSingleResult()).thenReturn(employee);
         doThrow(new RuntimeException()).when(entityManager).remove(any(Object.class));
+        when(transaction.isActive()).thenReturn(true);
+        doNothing().when(transaction).rollback();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             transactionEntityDao.findEntityAndDelete(parameter);

@@ -1,4 +1,4 @@
-package com.tm.core.process.manager;
+package com.tm.core.process.manager.generic;
 
 public interface ICommand {
     <E> void persistEntity(E entity);

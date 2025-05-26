@@ -1,5 +1,6 @@
 package com.tm.core.test.dao.generic.entityManager;
 
+import com.tm.core.configuration.TestJpaConfig;
 import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.modal.relationship.Dependent;
 import com.tm.core.modal.relationship.Employee;
@@ -216,14 +217,14 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
     @Test
     void updateRelationshipEntity_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Supplier<Employee> relationshipEntitySupplier = () -> {
+        Supplier<Employee> supplier = () -> {
             Employee oldRelationShipEntity = prepareRelationshipRootTestEntityDbMock();
             Employee employeeToUpdate = prepareToUpdateRelationshipRootTestEntity();
             employeeToUpdate.setId(oldRelationShipEntity.getId());
             return employeeToUpdate;
         };
         transactionTemplate.executeWithoutResult(transactionStatus -> {
-            genericDao.mergeSupplier(relationshipEntitySupplier);
+            genericDao.mergeSupplier(supplier);
         });
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
     }
@@ -327,12 +328,12 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
     @Test
     void deleteRelationshipEntityByConsumer_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
+        Consumer<EntityManager> consumer = (EntityManager em) -> {
+            Employee employee = em.find(Employee.class, 1L);
+            em.remove(employee);
+        };
 
         transactionTemplate.executeWithoutResult(transactionStatus -> {
-            Consumer<EntityManager> consumer = (EntityManager em) -> {
-                Employee employee = em.find(Employee.class, 1L);
-                em.remove(employee);
-            };
             genericDao.executeConsumer(consumer);
         });
         verifyExpectedData("/datasets/relationship/deleteRelationshipTestEntityDataSet.yml");

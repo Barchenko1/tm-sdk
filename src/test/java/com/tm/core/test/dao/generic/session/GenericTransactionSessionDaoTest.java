@@ -310,13 +310,13 @@ public class GenericTransactionSessionDaoTest extends AbstractDaoTest {
     @Test
     void updateRelationshipEntity_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Supplier<Employee> relationshipEntitySupplier = () -> {
+        Supplier<Employee> supplier = () -> {
             Employee oldRelationShipEntity = prepareRelationshipRootTestEntityDbMock();
             Employee employeeToUpdate = prepareToUpdateRelationshipRootTestEntity();
             employeeToUpdate.setId(oldRelationShipEntity.getId());
             return employeeToUpdate;
         };
-        genericTransactionDao.mergeSupplier(relationshipEntitySupplier);
+        genericTransactionDao.mergeSupplier(supplier);
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
     }
 

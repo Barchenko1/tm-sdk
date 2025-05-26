@@ -151,7 +151,7 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
         Employee employee = new Employee();
         employee.setName("Relationship Root Entity");
 
-        entityOperationManager.saveEntity(employee);
+        entityOperationManager.persistEntity(employee);
         verifyExpectedData("/datasets/relationship/saveSingleRelationshipTestEntityDataSet.yml");
     }
 
@@ -160,7 +160,7 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
         loadDataSet("/datasets/relationship/emptyRelationshipTestEntityDataSet.yml");
         Object object = new Object();
         assertThrows(RuntimeException.class, () -> {
-            entityOperationManager.saveEntity(object);
+            entityOperationManager.persistEntity(object);
         });
     }
 
@@ -169,7 +169,7 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
         loadDataSet("/datasets/relationship/emptyRelationshipTestEntityDataSet.yml");
         Employee employee = prepareToSaveRelationshipRootTestEntity();
 
-        entityOperationManager.saveEntity(employee);
+        entityOperationManager.persistEntity(employee);
         verifyExpectedData("/datasets/relationship/saveMultipleRelationshipTestEntityDataSet.yml");
     }
 
@@ -199,7 +199,7 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
         doNothing().when(transaction).rollback();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            entityOperationManager.saveEntity(employee);
+            entityOperationManager.persistEntity(employee);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
@@ -300,7 +300,7 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
     void updateEntity_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Employee employee = prepareToUpdateRelationshipRootTestEntity();
-        entityOperationManager.updateEntity(employee);
+        entityOperationManager.mergeEntity(employee);
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
     }
 
@@ -329,19 +329,19 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
         when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
-        assertThrows(RuntimeException.class, () -> entityOperationManager.updateEntity(employee));
+        assertThrows(RuntimeException.class, () -> entityOperationManager.mergeEntity(employee));
     }
 
     @Test
     void updateRelationshipEntity_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Supplier<Employee> relationshipEntitySupplier = () -> {
+        Supplier<Employee> supplier = () -> {
             Employee oldRelationShipEntity = prepareRelationshipRootTestEntityDbMock();
             Employee employeeToUpdate = prepareToUpdateRelationshipRootTestEntity();
             employeeToUpdate.setId(oldRelationShipEntity.getId());
             return employeeToUpdate;
         };
-        entityOperationManager.updateSupplier(relationshipEntitySupplier);
+        entityOperationManager.mergeSupplier(supplier);
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
     }
 
@@ -371,7 +371,7 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
 
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            entityOperationManager.updateSupplier(supplier);
+            entityOperationManager.mergeSupplier(supplier);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
@@ -747,6 +747,7 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
         assertEquals("Dependent Entity", result.getSpouse().getName());
 
         List<Dependent> dependents = result.getDependentList();
+        dependents.sort(Comparator.comparing(Dependent::getId));
         int[] expectedIds = {2, 3};
 
         for (int i = 0; i < expectedIds.length; i++) {

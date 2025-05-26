@@ -1,4 +1,4 @@
-package com.tm.core.process.manager;
+package com.tm.core.process.manager.generic;
 
 import com.tm.core.finder.parameter.Parameter;
 

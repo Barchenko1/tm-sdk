@@ -28,7 +28,7 @@ public abstract class AbstractTransactionEntityOperationManager implements IEnti
     }
 
     @Override
-    public <E> void updateSupplier(Supplier<E> entitySupplier) {
+    public <E> void mergeSupplier(Supplier<E> entitySupplier) {
         LOGGER.info("Updating entity");
         dao.mergeSupplier(entitySupplier);
     }
@@ -56,13 +56,13 @@ public abstract class AbstractTransactionEntityOperationManager implements IEnti
     }
 
     @Override
-    public <E> void saveEntity(E entity) {
+    public <E> void persistEntity(E entity) {
         LOGGER.info("Saving entity");
         dao.persistEntity(entity);
     }
 
     @Override
-    public <E> void updateEntity(E entity) {
+    public <E> void mergeEntity(E entity) {
         LOGGER.info("Updating entity");
         dao.mergeEntity(entity);
     }

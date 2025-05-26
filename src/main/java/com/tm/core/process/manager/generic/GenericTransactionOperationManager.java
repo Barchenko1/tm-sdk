@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class GenericTransactionOperationManager extends AbstractGenericTransactionOperationManager implements IGenericOperationManager {
+public class GenericTransactionOperationManager extends AbstractGenericTransactionOperationManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenericTransactionOperationManager.class);
 
     public GenericTransactionOperationManager(IGenericTransactionDao genericTransactionDao) {
@@ -26,7 +26,7 @@ public class GenericTransactionOperationManager extends AbstractGenericTransacti
     }
 
     @Override
-    public <E> void updateSupplier(Supplier<E> entitySupplier) {
+    public <E> void mergeSupplier(Supplier<E> entitySupplier) {
         LOGGER.info("Updating entity");
         genericTransactionDao.mergeSupplier(entitySupplier);
     }

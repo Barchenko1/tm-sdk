@@ -319,13 +319,13 @@ class GenericTransactionEntityManagerOperationManagerTest extends AbstractDaoTes
     @Test
     void updateRelationshipEntity_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Supplier<Employee> relationshipEntitySupplier = () -> {
+        Supplier<Employee> supplier = () -> {
             Employee oldRelationShipEntity = prepareRelationshipRootTestEntityDbMock();
             Employee employeeToUpdate = prepareToUpdateRelationshipRootTestEntity();
             employeeToUpdate.setId(oldRelationShipEntity.getId());
             return employeeToUpdate;
         };
-        genericOperationManager.updateSupplier(relationshipEntitySupplier);
+        genericOperationManager.mergeSupplier(supplier);
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
     }
 
@@ -355,7 +355,7 @@ class GenericTransactionEntityManagerOperationManagerTest extends AbstractDaoTes
 
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            genericOperationManager.updateSupplier(supplier);
+            genericOperationManager.mergeSupplier(supplier);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());

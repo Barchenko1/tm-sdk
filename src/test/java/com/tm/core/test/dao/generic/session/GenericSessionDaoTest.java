@@ -1,5 +1,6 @@
 package com.tm.core.test.dao.generic.session;
 
+import com.tm.core.configuration.TestSessionJpaConfig;
 import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.modal.relationship.Dependent;
 import com.tm.core.modal.relationship.Employee;
@@ -141,7 +142,6 @@ public class GenericSessionDaoTest extends AbstractDaoTest {
             throw new RuntimeException();
         };
 
-
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             genericDao.persistEntity(supplier);
         });
@@ -217,14 +217,14 @@ public class GenericSessionDaoTest extends AbstractDaoTest {
     @Test
     void updateRelationshipEntity_success() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Supplier<Employee> relationshipEntitySupplier = () -> {
+        Supplier<Employee> supplier = () -> {
             Employee oldRelationShipEntity = prepareRelationshipRootTestEntityDbMock();
             Employee employeeToUpdate = prepareToUpdateRelationshipRootTestEntity();
             employeeToUpdate.setId(oldRelationShipEntity.getId());
             return employeeToUpdate;
         };
         transactionTemplate.executeWithoutResult(transactionStatus -> {
-            genericDao.mergeSupplier(relationshipEntitySupplier);
+            genericDao.mergeSupplier(supplier);
         });
         verifyExpectedData("/datasets/relationship/updateRelationshipTestEntityDataSet.yml");
     }
