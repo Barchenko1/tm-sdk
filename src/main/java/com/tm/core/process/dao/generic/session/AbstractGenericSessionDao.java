@@ -1,5 +1,7 @@
 package com.tm.core.process.dao.generic.session;
 
+import com.tm.core.process.dao.IFetchHandler;
+import com.tm.core.process.dao.fetch.SessionFetchHandler;
 import com.tm.core.process.dao.generic.IGenericDao;
 import com.tm.core.process.dao.query.IQueryService;
 import com.tm.core.process.dao.query.QueryService;
@@ -14,12 +16,14 @@ public abstract class AbstractGenericSessionDao implements IGenericDao {
     protected final SessionFactory sessionFactory;
     protected final IEntityFieldHelper entityFieldHelper;
     protected final IQueryService queryService;
+    protected final IFetchHandler fetchHandler;
 
     public AbstractGenericSessionDao(SessionFactory sessionFactory,
                                      String entityPackage) {
         this.sessionFactory = sessionFactory;
         this.entityFieldHelper = new EntityFieldHelper();
         this.queryService = initializerQueryService(entityPackage);
+        this.fetchHandler = new SessionFetchHandler(sessionFactory, queryService);
     }
 
     private IQueryService initializerQueryService(String entityPackage) {

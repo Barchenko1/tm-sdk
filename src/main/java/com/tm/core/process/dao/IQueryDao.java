@@ -1,12 +1,11 @@
-package com.tm.core.process.manager.generic;
+package com.tm.core.process.dao;
 
 import com.tm.core.finder.parameter.Parameter;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
-public interface IQuery {
+public interface IQueryDao {
     <E> List<E> getGraphEntityList(Class<E> clazz, String graph, Parameter... parameters);
     <E> E getGraphEntity(Class<E> clazz, String graph, Parameter... parameters);
     <E> Optional<E> getGraphOptionalEntity(Class<E> clazz, String graph, Parameter... parameters);
@@ -22,4 +21,5 @@ public interface IQuery {
     <E> List<E> getNamedQueryEntityListClose(Class<E> clazz, String namedQuery, Parameter... parameters);
     <E> E getNamedQueryEntityClose(Class<E> clazz, String namedQuery, Parameter... parameters);
     <E> Optional<E> getNamedQueryOptionalEntityClose(Class<E> clazz, String namedQuery, Parameter... parameters);
+
 }

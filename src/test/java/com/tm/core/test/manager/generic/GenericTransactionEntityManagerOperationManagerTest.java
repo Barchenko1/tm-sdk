@@ -5,6 +5,7 @@ import com.tm.core.modal.relationship.Dependent;
 import com.tm.core.modal.relationship.Employee;
 import com.tm.core.modal.relationship.Item;
 import com.tm.core.process.dao.generic.IGenericTransactionDao;
+import com.tm.core.process.dao.generic.entityManager.AbstractGenericEntityManagerDao;
 import com.tm.core.process.dao.generic.entityManager.AbstractGenericTransactionEntityManagerDao;
 import com.tm.core.process.dao.generic.entityManager.GenericTransactionEntityManagerDao;
 import com.tm.core.process.dao.transaction.EntityManagerTransactionHandler;
@@ -377,7 +378,7 @@ class GenericTransactionEntityManagerOperationManagerTest extends AbstractDaoTes
     @Test
     void updateRelationshipEntityConsumer_transactionFailure() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Consumer<EntityManager> relationshipRootTestEntitySupplier = (EntityManager em) -> {
+        Consumer<EntityManager> consumer = (EntityManager em) -> {
             Employee employee = prepareToSaveRelationshipRootTestEntity();
             employee.setId(1L);
             em.merge(employee);
@@ -404,7 +405,7 @@ class GenericTransactionEntityManagerOperationManagerTest extends AbstractDaoTes
         doNothing().when(transaction).rollback();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            genericOperationManager.executeConsumer(relationshipRootTestEntitySupplier);
+            genericOperationManager.executeConsumer(consumer);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
@@ -559,7 +560,7 @@ class GenericTransactionEntityManagerOperationManagerTest extends AbstractDaoTes
         Query<Employee> query = mock(Query.class);
 
         try {
-            Field transactionHandlerField = AbstractGenericTransactionEntityManagerDao.class.getDeclaredField("entityManager");
+            Field transactionHandlerField = AbstractGenericEntityManagerDao.class.getDeclaredField("entityManager");
             transactionHandlerField.setAccessible(true);
             transactionHandlerField.set(genericTransactionDao, entityManager);
             Field genericTransactionOperationManagerField = AbstractGenericTransactionOperationManager.class.getDeclaredField("genericTransactionDao");

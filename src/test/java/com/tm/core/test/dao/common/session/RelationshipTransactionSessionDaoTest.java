@@ -3,6 +3,7 @@ package com.tm.core.test.dao.common.session;
 import com.tm.core.process.dao.AbstractEntityChecker;
 import com.tm.core.dao.basic.TestTransactionSessionFactoryDao;
 import com.tm.core.process.dao.common.ITransactionEntityDao;
+import com.tm.core.process.dao.common.session.AbstractSessionFactoryDao;
 import com.tm.core.process.dao.common.session.AbstractTransactionSessionFactoryDao;
 import com.tm.core.process.dao.query.QueryService;
 import com.tm.core.process.dao.query.IQueryService;
@@ -442,7 +443,7 @@ public class RelationshipTransactionSessionDaoTest extends AbstractDaoTest {
         Query<Employee> query = mock(Query.class);
 
         try {
-            Field sessionManagerField = AbstractTransactionSessionFactoryDao.class.getDeclaredField("sessionFactory");
+            Field sessionManagerField = AbstractSessionFactoryDao.class.getDeclaredField("sessionFactory");
             sessionManagerField.setAccessible(true);
             sessionManagerField.set(transactionEntityDao, sessionFactory);
         } catch (Exception e) {
@@ -605,7 +606,7 @@ public class RelationshipTransactionSessionDaoTest extends AbstractDaoTest {
         Query<Employee> query = mock(Query.class);
 
         try {
-            Field sessionManagerField = AbstractTransactionSessionFactoryDao.class.getDeclaredField("sessionFactory");
+            Field sessionManagerField = AbstractSessionFactoryDao.class.getDeclaredField("sessionFactory");
             sessionManagerField.setAccessible(true);
             sessionManagerField.set(transactionEntityDao, sessionFactory);
         } catch (Exception e) {

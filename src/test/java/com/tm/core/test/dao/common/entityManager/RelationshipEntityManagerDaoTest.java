@@ -190,9 +190,9 @@ public class RelationshipEntityManagerDaoTest extends AbstractDaoTest {
         EntityManager entityManager = mock(EntityManager.class);
 
         try {
-            Field transactionHandlerField = AbstractEntityManagerDao.class.getDeclaredField("entityManager");
-            transactionHandlerField.setAccessible(true);
-            transactionHandlerField.set(entityDao, entityManager);
+            Field entityManagerField = AbstractEntityManagerDao.class.getDeclaredField("entityManager");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(entityDao, entityManager);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -224,11 +224,19 @@ public class RelationshipEntityManagerDaoTest extends AbstractDaoTest {
     @Test
     void saveRelationshipEntitySupplier_transactionFailure() {
         loadDataSet("/datasets/relationship/emptyRelationshipTestEntityDataSet.yml");
-        Supplier<Employee> supplier = () -> {
-            Employee employee = new Employee();
-            employee.setName("New RelationshipRootTestEntity");
-            throw new RuntimeException();
-        };
+
+        Supplier<Employee> supplier = this::prepareRelationshipRootTestEntityDbMock;
+        EntityManager entityManager = mock(EntityManager.class);
+
+        try {
+            Field entityManagerField = AbstractEntityManagerDao.class.getDeclaredField("entityManager");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(entityDao, entityManager);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        doThrow(new RuntimeException()).when(entityManager).persist(any(Employee.class));
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             entityDao.persistSupplier(supplier);
@@ -291,9 +299,9 @@ public class RelationshipEntityManagerDaoTest extends AbstractDaoTest {
         EntityManager entityManager = mock(EntityManager.class);
 
         try {
-            Field transactionHandlerField = AbstractEntityManagerDao.class.getDeclaredField("entityManager");
-            transactionHandlerField.setAccessible(true);
-            transactionHandlerField.set(entityDao, entityManager);
+            Field entityManagerField = AbstractEntityManagerDao.class.getDeclaredField("entityManager");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(entityDao, entityManager);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -324,12 +332,22 @@ public class RelationshipEntityManagerDaoTest extends AbstractDaoTest {
         Employee employee = prepareToSaveRelationshipRootTestEntity();
         employee.setId(1L);
 
-        Supplier<Employee> relationshipRootTestEntitySupplier = () -> {
-            throw new RuntimeException();
-        };
+        Supplier<Employee> supplier = this::prepareRelationshipRootTestEntityDbMock;
+
+        EntityManager entityManager = mock(EntityManager.class);
+
+        try {
+            Field entityManagerField = AbstractEntityManagerDao.class.getDeclaredField("entityManager");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(entityDao, entityManager);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        doThrow(new RuntimeException()).when(entityManager).merge(any(Employee.class));
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            entityDao.mergeSupplier(relationshipRootTestEntitySupplier);
+            entityDao.mergeSupplier(supplier);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
@@ -381,9 +399,20 @@ public class RelationshipEntityManagerDaoTest extends AbstractDaoTest {
     @Test
     void deleteRelationshipEntityBySupplier_transactionFailure() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Supplier<Employee> supplier = () -> {
-            throw new RuntimeException();
-        };
+        Supplier<Employee> supplier = this::prepareRelationshipRootTestEntityDbMock;
+
+        EntityManager entityManager = mock(EntityManager.class);
+
+        try {
+            Field entityManagerField = AbstractEntityManagerDao.class.getDeclaredField("entityManager");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(entityDao, entityManager);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        doThrow(new RuntimeException()).when(entityManager).remove(any(Employee.class));
+
         Exception exception = assertThrows(RuntimeException.class, () -> {
             entityDao.deleteSupplier(supplier);
         });
@@ -437,9 +466,9 @@ public class RelationshipEntityManagerDaoTest extends AbstractDaoTest {
         EntityManager entityManager = mock(EntityManager.class);
 
         try {
-            Field transactionHandlerField = AbstractEntityManagerDao.class.getDeclaredField("entityManager");
-            transactionHandlerField.setAccessible(true);
-            transactionHandlerField.set(entityDao, entityManager);
+            Field entityManagerField = AbstractEntityManagerDao.class.getDeclaredField("entityManager");
+            entityManagerField.setAccessible(true);
+            entityManagerField.set(entityDao, entityManager);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

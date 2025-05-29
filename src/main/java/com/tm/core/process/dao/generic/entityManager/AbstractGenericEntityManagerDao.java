@@ -2,6 +2,8 @@ package com.tm.core.process.dao.generic.entityManager;
 
 import com.tm.core.finder.manager.EntityMappingManager;
 import com.tm.core.finder.scanner.EntityScanner;
+import com.tm.core.process.dao.fetch.EntityManagerFetchHandler;
+import com.tm.core.process.dao.IFetchHandler;
 import com.tm.core.process.dao.generic.IGenericDao;
 import com.tm.core.process.dao.query.IQueryService;
 import com.tm.core.process.dao.query.QueryService;
@@ -13,12 +15,14 @@ public abstract class AbstractGenericEntityManagerDao implements IGenericDao {
     protected final EntityManager entityManager;
     protected final IEntityFieldHelper entityFieldHelper;
     protected final IQueryService queryService;
+    protected final IFetchHandler fetchHandler;
 
     public AbstractGenericEntityManagerDao(EntityManager entityManager,
                                            String entityPackage) {
         this.entityManager = entityManager;
         this.entityFieldHelper = new EntityFieldHelper();
         this.queryService = initializerQueryService(entityPackage);
+        this.fetchHandler = new EntityManagerFetchHandler(entityManager, queryService);
     }
 
     private IQueryService initializerQueryService(String entityPackage) {

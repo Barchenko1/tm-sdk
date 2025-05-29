@@ -2,6 +2,8 @@ package com.tm.core.process.dao.common.session;
 
 import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.process.dao.common.IEntityDao;
+import com.tm.core.process.dao.IFetchHandler;
+import com.tm.core.process.dao.fetch.SessionFetchHandler;
 import com.tm.core.process.dao.query.IQueryService;
 import com.tm.core.util.helper.EntityFieldHelper;
 import com.tm.core.util.helper.IEntityFieldHelper;
@@ -23,6 +25,7 @@ public abstract class AbstractSessionFactoryDao implements IEntityDao {
     protected final SessionFactory sessionFactory;
     protected final IEntityFieldHelper entityFieldHelper;
     protected final IQueryService queryService;
+    protected final IFetchHandler fetchHandler;
 
     public AbstractSessionFactoryDao(SessionFactory sessionFactory,
                                      IQueryService queryService,
@@ -31,6 +34,7 @@ public abstract class AbstractSessionFactoryDao implements IEntityDao {
         this.sessionFactory = sessionFactory;
         this.entityFieldHelper = new EntityFieldHelper();
         this.queryService = queryService;
+        this.fetchHandler = new SessionFetchHandler(sessionFactory, queryService);
     }
 
     @Override
@@ -118,10 +122,10 @@ public abstract class AbstractSessionFactoryDao implements IEntityDao {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <E> List<E> getGraphEntityList(String graphName, Parameter... parameters) {
+    public <E> List<E> getGraphEntityList(String graph, Parameter... parameters) {
         try {
             Session session = sessionFactory.getCurrentSession();
-            return (List<E>) queryService.getGraphEntityList(session, this.clazz, graphName, parameters);
+            return (List<E>) queryService.getGraphEntityList(session, this.clazz, graph, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity list error {}", e.getMessage());
             throw new RuntimeException(e);
@@ -142,10 +146,10 @@ public abstract class AbstractSessionFactoryDao implements IEntityDao {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <E> E getGraphEntity(String graphName, Parameter... parameters) {
+    public <E> E getGraphEntity(String graph, Parameter... parameters) {
         try {
             Session session = sessionFactory.getCurrentSession();
-            return (E) queryService.getGraphEntity(session, this.clazz, graphName, parameters);
+            return (E) queryService.getGraphEntity(session, this.clazz, graph, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
             throw new RuntimeException(e);
@@ -195,6 +199,36 @@ public abstract class AbstractSessionFactoryDao implements IEntityDao {
                     String.format("Invalid entity type %s != %s", this.clazz, entity.getClass())
             );
         }
+    }
+
+    @Override
+    public <E> List<E> getGraphEntityListClose(String graph, Parameter... parameters) {
+        return List.of();
+    }
+
+    @Override
+    public <E> E getGraphEntityClose(String graph, Parameter... parameters) {
+        return null;
+    }
+
+    @Override
+    public <E> Optional<E> getGraphOptionalEntityClose(String graph, Parameter... parameters) {
+        return Optional.empty();
+    }
+
+    @Override
+    public <E> List<E> getNamedQueryEntityListClose(String namedQuery, Parameter... parameters) {
+        return List.of();
+    }
+
+    @Override
+    public <E> E getNamedQueryEntityClose(String namedQuery, Parameter... parameters) {
+        return null;
+    }
+
+    @Override
+    public <E> Optional<E> getNamedQueryOptionalEntityClose(String namedQuery, Parameter... parameters) {
+        return Optional.empty();
     }
 
     @Override

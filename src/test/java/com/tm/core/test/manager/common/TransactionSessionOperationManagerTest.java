@@ -3,6 +3,7 @@ package com.tm.core.test.manager.common;
 import com.tm.core.process.dao.AbstractEntityChecker;
 import com.tm.core.dao.basic.TestTransactionSessionFactoryDao;
 import com.tm.core.process.dao.common.ITransactionEntityDao;
+import com.tm.core.process.dao.common.session.AbstractSessionFactoryDao;
 import com.tm.core.process.dao.common.session.AbstractTransactionSessionFactoryDao;
 import com.tm.core.process.dao.query.QueryService;
 import com.tm.core.process.dao.query.IQueryService;
@@ -393,7 +394,7 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
     @Test
     void updateRelationshipEntityConsumer_transactionFailure() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Consumer<EntityManager> relationshipRootTestEntitySupplier = (EntityManager em) -> {
+        Consumer<EntityManager> consumer = (EntityManager em) -> {
             Employee employee = prepareToSaveRelationshipRootTestEntity();
             employee.setId(1L);
             em.merge(employee);
@@ -417,7 +418,7 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
         doNothing().when(transaction).rollback();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            entityOperationManager.executeConsumer(relationshipRootTestEntitySupplier);
+            entityOperationManager.executeConsumer(consumer);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
@@ -445,7 +446,7 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
         Query<Employee> query = mock(Query.class);
 
         try {
-            Field sessionManagerField = AbstractTransactionSessionFactoryDao.class.getDeclaredField("sessionFactory");
+            Field sessionManagerField = AbstractSessionFactoryDao.class.getDeclaredField("sessionFactory");
             sessionManagerField.setAccessible(true);
             sessionManagerField.set(transactionEntityDao, sessionFactory);
         } catch (Exception e) {
@@ -606,7 +607,7 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
         Query<Employee> query = mock(Query.class);
 
         try {
-            Field sessionManagerField = AbstractTransactionSessionFactoryDao.class.getDeclaredField("sessionFactory");
+            Field sessionManagerField = AbstractSessionFactoryDao.class.getDeclaredField("sessionFactory");
             sessionManagerField.setAccessible(true);
             sessionManagerField.set(transactionEntityDao, sessionFactory);
         } catch (Exception e) {

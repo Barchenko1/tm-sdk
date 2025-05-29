@@ -1,6 +1,8 @@
 package com.tm.core.process.dao.common.session;
 
 import com.tm.core.process.dao.common.ITransactionEntityDao;
+import com.tm.core.process.dao.IFetchHandler;
+import com.tm.core.process.dao.fetch.SessionFetchHandler;
 import com.tm.core.process.dao.query.IQueryService;
 import com.tm.core.process.dao.transaction.ITransactionHandler;
 import com.tm.core.process.dao.transaction.SessionTransactionHandler;
@@ -19,22 +21,15 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public abstract class AbstractTransactionSessionFactoryDao implements ITransactionEntityDao {
+public abstract class AbstractTransactionSessionFactoryDao extends AbstractSessionFactoryDao implements ITransactionEntityDao {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTransactionSessionFactoryDao.class);
 
-    protected final Class<?> clazz;
-    protected final SessionFactory sessionFactory;
-    protected final IEntityFieldHelper entityFieldHelper;
-    protected final IQueryService queryService;
     protected final ITransactionHandler transactionHandler;
 
     public AbstractTransactionSessionFactoryDao(SessionFactory sessionFactory,
                                                 IQueryService queryService,
                                                 Class<?> clazz) {
-        this.clazz = clazz;
-        this.sessionFactory = sessionFactory;
-        this.entityFieldHelper = new EntityFieldHelper();
-        this.queryService = queryService;
+        super(sessionFactory, queryService, clazz);
         this.transactionHandler = new SessionTransactionHandler(sessionFactory);
     }
 
@@ -118,9 +113,9 @@ public abstract class AbstractTransactionSessionFactoryDao implements ITransacti
 
     @Override
     @SuppressWarnings("unchecked")
-    public <E> List<E> getGraphEntityList(String graphName, Parameter... parameters) {
+    public <E> List<E> getGraphEntityList(String graph, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
-            return (List<E>) queryService.getGraphEntityList(session, this.clazz, graphName, parameters);
+            return (List<E>) queryService.getGraphEntityList(session, this.clazz, graph, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity list error {}", e.getMessage());
             throw e;
@@ -140,9 +135,9 @@ public abstract class AbstractTransactionSessionFactoryDao implements ITransacti
 
     @Override
     @SuppressWarnings("unchecked")
-    public <E> E getGraphEntity(String graphName, Parameter... parameters) {
+    public <E> E getGraphEntity(String graph, Parameter... parameters) {
         try (Session session = sessionFactory.openSession()) {
-            return (E) queryService.getGraphEntity(session, this.clazz, graphName, parameters);
+            return (E) queryService.getGraphEntity(session, this.clazz, graph, parameters);
         } catch (Exception e) {
             LOGGER.warn("get entity error {}", e.getMessage());
             throw e;

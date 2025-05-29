@@ -2,6 +2,8 @@ package com.tm.core.process.dao.common.entityManager;
 
 import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.process.dao.common.IEntityDao;
+import com.tm.core.process.dao.fetch.EntityManagerFetchHandler;
+import com.tm.core.process.dao.IFetchHandler;
 import com.tm.core.process.dao.query.IQueryService;
 import com.tm.core.util.helper.EntityFieldHelper;
 import com.tm.core.util.helper.IEntityFieldHelper;
@@ -21,6 +23,7 @@ public abstract class AbstractEntityManagerDao implements IEntityDao {
     protected final EntityManager entityManager;
     protected final IEntityFieldHelper entityFieldHelper;
     protected final IQueryService queryService;
+    protected final IFetchHandler fetchHandler;
 
     public AbstractEntityManagerDao(EntityManager entityManager,
                                     IQueryService queryService,
@@ -29,6 +32,7 @@ public abstract class AbstractEntityManagerDao implements IEntityDao {
         this.entityManager = entityManager;
         this.entityFieldHelper = new EntityFieldHelper();
         this.queryService = queryService;
+        this.fetchHandler = new EntityManagerFetchHandler(entityManager, queryService);
     }
 
     @Override
@@ -52,18 +56,21 @@ public abstract class AbstractEntityManagerDao implements IEntityDao {
     @Override
     public <E> void persistSupplier(Supplier<E> supplier) {
         E entity = supplier.get();
+        classTypeChecker(entity);
         entityManager.persist(entity);
     }
 
     @Override
     public <E> void mergeSupplier(Supplier<E> supplier) {
         E entity = supplier.get();
+        classTypeChecker(entity);
         entityManager.merge(entity);
     }
 
     @Override
     public <E> void deleteSupplier(Supplier<E> supplier) {
         E entity = supplier.get();
+        classTypeChecker(entity);
         entityManager.remove(entity);
     }
 
@@ -74,65 +81,77 @@ public abstract class AbstractEntityManagerDao implements IEntityDao {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <E> List<E> getGraphEntityList(String graphName, Parameter... parameters) {
-        try {
-            return (List<E>) queryService.getGraphEntityList(entityManager, clazz, graphName, parameters);
-        } finally {
-            entityManager.clear();
-        }
+    public <E> List<E> getGraphEntityList(String graph, Parameter... parameters) {
+        return (List<E>) fetchHandler.getGraphEntityList(clazz, graph, parameters);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <E> List<E> getNamedQueryEntityList(String namedQuery, Parameter... parameters) {
-        try {
-            return (List<E>) queryService.getNamedQueryEntityList(entityManager, clazz, namedQuery, parameters);
-        } finally {
-            entityManager.clear();
-        }
+        return (List<E>) fetchHandler.getNamedQueryEntityList(clazz, namedQuery, parameters);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <E> E getGraphEntity(String graphName, Parameter... parameters) {
-        try {
-            return (E) queryService.getGraphEntity(entityManager, clazz, graphName, parameters);
-        } finally {
-            entityManager.clear();
-        }
+    public <E> E getGraphEntity(String graph, Parameter... parameters) {
+        return (E) fetchHandler.getGraphEntity(clazz, graph, parameters);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <E> E getNamedQueryEntity(String namedQuery, Parameter... parameters) {
-        try {
-            return (E) queryService.getNamedQueryEntity(entityManager, clazz, namedQuery, parameters);
-        } finally {
-            entityManager.clear();
-        }
+        return (E) fetchHandler.getNamedQueryEntity(clazz, namedQuery, parameters);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <E> Optional<E> getGraphOptionalEntity(String graph, Parameter... parameters) {
-        try {
-            return (Optional<E>) queryService.getGraphOptionalEntity(entityManager, clazz, graph, parameters);
-        } finally {
-            entityManager.clear();
-        }
+        return (Optional<E>) fetchHandler.getGraphOptionalEntity(clazz, graph, parameters);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <E> Optional<E> getNamedQueryOptionalEntity(String namedQuery, Parameter... parameters) {
-        try {
-            return (Optional<E>) queryService.getNamedQueryOptionalEntity(entityManager, clazz, namedQuery, parameters);
-        } finally {
-            entityManager.clear();
-        }
+        return (Optional<E>) fetchHandler.getNamedQueryOptionalEntity(clazz, namedQuery, parameters);
     }
 
-    private <E> void classTypeChecker(E entity) {
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E> List<E> getGraphEntityListClose(String graph, Parameter... parameters) {
+        return (List<E>) fetchHandler.getGraphEntityListClose(clazz, graph, parameters);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E> E getGraphEntityClose(String graph, Parameter... parameters) {
+        return (E) fetchHandler.getGraphEntityClose(clazz, graph, parameters);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E> Optional<E> getGraphOptionalEntityClose(String graph, Parameter... parameters) {
+        return (Optional<E>) fetchHandler.getGraphOptionalEntityClose(clazz, graph, parameters);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E> List<E> getNamedQueryEntityListClose(String namedQuery, Parameter... parameters) {
+        return (List<E>) fetchHandler.getNamedQueryEntityListClose(clazz, namedQuery, parameters);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E> E getNamedQueryEntityClose(String namedQuery, Parameter... parameters) {
+        return (E) fetchHandler.getNamedQueryEntityClose(clazz, namedQuery, parameters);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E> Optional<E> getNamedQueryOptionalEntityClose(String namedQuery, Parameter... parameters) {
+        return (Optional<E>) fetchHandler.getNamedQueryOptionalEntityClose(clazz, namedQuery, parameters);
+    }
+
+    protected  <E> void classTypeChecker(E entity) {
         if (this.clazz != entity.getClass()) {
             LOGGER.warn("Invalid entity type {} != {}", this.clazz, entity.getClass());
             throw new RuntimeException(

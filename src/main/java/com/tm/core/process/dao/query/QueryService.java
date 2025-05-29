@@ -79,8 +79,8 @@ public class QueryService implements IQueryService {
     }
 
     @SuppressWarnings("unchecked")
-    private <E> Query<E> getDynamicEntityGraphQuery(EntityManager entityManager, Class<E> clazz, String graphName, Parameter... params) {
-        LOGGER.info("getDynamicEntityGraphQuery func: {}, {}", clazz, graphName);
+    private <E> Query<E> getDynamicEntityGraphQuery(EntityManager entityManager, Class<E> clazz, String graph, Parameter... params) {
+        LOGGER.info("getDynamicEntityGraphQuery func: {}, {}", clazz, graph);
         EntityTable entityTable = entityMappingManager.getEntityTable(clazz);
         if (entityTable == null) {
             throw new RuntimeException("Invalid select class: " + clazz);
@@ -97,7 +97,7 @@ public class QueryService implements IQueryService {
             }
         }
 
-        query.setHint("jakarta.persistence.loadgraph", entityManager.getEntityGraph(graphName));
+        query.setHint("jakarta.persistence.loadgraph", entityManager.getEntityGraph(graph));
         return query;
     }
 

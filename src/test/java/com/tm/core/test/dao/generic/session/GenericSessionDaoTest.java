@@ -136,15 +136,23 @@ public class GenericSessionDaoTest extends AbstractDaoTest {
     @Test
     void saveRelationshipEntitySupplier_transactionFailure() {
         loadDataSet("/datasets/relationship/emptyRelationshipTestEntityDataSet.yml");
-        Supplier<Employee> supplier = () -> {
-            Employee employee = new Employee();
-            employee.setName("New RelationshipRootTestEntity");
-            throw new RuntimeException();
-        };
+        Supplier<Employee> supplier = this::prepareRelationshipRootTestEntityDbMock;
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            genericDao.persistEntity(supplier);
-        });
+        SessionFactory sessionFactory = mock(SessionFactory.class);
+        Session session = mock(Session.class);
+
+        try {
+            Field transactionHandlerField = AbstractGenericSessionDao.class.getDeclaredField("sessionFactory");
+            transactionHandlerField.setAccessible(true);
+            transactionHandlerField.set(genericDao, sessionFactory);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        when(sessionFactory.getCurrentSession()).thenReturn(session);
+        doThrow(new RuntimeException()).when(session).persist(supplier.get());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> genericDao.persistEntity(supplier));
 
         assertEquals(RuntimeException.class, exception.getClass());
     }
@@ -223,6 +231,7 @@ public class GenericSessionDaoTest extends AbstractDaoTest {
             employeeToUpdate.setId(oldRelationShipEntity.getId());
             return employeeToUpdate;
         };
+
         transactionTemplate.executeWithoutResult(transactionStatus -> {
             genericDao.mergeSupplier(supplier);
         });
@@ -234,13 +243,23 @@ public class GenericSessionDaoTest extends AbstractDaoTest {
         Employee employee = prepareToSaveRelationshipRootTestEntity();
         employee.setId(1L);
 
-        Supplier<Employee> relationshipRootTestEntitySupplier = () -> {
-            throw new RuntimeException();
-        };
+        Supplier<Employee> supplier = this::prepareRelationshipRootTestEntityDbMock;
 
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            genericDao.mergeSupplier(relationshipRootTestEntitySupplier);
-        });
+        SessionFactory sessionFactory = mock(SessionFactory.class);
+        Session session = mock(Session.class);
+
+        try {
+            Field transactionHandlerField = AbstractGenericSessionDao.class.getDeclaredField("sessionFactory");
+            transactionHandlerField.setAccessible(true);
+            transactionHandlerField.set(genericDao, sessionFactory);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        when(sessionFactory.getCurrentSession()).thenReturn(session);
+        doThrow(new RuntimeException()).when(session).merge(supplier.get());
+
+        Exception exception = assertThrows(RuntimeException.class, () -> genericDao.mergeSupplier(supplier));
 
         assertEquals(RuntimeException.class, exception.getClass());
     }
@@ -264,14 +283,14 @@ public class GenericSessionDaoTest extends AbstractDaoTest {
     @Test
     void updateRelationshipEntityConsumer_transactionFailure() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Consumer<EntityManager> relationshipRootTestEntitySupplier = (EntityManager em) -> {
+        Consumer<EntityManager> consumer = (EntityManager em) -> {
             Employee employee = prepareToSaveRelationshipRootTestEntity();
             employee.setId(1L);
             em.merge(employee);
         };
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            genericDao.executeConsumer(relationshipRootTestEntitySupplier);
+            genericDao.executeConsumer(consumer);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
@@ -291,9 +310,22 @@ public class GenericSessionDaoTest extends AbstractDaoTest {
     @Test
     void deleteRelationshipEntityBySupplier_transactionFailure() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Supplier<Employee> supplier = () -> {
-            throw new RuntimeException();
-        };
+        Supplier<Employee> supplier = this::prepareRelationshipRootTestEntityDbMock;
+
+        SessionFactory sessionFactory = mock(SessionFactory.class);
+        Session session = mock(Session.class);
+
+        try {
+            Field transactionHandlerField = AbstractGenericSessionDao.class.getDeclaredField("sessionFactory");
+            transactionHandlerField.setAccessible(true);
+            transactionHandlerField.set(genericDao, sessionFactory);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        when(sessionFactory.getCurrentSession()).thenReturn(session);
+        doThrow(new RuntimeException()).when(session).remove(supplier.get());
+
         Exception exception = assertThrows(RuntimeException.class, () -> {
             genericDao.deleteEntity(supplier);
         });

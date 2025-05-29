@@ -10,6 +10,7 @@ import com.tm.core.modal.relationship.Employee;
 import com.tm.core.modal.relationship.Item;
 import com.tm.core.process.dao.AbstractEntityChecker;
 import com.tm.core.process.dao.common.ITransactionEntityDao;
+import com.tm.core.process.dao.common.entityManager.AbstractEntityManagerDao;
 import com.tm.core.process.dao.common.entityManager.AbstractTransactionEntityManagerDao;
 import com.tm.core.process.dao.query.IQueryService;
 import com.tm.core.process.dao.query.QueryService;
@@ -386,7 +387,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
     @Test
     void updateRelationshipEntityConsumer_transactionFailure() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Consumer<EntityManager> relationshipRootTestEntitySupplier = (EntityManager em) -> {
+        Consumer<EntityManager> consumer = (EntityManager em) -> {
             Employee employee = prepareToSaveRelationshipRootTestEntity();
             employee.setId(1L);
             em.merge(employee);
@@ -410,7 +411,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
         doNothing().when(transaction).rollback();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            entityOperationManager.executeConsumer(relationshipRootTestEntitySupplier);
+            entityOperationManager.executeConsumer(consumer);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
@@ -437,7 +438,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
         Query<Employee> query = mock(Query.class);
 
         try {
-            Field entityManagerField = AbstractTransactionEntityManagerDao.class.getDeclaredField("entityManager");
+            Field entityManagerField = AbstractEntityManagerDao.class.getDeclaredField("entityManager");
             entityManagerField.setAccessible(true);
             entityManagerField.set(transactionEntityDao, entityManager);
         } catch (Exception e) {
@@ -595,7 +596,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
         Query<Employee> query = mock(Query.class);
 
         try {
-            Field entityManagerField = AbstractTransactionEntityManagerDao.class.getDeclaredField("entityManager");
+            Field entityManagerField = AbstractEntityManagerDao.class.getDeclaredField("entityManager");
             entityManagerField.setAccessible(true);
             entityManagerField.set(transactionEntityDao, entityManager);
         } catch (Exception e) {
@@ -619,7 +620,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Parameter parameter = new Parameter("id", 1L);
 
-        Employee result = entityOperationManager.getGraphEntity(GRAPH_PATH, parameter);
+        Employee result = entityOperationManager.getGraphEntityClose(GRAPH_PATH, parameter);
 
         assertEquals(1L, result.getId());
         assertEquals("Relationship Root Entity", result.getName());
@@ -637,7 +638,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
     @Test
     public void testGetEntityGraph_Failure() {
         assertThrows(RuntimeException.class, () -> {
-            entityOperationManager.getGraphEntity(GRAPH_PATH, new Parameter("id", 1));
+            entityOperationManager.getGraphEntityClose(GRAPH_PATH, new Parameter("id", 1));
         });
     }
 
@@ -645,7 +646,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
     void getEntityWithDependencies() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Employee result =
-                transactionEntityDao.getNamedQueryEntity(NAMED_QUERY_NAME_ONE, new Parameter("id", 1));
+                transactionEntityDao.getNamedQueryEntityClose(NAMED_QUERY_NAME_ONE, new Parameter("id", 1));
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
@@ -673,7 +674,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id1", 1L);
 
         assertThrows(RuntimeException.class, () -> {
-            transactionEntityDao.getNamedQueryEntity(NAMED_QUERY_NAME_ONE, parameter);
+            transactionEntityDao.getNamedQueryEntityClose(NAMED_QUERY_NAME_ONE, parameter);
         });
     }
 
@@ -683,7 +684,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id", 1L);
 
         Optional<Employee> optional =
-                entityOperationManager.getGraphOptionalEntity(GRAPH_PATH, parameter);
+                entityOperationManager.getGraphOptionalEntityClose(GRAPH_PATH, parameter);
 
         assertTrue(optional.isPresent());
         Employee result = optional.get();
@@ -712,7 +713,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id1", 1L);
 
         assertThrows(RuntimeException.class, () -> {
-            entityOperationManager.getGraphOptionalEntity(GRAPH_PATH, parameter);
+            entityOperationManager.getGraphOptionalEntityClose(GRAPH_PATH, parameter);
         });
 
     }
@@ -723,7 +724,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id", 1L);
 
         Optional<Employee> optional =
-                transactionEntityDao.getNamedQueryOptionalEntity(NAMED_QUERY_NAME_ONE, parameter);
+                entityOperationManager.getNamedQueryOptionalEntityClose(NAMED_QUERY_NAME_ONE, parameter);
 
         assertTrue(optional.isPresent());
         Employee result = optional.get();
@@ -752,7 +753,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id1", 1L);
 
         assertThrows(RuntimeException.class, () -> {
-            transactionEntityDao.getNamedQueryOptionalEntity(NAMED_QUERY_NAME_ONE, parameter);
+            transactionEntityDao.getNamedQueryOptionalEntityClose(NAMED_QUERY_NAME_ONE, parameter);
         });
 
     }
@@ -762,7 +763,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Parameter parameter = new Parameter("id", 1L);
 
-        List<Employee> result = entityOperationManager.getGraphEntityList(GRAPH_PATH, parameter);
+        List<Employee> result = entityOperationManager.getGraphEntityListClose(GRAPH_PATH, parameter);
         result.sort(Comparator.comparingLong(Employee::getId));
 
         assertEquals(1, result.size());
@@ -788,7 +789,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
     void getEntityListGraph_transactionFailure() {
         Parameter parameter = new Parameter("id1", 1L);
 
-        assertThrows(RuntimeException.class, () -> entityOperationManager.getGraphEntityList(GRAPH_PATH, parameter));
+        assertThrows(RuntimeException.class, () -> entityOperationManager.getGraphEntityListClose(GRAPH_PATH, parameter));
     }
 
     @Test
@@ -796,7 +797,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Parameter parameter = new Parameter("id", 1L);
 
-        List<Employee> result = transactionEntityDao.getNamedQueryEntityList(NAMED_QUERY_NAME_ONE, parameter);
+        List<Employee> result = entityOperationManager.getNamedQueryEntityListClose(NAMED_QUERY_NAME_ONE, parameter);
 
         assertEquals(1, result.size());
         assertEquals(1, result.get(0).getId());
@@ -815,7 +816,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id1", 1L);
 
         assertThrows(RuntimeException.class, () -> {
-            transactionEntityDao.getNamedQueryEntityList(NAMED_QUERY_NAME_ONE, parameter);
+            entityOperationManager.getNamedQueryEntityListClose(NAMED_QUERY_NAME_ONE, parameter);
         });
     }
 

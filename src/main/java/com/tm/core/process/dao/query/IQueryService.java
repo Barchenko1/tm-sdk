@@ -11,9 +11,9 @@ public interface IQueryService {
 
     <E> E getEntityByDefaultNamedQuery(EntityManager entityManager, Class<E> clazz, Parameter... parameters);
 
-    <E> E getGraphEntity(EntityManager entityManager, Class<E> clazz, String graphName, Parameter... parameters);
-    <E> Optional<E> getGraphOptionalEntity(EntityManager entityManager, Class<E> clazz, String graphName, Parameter... parameters);
-    <E> List<E> getGraphEntityList(EntityManager entityManager, Class<E> clazz, String graphName, Parameter... parameters);
+    <E> E getGraphEntity(EntityManager entityManager, Class<E> clazz, String graph, Parameter... parameters);
+    <E> Optional<E> getGraphOptionalEntity(EntityManager entityManager, Class<E> clazz, String graph, Parameter... parameters);
+    <E> List<E> getGraphEntityList(EntityManager entityManager, Class<E> clazz, String graph, Parameter... parameters);
 
     <E> E getNamedQueryEntity(EntityManager entityManager, Class<E> clazz, String namedQuery, Parameter... parameters);
     <E> Optional<E> getNamedQueryOptionalEntity(EntityManager entityManager, Class<E> clazz, String namedQuery, Parameter... parameters);

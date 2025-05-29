@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class GenericTransactionOperationManager extends AbstractGenericTransactionOperationManager {
@@ -72,71 +71,63 @@ public class GenericTransactionOperationManager extends AbstractGenericTransacti
     }
 
     @Override
-    public <E> E getGraphEntity(Class<E> clazz, String graph, Parameter parameter) {
-        LOGGER.info("Getting entity");
-        return genericTransactionDao.getGraphEntity(clazz, graph, parameter);
+    public <E> List<E> getGraphEntityList(Class<E> clazz, String graph, Parameter... parameters) {
+        return genericTransactionDao.getGraphEntityList(clazz, graph, parameters);
     }
 
     @Override
-    public <E> Optional<E> getGraphOptionalEntity(Class<E> clazz, String graph, Parameter parameter) {
-        LOGGER.info("Getting entity");
-        return genericTransactionDao.getGraphOptionalEntity(clazz, graph, parameter);
+    public <E> E getGraphEntity(Class<E> clazz, String graph, Parameter... parameters) {
+        return genericTransactionDao.getGraphEntity(clazz, graph, parameters);
     }
 
     @Override
-    public <E> List<E> getGraphEntityList(Class<E> clazz, String graph, Parameter parameter) {
-        LOGGER.info("Getting entity list");
-        return genericTransactionDao.getGraphEntityList(clazz, graph, parameter);
+    public <E> Optional<E> getGraphOptionalEntity(Class<E> clazz, String graph, Parameter... parameters) {
+        return genericTransactionDao.getGraphOptionalEntity(clazz, graph, parameters);
     }
 
     @Override
-    public <E> E getNamedQueryEntity(Class<E> clazz, String namedQuery, Parameter parameter) {
-        LOGGER.info("Getting entity");
-        return genericTransactionDao.getNamedQueryEntity(clazz, namedQuery, parameter);
+    public <E> List<E> getGraphEntityListClose(Class<E> clazz, String graph, Parameter... parameters) {
+        return genericTransactionDao.getGraphEntityListClose(clazz, graph, parameters);
     }
 
     @Override
-    public <E> Optional<E> getNamedQueryOptionalEntity(Class<E> clazz, String namedQuery, Parameter parameter) {
-        LOGGER.info("Getting entity");
-        return genericTransactionDao.getNamedQueryOptionalEntity(clazz, namedQuery, parameter);
+    public <E> E getGraphEntityClose(Class<E> clazz, String graph, Parameter... parameters) {
+        return genericTransactionDao.getGraphEntityClose(clazz, graph, parameters);
     }
 
     @Override
-    public <E> List<E> getNamedQueryEntityList(Class<E> clazz, String namedQuery, Parameter parameter) {
-        LOGGER.info("Getting entity list");
-        return genericTransactionDao.getNamedQueryEntityList(clazz, namedQuery, parameter);
+    public <E> Optional<E> getGraphOptionalEntityClose(Class<E> clazz, String graph, Parameter... parameters) {
+        return genericTransactionDao.getGraphOptionalEntityClose(clazz, graph, parameters);
     }
 
     @Override
-    public <E, R> R getGraphEntityDto(Class<E> clazz, String graph, Parameter parameter, Function<E, R> mapToDtoFunction) {
-        LOGGER.info("Getting entity dto");
-        E entity = genericTransactionDao.getGraphEntity(clazz, graph, parameter);
-        return Optional.ofNullable(entity).map(mapToDtoFunction).orElse(null);
+    public <E> List<E> getNamedQueryEntityList(Class<E> clazz, String namedQuery, Parameter... parameters) {
+        return genericTransactionDao.getNamedQueryEntityList(clazz, namedQuery, parameters);
     }
 
     @Override
-    public <E, R> Optional<R> getGraphOptionalEntityDto(Class<E> clazz, String graph, Parameter parameter, Function<E, R> mapToDtoFunction) {
-        LOGGER.info("Getting entity dto");
-        E entity = genericTransactionDao.getGraphEntity(clazz, graph, parameter);
-        return Optional.ofNullable(entity).map(mapToDtoFunction);
+    public <E> E getNamedQueryEntity(Class<E> clazz, String namedQuery, Parameter... parameters) {
+        return genericTransactionDao.getNamedQueryEntity(clazz, namedQuery, parameters);
     }
 
     @Override
-    public <E, R> List<R> getGraphEntityDtoList(Class<E> clazz, String graph, Function<E, R> mapToDtoFunction) {
-        LOGGER.info("Getting entity dto list");
-        List<E> entityList = genericTransactionDao.getGraphEntityList(clazz, graph);
-        return entityList.stream()
-                .map(entity -> transformEntityToDto(entity, mapToDtoFunction))
-                .toList();
+    public <E> Optional<E> getNamedQueryOptionalEntity(Class<E> clazz, String namedQuery, Parameter... parameters) {
+        return genericTransactionDao.getNamedQueryOptionalEntity(clazz, namedQuery, parameters);
     }
 
     @Override
-    public <E, R> List<R> getSubGraphEntityDtoList(Class<E> clazz, String graph, Parameter parameter, Function<E, R> mapToDtoFunction) {
-        LOGGER.info("Getting entity dto list");
-        List<E> entityList = genericTransactionDao.getGraphEntityList(clazz, graph, parameter);
-        return entityList.stream()
-                .map(entity -> transformEntityToDto(entity, mapToDtoFunction))
-                .toList();
+    public <E> List<E> getNamedQueryEntityListClose(Class<E> clazz, String namedQuery, Parameter... parameters) {
+        return genericTransactionDao.getNamedQueryEntityListClose(clazz, namedQuery, parameters);
+    }
+
+    @Override
+    public <E> E getNamedQueryEntityClose(Class<E> clazz, String namedQuery, Parameter... parameters) {
+        return genericTransactionDao.getNamedQueryEntityClose(clazz, namedQuery, parameters);
+    }
+
+    @Override
+    public <E> Optional<E> getNamedQueryOptionalEntityClose(Class<E> clazz, String namedQuery, Parameter... parameters) {
+        return genericTransactionDao.getNamedQueryOptionalEntityClose(clazz, namedQuery, parameters);
     }
 
 }

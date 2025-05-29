@@ -68,9 +68,9 @@ public class GenericTransactionEntityManagerDao extends AbstractGenericTransacti
     }
 
     @Override
-    public <E> List<E> getGraphEntityList(Class<E> clazz, String graphName, Parameter... parameters) {
+    public <E> List<E> getGraphEntityList(Class<E> clazz, String graph, Parameter... parameters) {
         try {
-            return queryService.getGraphEntityList(entityManager, clazz, graphName, parameters);
+            return queryService.getGraphEntityList(entityManager, clazz, graph, parameters);
         } finally {
             entityManager.clear();
         }
@@ -86,9 +86,9 @@ public class GenericTransactionEntityManagerDao extends AbstractGenericTransacti
     }
 
     @Override
-    public <E> E getGraphEntity(Class<E> clazz, String graphName, Parameter... parameters) {
+    public <E> E getGraphEntity(Class<E> clazz, String graph, Parameter... parameters) {
         try {
-            return queryService.getGraphEntity(entityManager, clazz, graphName, parameters);
+            return queryService.getGraphEntity(entityManager, clazz, graph, parameters);
         } finally {
             entityManager.clear();
         }
@@ -113,12 +113,42 @@ public class GenericTransactionEntityManagerDao extends AbstractGenericTransacti
     }
 
     @Override
+    public <E> List<E> getGraphEntityListClose(Class<E> clazz, String graph, Parameter... parameters) {
+        return List.of();
+    }
+
+    @Override
+    public <E> E getGraphEntityClose(Class<E> clazz, String graph, Parameter... parameters) {
+        return null;
+    }
+
+    @Override
+    public <E> Optional<E> getGraphOptionalEntityClose(Class<E> clazz, String graph, Parameter... parameters) {
+        return Optional.empty();
+    }
+
+    @Override
     public <E> Optional<E> getNamedQueryOptionalEntity(Class<E> clazz, String namedQuery, Parameter... parameters) {
         try {
             return queryService.getNamedQueryOptionalEntity(entityManager, clazz, namedQuery, parameters);
         } finally {
             entityManager.clear();
         }
+    }
+
+    @Override
+    public <E> List<E> getNamedQueryEntityListClose(Class<E> clazz, String namedQuery, Parameter... parameters) {
+        return List.of();
+    }
+
+    @Override
+    public <E> E getNamedQueryEntityClose(Class<E> clazz, String namedQuery, Parameter... parameters) {
+        return null;
+    }
+
+    @Override
+    public <E> Optional<E> getNamedQueryOptionalEntityClose(Class<E> clazz, String namedQuery, Parameter... parameters) {
+        return Optional.empty();
     }
 
     @Override

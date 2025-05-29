@@ -231,7 +231,7 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
 
     @Test
     void updateRelationshipEntity_transactionFailure() {
-        Supplier<Employee> relationshipRootTestEntitySupplier = this::prepareRelationshipRootTestEntityDbMock;
+        Supplier<Employee> supplier = this::prepareRelationshipRootTestEntityDbMock;
 
         EntityManager entityManager = mock(EntityManager.class);
         try {
@@ -245,7 +245,7 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
         doThrow(new RuntimeException()).when(entityManager).merge(any(Employee.class));
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            genericDao.mergeSupplier(relationshipRootTestEntitySupplier);
+            genericDao.mergeSupplier(supplier);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
@@ -269,7 +269,7 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
     @Test
     void updateRelationshipEntityConsumer_transactionFailure() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
-        Consumer<EntityManager> relationshipRootTestEntitySupplier = (EntityManager em) -> {
+        Consumer<EntityManager> consumer = (EntityManager em) -> {
             Employee employee = prepareToSaveRelationshipRootTestEntity();
             employee.setId(1L);
             em.merge(employee);
@@ -286,7 +286,7 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
         doThrow(new RuntimeException()).when(entityManager).merge(any(Employee.class));
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            genericDao.executeConsumer(relationshipRootTestEntitySupplier);
+            genericDao.executeConsumer(consumer);
         });
 
         assertEquals(RuntimeException.class, exception.getClass());
