@@ -1,4 +1,4 @@
-package com.tm.core.process.manager.common.impl;
+package com.tm.core.process.manager.common.operator;
 
 import com.tm.core.process.dao.common.IEntityDao;
 

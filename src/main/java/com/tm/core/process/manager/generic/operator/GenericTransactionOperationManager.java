@@ -1,4 +1,4 @@
-package com.tm.core.process.manager.generic.impl;
+package com.tm.core.process.manager.generic.operator;
 
 import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.process.dao.generic.IGenericTransactionDao;

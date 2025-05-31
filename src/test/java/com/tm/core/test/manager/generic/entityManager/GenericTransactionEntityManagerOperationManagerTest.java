@@ -11,9 +11,8 @@ import com.tm.core.process.dao.generic.entityManager.GenericTransactionEntityMan
 import com.tm.core.process.dao.transaction.EntityManagerTransactionHandler;
 import com.tm.core.process.dao.transaction.ITransactionHandler;
 import com.tm.core.process.manager.generic.IGenericTransactionOperationManager;
-import com.tm.core.process.manager.generic.impl.AbstractGenericTransactionOperationManager;
-import com.tm.core.process.manager.generic.impl.GenericTransactionOperationManager;
-import com.tm.core.process.manager.generic.IGenericOperationManager;
+import com.tm.core.process.manager.generic.operator.AbstractGenericTransactionOperationManager;
+import com.tm.core.process.manager.generic.operator.GenericTransactionOperationManager;
 import com.tm.core.test.dao.AbstractDaoTest;
 import jakarta.persistence.EntityManager;
 import org.hibernate.Transaction;
