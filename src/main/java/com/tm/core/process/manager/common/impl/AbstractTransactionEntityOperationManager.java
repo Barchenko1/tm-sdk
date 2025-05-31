@@ -1,7 +1,8 @@
-package com.tm.core.process.manager.common;
+package com.tm.core.process.manager.common.impl;
 
 import com.tm.core.finder.parameter.Parameter;
 import com.tm.core.process.dao.common.ITransactionEntityDao;
+import com.tm.core.process.manager.common.ITransactionEntityOperationManager;
 import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public abstract class AbstractTransactionEntityOperationManager implements IEntityOperationManager {
+public abstract class AbstractTransactionEntityOperationManager implements ITransactionEntityOperationManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTransactionEntityOperationManager.class);
 
     private final ITransactionEntityDao dao;

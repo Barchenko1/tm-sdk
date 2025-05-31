@@ -123,117 +123,87 @@ public abstract class AbstractSessionFactoryDao implements IEntityDao {
     @Override
     @SuppressWarnings("unchecked")
     public <E> List<E> getGraphEntityList(String graph, Parameter... parameters) {
-        try {
-            Session session = sessionFactory.getCurrentSession();
-            return (List<E>) queryService.getGraphEntityList(session, this.clazz, graph, parameters);
-        } catch (Exception e) {
-            LOGGER.warn("get entity list error {}", e.getMessage());
-            throw new RuntimeException(e);
-        }
+        return (List<E>) fetchHandler.getGraphEntityList(clazz, graph, parameters);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <E> List<E> getNamedQueryEntityList(String namedQuery, Parameter... parameters) {
-        try {
-            Session session = sessionFactory.getCurrentSession();
-            return (List<E>) queryService.getNamedQueryEntityList(session, this.clazz, namedQuery, parameters);
-        } catch (Exception e) {
-            LOGGER.warn("get entity list error {}", e.getMessage());
-            throw new RuntimeException(e);
-        }
+        return (List<E>) fetchHandler.getNamedQueryEntityList(clazz, namedQuery, parameters);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <E> E getGraphEntity(String graph, Parameter... parameters) {
-        try {
-            Session session = sessionFactory.getCurrentSession();
-            return (E) queryService.getGraphEntity(session, this.clazz, graph, parameters);
-        } catch (Exception e) {
-            LOGGER.warn("get entity error {}", e.getMessage());
-            throw new RuntimeException(e);
-        }
+        return (E) fetchHandler.getGraphEntity(clazz, graph, parameters);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <E> E getNamedQueryEntity(String namedQuery, Parameter... parameters) {
-        try {
-            Session session = sessionFactory.getCurrentSession();
-            return (E) queryService.getNamedQueryEntity(session, this.clazz, namedQuery, parameters);
-        } catch (Exception e) {
-            LOGGER.warn("get entity error {}", e.getMessage());
-            throw new RuntimeException(e);
-        }
+        return (E) fetchHandler.getNamedQueryEntity(clazz, namedQuery, parameters);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <E> Optional<E> getGraphOptionalEntity(String graph, Parameter... parameters) {
-        try {
-            Session session = sessionFactory.getCurrentSession();
-            return (Optional<E>) queryService.getGraphOptionalEntity(session, this.clazz, graph, parameters);
-        } catch (Exception e) {
-            LOGGER.warn("get entity error {}", e.getMessage());
-            throw new RuntimeException(e);
-        }
+        return (Optional<E>) fetchHandler.getGraphOptionalEntity(clazz, graph, parameters);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <E> Optional<E> getNamedQueryOptionalEntity(String namedQuery, Parameter... parameters) {
-        try {
-            Session session = sessionFactory.getCurrentSession();
-            return (Optional<E>) queryService.getNamedQueryOptionalEntity(session, this.clazz, namedQuery, parameters);
-        } catch (Exception e) {
-            LOGGER.warn("get entity error {}", e.getMessage());
-            throw new RuntimeException(e);
-        }
+        return (Optional<E>) fetchHandler.getNamedQueryOptionalEntity(clazz, namedQuery, parameters);
     }
 
-    private <E> void classTypeChecker(E entity) {
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E> List<E> getGraphEntityListClose(String graph, Parameter... parameters) {
+        return (List<E>) fetchHandler.getGraphEntityListClose(clazz, graph, parameters);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E> E getGraphEntityClose(String graph, Parameter... parameters) {
+        return (E) fetchHandler.getGraphEntityClose(clazz, graph, parameters);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E> Optional<E> getGraphOptionalEntityClose(String graph, Parameter... parameters) {
+        return (Optional<E>) fetchHandler.getGraphOptionalEntityClose(clazz, graph, parameters);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E> List<E> getNamedQueryEntityListClose(String namedQuery, Parameter... parameters) {
+        return (List<E>) fetchHandler.getNamedQueryEntityListClose(clazz, namedQuery, parameters);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E> E getNamedQueryEntityClose(String namedQuery, Parameter... parameters) {
+        return (E) fetchHandler.getNamedQueryEntityClose(clazz, namedQuery, parameters);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E> Optional<E> getNamedQueryOptionalEntityClose(String namedQuery, Parameter... parameters) {
+        return (Optional<E>) fetchHandler.getNamedQueryOptionalEntityClose(clazz, namedQuery, parameters);
+    }
+
+    @Override
+    public Class<?> getEntityClass() {
+        return this.clazz;
+    }
+
+    protected  <E> void classTypeChecker(E entity) {
         if (this.clazz != entity.getClass()) {
             LOGGER.warn("Invalid entity type {} != {}", this.clazz, entity.getClass());
             throw new RuntimeException(
                     String.format("Invalid entity type %s != %s", this.clazz, entity.getClass())
             );
         }
-    }
-
-    @Override
-    public <E> List<E> getGraphEntityListClose(String graph, Parameter... parameters) {
-        return List.of();
-    }
-
-    @Override
-    public <E> E getGraphEntityClose(String graph, Parameter... parameters) {
-        return null;
-    }
-
-    @Override
-    public <E> Optional<E> getGraphOptionalEntityClose(String graph, Parameter... parameters) {
-        return Optional.empty();
-    }
-
-    @Override
-    public <E> List<E> getNamedQueryEntityListClose(String namedQuery, Parameter... parameters) {
-        return List.of();
-    }
-
-    @Override
-    public <E> E getNamedQueryEntityClose(String namedQuery, Parameter... parameters) {
-        return null;
-    }
-
-    @Override
-    public <E> Optional<E> getNamedQueryOptionalEntityClose(String namedQuery, Parameter... parameters) {
-        return Optional.empty();
-    }
-
-    @Override
-    public Class<?> getEntityClass() {
-        return this.clazz;
     }
 
 }

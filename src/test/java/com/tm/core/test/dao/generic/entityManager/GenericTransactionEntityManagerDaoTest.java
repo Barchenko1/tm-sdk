@@ -558,7 +558,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id", 1L);
 
         Employee result =
-                genericTransactionDao.getGraphEntity(Employee.class, GRAPH_PATH, parameter);
+                genericTransactionDao.getGraphEntityClose(Employee.class, GRAPH_PATH, parameter);
 
         assertEquals(1L, result.getId());
         assertEquals("Relationship Root Entity", result.getName());
@@ -584,7 +584,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
     public void testGetEntityGraph() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Employee entity =
-                genericTransactionDao.getGraphEntity(Employee.class, GRAPH_PATH, new Parameter("id", 1));
+                genericTransactionDao.getGraphEntityClose(Employee.class, GRAPH_PATH, new Parameter("id", 1));
 
         assertNotNull(entity);
         assertEquals(1, entity.getId());
@@ -593,7 +593,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
     @Test
     public void testGetEntityGraph_Failure() {
         assertThrows(RuntimeException.class, () -> {
-            genericTransactionDao.getGraphEntity(Employee.class, GRAPH_PATH, new Parameter("id", 1));
+            genericTransactionDao.getGraphEntityClose(Employee.class, GRAPH_PATH, new Parameter("id", 1));
         });
     }
 
@@ -601,7 +601,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
     void getEntityWithDependencies() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Employee result =
-                genericTransactionDao.getNamedQueryEntity(Employee.class, NAMED_QUERY_NAME_ONE, new Parameter("id", 1));
+                genericTransactionDao.getNamedQueryEntityClose(Employee.class, NAMED_QUERY_NAME_ONE, new Parameter("id", 1));
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
@@ -629,7 +629,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id1", 1L);
 
         assertThrows(RuntimeException.class, () -> {
-            genericTransactionDao.getNamedQueryEntity(Employee.class, NAMED_QUERY_NAME_ONE, parameter);
+            genericTransactionDao.getNamedQueryEntityClose(Employee.class, NAMED_QUERY_NAME_ONE, parameter);
         });
     }
 
@@ -639,7 +639,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id", 1L);
 
         Optional<Employee> optional =
-                genericTransactionDao.getGraphOptionalEntity(Employee.class, GRAPH_PATH, parameter);
+                genericTransactionDao.getGraphOptionalEntityClose(Employee.class, GRAPH_PATH, parameter);
 
         assertTrue(optional.isPresent());
         Employee result = optional.get();
@@ -668,7 +668,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id1", 1L);
 
         assertThrows(RuntimeException.class, () -> {
-            genericTransactionDao.getGraphOptionalEntity(Employee.class, GRAPH_PATH, parameter);
+            genericTransactionDao.getGraphOptionalEntityClose(Employee.class, GRAPH_PATH, parameter);
         });
 
     }
@@ -679,7 +679,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id", 1L);
 
         Optional<Employee> optional =
-                genericTransactionDao.getNamedQueryOptionalEntity(Employee.class, NAMED_QUERY_NAME_ONE, parameter);
+                genericTransactionDao.getNamedQueryOptionalEntityClose(Employee.class, NAMED_QUERY_NAME_ONE, parameter);
 
         assertTrue(optional.isPresent());
         Employee result = optional.get();
@@ -708,7 +708,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id1", 1L);
 
         assertThrows(RuntimeException.class, () -> {
-            genericTransactionDao.getNamedQueryOptionalEntity(Employee.class, NAMED_QUERY_NAME_ONE, parameter);
+            genericTransactionDao.getNamedQueryOptionalEntityClose(Employee.class, NAMED_QUERY_NAME_ONE, parameter);
         });
 
     }
@@ -718,7 +718,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Parameter parameter = new Parameter("id", 1L);
 
-        List<Employee> result = genericTransactionDao.getGraphEntityList(Employee.class, GRAPH_PATH, parameter);
+        List<Employee> result = genericTransactionDao.getGraphEntityListClose(Employee.class, GRAPH_PATH, parameter);
 
         assertEquals(1, result.size());
         assertEquals(1, result.get(0).getId());
@@ -743,7 +743,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id1", 1L);
 
         assertThrows(RuntimeException.class, () -> {
-            genericTransactionDao.getGraphEntityList(Employee.class, GRAPH_PATH, parameter);
+            genericTransactionDao.getGraphEntityListClose(Employee.class, GRAPH_PATH, parameter);
         });
     }
 
@@ -752,7 +752,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Parameter parameter = new Parameter("id", 1L);
 
-        List<Employee> result = genericTransactionDao.getNamedQueryEntityList(Employee.class, NAMED_QUERY_NAME_ONE, parameter);
+        List<Employee> result = genericTransactionDao.getNamedQueryEntityListClose(Employee.class, NAMED_QUERY_NAME_ONE, parameter);
 
         assertEquals(1, result.size());
         assertEquals(1, result.get(0).getId());
@@ -778,7 +778,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
         Parameter parameter = new Parameter("id1", 1L);
 
         assertThrows(RuntimeException.class, () -> {
-            genericTransactionDao.getNamedQueryEntityList(Employee.class, NAMED_QUERY_NAME_ONE, parameter);
+            genericTransactionDao.getNamedQueryEntityListClose(Employee.class, NAMED_QUERY_NAME_ONE, parameter);
         });
     }
 

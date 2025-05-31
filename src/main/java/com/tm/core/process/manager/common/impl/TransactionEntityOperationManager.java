@@ -1,4 +1,4 @@
-package com.tm.core.process.manager.common;
+package com.tm.core.process.manager.common.impl;
 
 import com.tm.core.process.dao.common.ITransactionEntityDao;
 

@@ -5,7 +5,7 @@ import com.tm.core.process.dao.transaction.ITransactionHandler;
 import com.tm.core.process.dao.transaction.SessionTransactionHandler;
 import org.hibernate.SessionFactory;
 
-public abstract class AbstractGenericTransactionSessionDao extends AbstractGenericSessionDao implements IGenericTransactionDao {
+public abstract class AbstractGenericTransactionSessionDao extends AbstractGenericSessionFactoryDao implements IGenericTransactionDao {
 
     protected final ITransactionHandler transactionHandler;
 

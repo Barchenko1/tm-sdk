@@ -46,10 +46,10 @@ public class GenericEntityManagerDaoTest extends AbstractDaoTest {
     @PersistenceContext
     private EntityManager entityManager;
 
-    private IGenericDao genericDao;
-
     @Autowired
     private TransactionTemplate transactionTemplate;
+
+    private IGenericDao genericDao;
 
     @BeforeEach
     public void setupAll() {

@@ -56,10 +56,10 @@ public class RelationshipSessionDaoTest extends AbstractDaoTest {
     @Qualifier("hibernateSessionFactory")
     private SessionFactory sessionFactory;
 
-    private IEntityDao entityDao;
-
     @Autowired
     private TransactionTemplate transactionTemplate;
+
+    private IEntityDao entityDao;
 
     @BeforeEach
     public void setupAll() {

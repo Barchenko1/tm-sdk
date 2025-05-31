@@ -1,32 +1,33 @@
-package com.tm.core.process.dao.generic.entityManager;
+package com.tm.core.process.dao.generic.session;
 
-import com.tm.core.finder.manager.EntityMappingManager;
 import com.tm.core.finder.parameter.Parameter;
-import com.tm.core.finder.scanner.EntityScanner;
-import com.tm.core.process.dao.fetch.EntityManagerFetchHandler;
 import com.tm.core.process.dao.IFetchHandler;
+import com.tm.core.process.dao.fetch.SessionFetchHandler;
 import com.tm.core.process.dao.generic.IGenericDao;
 import com.tm.core.process.dao.query.IQueryService;
 import com.tm.core.process.dao.query.QueryService;
+import com.tm.core.finder.manager.EntityMappingManager;
+import com.tm.core.finder.scanner.EntityScanner;
 import com.tm.core.util.helper.EntityFieldHelper;
 import com.tm.core.util.helper.IEntityFieldHelper;
-import jakarta.persistence.EntityManager;
+import org.hibernate.SessionFactory;
 
 import java.util.List;
 import java.util.Optional;
 
-public abstract class AbstractGenericEntityManagerDao implements IGenericDao {
-    protected final EntityManager entityManager;
+public abstract class AbstractGenericSessionFactoryDao implements IGenericDao {
+
+    protected final SessionFactory sessionFactory;
     protected final IEntityFieldHelper entityFieldHelper;
     protected final IQueryService queryService;
     protected final IFetchHandler fetchHandler;
 
-    public AbstractGenericEntityManagerDao(EntityManager entityManager,
-                                           String entityPackage) {
-        this.entityManager = entityManager;
+    public AbstractGenericSessionFactoryDao(SessionFactory sessionFactory,
+                                            String entityPackage) {
+        this.sessionFactory = sessionFactory;
         this.entityFieldHelper = new EntityFieldHelper();
         this.queryService = initializerQueryService(entityPackage);
-        this.fetchHandler = new EntityManagerFetchHandler(entityManager, queryService);
+        this.fetchHandler = new SessionFetchHandler(sessionFactory, queryService);
     }
 
     private IQueryService initializerQueryService(String entityPackage) {
@@ -43,6 +44,7 @@ public abstract class AbstractGenericEntityManagerDao implements IGenericDao {
     @Override
     public <E> List<E> getNamedQueryEntityList(Class<E> clazz, String namedQuery, Parameter... parameters) {
         return fetchHandler.getNamedQueryEntityList(clazz, namedQuery, parameters);
+
     }
 
     @Override
@@ -53,6 +55,7 @@ public abstract class AbstractGenericEntityManagerDao implements IGenericDao {
     @Override
     public <E> E getNamedQueryEntity(Class<E> clazz, String namedQuery, Parameter... parameters) {
         return fetchHandler.getNamedQueryEntity(clazz, namedQuery, parameters);
+
     }
 
     @Override
@@ -94,4 +97,5 @@ public abstract class AbstractGenericEntityManagerDao implements IGenericDao {
     public <E> Optional<E> getNamedQueryOptionalEntityClose(Class<E> clazz, String namedQuery, Parameter... parameters) {
         return fetchHandler.getNamedQueryOptionalEntityClose(clazz, namedQuery, parameters);
     }
+
 }

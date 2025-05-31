@@ -4,8 +4,6 @@ import com.tm.core.finder.parameter.Parameter;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -65,90 +63,6 @@ public class GenericTransactionEntityManagerDao extends AbstractGenericTransacti
         } finally {
             entityManager.clear();
         }
-    }
-
-    @Override
-    public <E> List<E> getGraphEntityList(Class<E> clazz, String graph, Parameter... parameters) {
-        try {
-            return queryService.getGraphEntityList(entityManager, clazz, graph, parameters);
-        } finally {
-            entityManager.clear();
-        }
-    }
-
-    @Override
-    public <E> List<E> getNamedQueryEntityList(Class<E> clazz, String namedQuery, Parameter... parameters) {
-        try {
-            return queryService.getNamedQueryEntityList(entityManager, clazz, namedQuery, parameters);
-        } finally {
-            entityManager.clear();
-        }
-    }
-
-    @Override
-    public <E> E getGraphEntity(Class<E> clazz, String graph, Parameter... parameters) {
-        try {
-            return queryService.getGraphEntity(entityManager, clazz, graph, parameters);
-        } finally {
-            entityManager.clear();
-        }
-    }
-
-    @Override
-    public <E> E getNamedQueryEntity(Class<E> clazz, String namedQuery, Parameter... parameters) {
-        try {
-            return queryService.getNamedQueryEntity(entityManager, clazz, namedQuery, parameters);
-        } finally {
-            entityManager.clear();
-        }
-    }
-
-    @Override
-    public <E> Optional<E> getGraphOptionalEntity(Class<E> clazz, String graph, Parameter... parameters) {
-        try {
-            return queryService.getGraphOptionalEntity(entityManager, clazz, graph, parameters);
-        } finally {
-            entityManager.clear();
-        }
-    }
-
-    @Override
-    public <E> List<E> getGraphEntityListClose(Class<E> clazz, String graph, Parameter... parameters) {
-        return List.of();
-    }
-
-    @Override
-    public <E> E getGraphEntityClose(Class<E> clazz, String graph, Parameter... parameters) {
-        return null;
-    }
-
-    @Override
-    public <E> Optional<E> getGraphOptionalEntityClose(Class<E> clazz, String graph, Parameter... parameters) {
-        return Optional.empty();
-    }
-
-    @Override
-    public <E> Optional<E> getNamedQueryOptionalEntity(Class<E> clazz, String namedQuery, Parameter... parameters) {
-        try {
-            return queryService.getNamedQueryOptionalEntity(entityManager, clazz, namedQuery, parameters);
-        } finally {
-            entityManager.clear();
-        }
-    }
-
-    @Override
-    public <E> List<E> getNamedQueryEntityListClose(Class<E> clazz, String namedQuery, Parameter... parameters) {
-        return List.of();
-    }
-
-    @Override
-    public <E> E getNamedQueryEntityClose(Class<E> clazz, String namedQuery, Parameter... parameters) {
-        return null;
-    }
-
-    @Override
-    public <E> Optional<E> getNamedQueryOptionalEntityClose(Class<E> clazz, String namedQuery, Parameter... parameters) {
-        return Optional.empty();
     }
 
     @Override
