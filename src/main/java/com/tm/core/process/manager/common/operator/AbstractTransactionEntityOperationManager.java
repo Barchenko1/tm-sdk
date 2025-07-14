@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public abstract class AbstractTransactionEntityOperationManager implements ITransactionEntityOperationManager {
@@ -41,8 +42,14 @@ public abstract class AbstractTransactionEntityOperationManager implements ITran
 
     @Override
     public void executeConsumer(Consumer<EntityManager> consumer) {
-        LOGGER.info("Saving entity");
+        LOGGER.info("Execute consumer");
         dao.executeConsumer(consumer);
+    }
+
+    @Override
+    public <T> T executeFunction(Function<EntityManager, T> function) {
+        LOGGER.info("Execute function");
+        return dao.executeFunction(function);
     }
 
     @Override

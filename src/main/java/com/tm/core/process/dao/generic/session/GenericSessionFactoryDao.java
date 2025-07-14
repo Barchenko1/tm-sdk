@@ -1,15 +1,13 @@
 package com.tm.core.process.dao.generic.session;
 
-import com.tm.core.finder.parameter.Parameter;
 import jakarta.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class GenericSessionFactoryDao extends AbstractGenericSessionFactoryDao {
@@ -93,6 +91,17 @@ public class GenericSessionFactoryDao extends AbstractGenericSessionFactoryDao {
         try {
             Session session = sessionFactory.getCurrentSession();
             consumer.accept(session);
+        } catch (Exception e) {
+            LOGGER.warn("transaction error", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public <T> T executeFunction(Function<EntityManager, T> function) {
+        try {
+            Session session = sessionFactory.getCurrentSession();
+            return function.apply(session);
         } catch (Exception e) {
             LOGGER.warn("transaction error", e);
             throw new RuntimeException(e);

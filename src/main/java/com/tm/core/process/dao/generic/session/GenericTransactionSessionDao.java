@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class GenericTransactionSessionDao extends AbstractGenericTransactionSessionDao {
@@ -86,5 +87,10 @@ public class GenericTransactionSessionDao extends AbstractGenericTransactionSess
     @Override
     public void executeConsumer(Consumer<EntityManager> consumer) {
         transactionHandler.executeConsumer(consumer);
+    }
+
+    @Override
+    public <T> T executeFunction(Function<EntityManager, T> function) {
+        return transactionHandler.executeFunction(function);
     }
 }

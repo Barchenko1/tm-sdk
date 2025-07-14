@@ -191,7 +191,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(entityManager).persist(employee);
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -234,7 +234,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(entityManager).persist(any(Employee.class));
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
 
@@ -281,7 +281,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
         }
 
         when(entityManager.getTransaction()).thenReturn(transaction);
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
 
@@ -320,7 +320,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(entityManager).merge(employee);
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         assertThrows(RuntimeException.class, () -> transactionEntityOperationManager.mergeEntity(employee));
@@ -360,7 +360,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(entityManager).merge(any(Employee.class));
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
 
@@ -407,7 +407,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
         }
 
         when(entityManager.getTransaction()).thenReturn(transaction);
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -493,7 +493,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(entityManager).remove(any(Employee.class));
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
@@ -535,7 +535,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
         }
 
         when(entityManager.getTransaction()).thenReturn(transaction);
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
 
@@ -573,7 +573,7 @@ class TransactionEntityManagerOperationManagerTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(entityManager).remove(any(Object.class));
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         Employee employee = prepareRelationshipRootTestEntityDbMock();

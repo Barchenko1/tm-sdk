@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class GenericTransactionEntityManagerDao extends AbstractGenericTransactionEntityManagerDao {
@@ -31,14 +32,19 @@ public class GenericTransactionEntityManagerDao extends AbstractGenericTransacti
     @Override
     public <E> void findEntityAndUpdate(Class<E> clazz, E entity, Parameter... parameters) {
         EntityTransaction transaction = entityManager.getTransaction();
+        boolean isNewTransaction = !transaction.isActive();
         try {
-            transaction.begin();
+            if (isNewTransaction) {
+                transaction.begin();
+            }
             E oldEntity = queryService.getEntityByDefaultNamedQuery(entityManager, clazz, parameters);
             entityFieldHelper.setId(entity, entityFieldHelper.findId(oldEntity));
             entityManager.merge(entity);
-            transaction.commit();
+            if (isNewTransaction) {
+                transaction.commit();
+            }
         } catch (Exception e) {
-            if (transaction != null && transaction.isActive()) {
+            if (isNewTransaction) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);
@@ -50,13 +56,18 @@ public class GenericTransactionEntityManagerDao extends AbstractGenericTransacti
     @Override
     public <E> void findEntityAndDelete(Class<E> clazz, Parameter... parameters) {
         EntityTransaction transaction = entityManager.getTransaction();
+        boolean isNewTransaction = !transaction.isActive();
         try {
-            transaction.begin();
+            if (isNewTransaction) {
+                transaction.begin();
+            }
             E entity = queryService.getEntityByDefaultNamedQuery(entityManager, clazz, parameters);
             entityManager.remove(entity);
-            transaction.commit();
+            if (isNewTransaction) {
+                transaction.commit();
+            }
         } catch (Exception e) {
-            if (transaction != null && transaction.isActive()) {
+            if (isNewTransaction) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);
@@ -83,6 +94,11 @@ public class GenericTransactionEntityManagerDao extends AbstractGenericTransacti
     @Override
     public void executeConsumer(Consumer<EntityManager> consumer) {
         transactionHandler.executeConsumer(consumer);
+    }
+
+    @Override
+    public <T> T executeFunction(Function<EntityManager, T> function) {
+        return transactionHandler.executeFunction(function);
     }
 
 }

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class SessionTransactionHandler implements ITransactionHandler {
@@ -26,6 +27,23 @@ public class SessionTransactionHandler implements ITransactionHandler {
             transaction = session.beginTransaction();
             consumer.accept(session);
             transaction.commit();
+        } catch (Exception e) {
+            LOGGER.error("transaction error", e);
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public <T> T executeFunction(Function<EntityManager, T> function) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            T result = function.apply(session);
+            transaction.commit();
+            return result;
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
             if (transaction != null && transaction.isActive()) {

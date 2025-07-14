@@ -3,6 +3,7 @@ package com.tm.core.process.dao.generic.entityManager;
 import jakarta.persistence.EntityManager;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class GenericEntityManagerDao extends AbstractGenericEntityManagerDao {
@@ -47,5 +48,10 @@ public class GenericEntityManagerDao extends AbstractGenericEntityManagerDao {
     @Override
     public void executeConsumer(Consumer<EntityManager> consumer) {
         consumer.accept(entityManager);
+    }
+
+    @Override
+    public <T> T executeFunction(Function<EntityManager, T> function) {
+        return function.apply(entityManager);
     }
 }

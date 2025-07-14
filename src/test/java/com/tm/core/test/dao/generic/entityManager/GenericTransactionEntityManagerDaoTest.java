@@ -167,7 +167,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(entityManager).persist(employee);
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -209,7 +209,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(entityManager).persist(any(Employee.class));
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -277,7 +277,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(entityManager).merge(employee);
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         assertThrows(RuntimeException.class, () -> genericTransactionDao.mergeEntity(employee));
@@ -314,7 +314,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(entityManager).merge(any(Employee.class));
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
@@ -360,7 +360,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(transaction).commit();
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -402,7 +402,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
         when(entityManager.createNamedQuery(anyString(), eq(Employee.class))).thenReturn(query);
         when(query.getSingleResult()).thenReturn(employee);
         doThrow(new RuntimeException()).when(entityManager).merge(any(Object.class));
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         assertThrows(RuntimeException.class, () -> {
@@ -447,7 +447,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(entityManager).remove(any(Employee.class));
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
@@ -508,7 +508,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(entityManager).remove(any(Object.class));
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         Employee employee = prepareRelationshipRootTestEntityDbMock();
@@ -542,7 +542,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
         when(entityManager.createNamedQuery(anyString(), eq(Employee.class))).thenReturn(query);
         when(query.getSingleResult()).thenReturn(employee);
         doThrow(new RuntimeException()).when(entityManager).remove(any(Object.class));
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {

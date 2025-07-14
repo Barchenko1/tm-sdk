@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public abstract class AbstractEntityManagerDao implements IEntityDao {
@@ -77,6 +78,11 @@ public abstract class AbstractEntityManagerDao implements IEntityDao {
     @Override
     public void executeConsumer(Consumer<EntityManager> consumer) {
         consumer.accept(entityManager);
+    }
+
+    @Override
+    public <T> T executeFunction(Function<EntityManager, T> function) {
+        return function.apply(entityManager);
     }
 
     @Override

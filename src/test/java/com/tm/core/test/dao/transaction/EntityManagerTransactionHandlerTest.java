@@ -74,7 +74,7 @@ public class EntityManagerTransactionHandlerTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(entityManager).persist(Item);
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         Supplier<Item> ItemSupplier = () -> Item;
@@ -117,7 +117,7 @@ public class EntityManagerTransactionHandlerTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(entityManager).persist(any(Item.class));
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         Consumer<EntityManager> sessionConsumer = (EntityManager em) -> {
@@ -167,7 +167,7 @@ public class EntityManagerTransactionHandlerTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(entityManager).merge(Item);
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         Exception exception =
@@ -215,7 +215,7 @@ public class EntityManagerTransactionHandlerTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(entityManager).merge(any(Item.class));
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         Exception exception =
@@ -258,7 +258,7 @@ public class EntityManagerTransactionHandlerTest extends AbstractDaoTest {
 
         when(entityManager.getTransaction()).thenReturn(transaction);
         doThrow(new RuntimeException()).when(entityManager).remove(Item);
-        when(transaction.isActive()).thenReturn(true);
+        when(transaction.isActive()).thenReturn(false);
         doNothing().when(transaction).rollback();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {

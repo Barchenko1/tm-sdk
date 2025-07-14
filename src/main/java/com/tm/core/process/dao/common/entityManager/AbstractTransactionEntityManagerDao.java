@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public abstract class AbstractTransactionEntityManagerDao extends AbstractEntityManagerDao implements ITransactionEntityDao {
@@ -51,14 +52,19 @@ public abstract class AbstractTransactionEntityManagerDao extends AbstractEntity
     public <E> void findEntityAndUpdate(E entity, Parameter... parameters) {
         classTypeChecker(entity);
         EntityTransaction transaction = entityManager.getTransaction();
+        boolean isNewTransaction = !transaction.isActive();
         try {
-            transaction.begin();
+            if (isNewTransaction) {
+                transaction.begin();
+            }
             E oldEntity = (E) queryService.getEntityByDefaultNamedQuery(entityManager, clazz, parameters);
             entityFieldHelper.setId(entity, entityFieldHelper.findId(oldEntity));
             entityManager.merge(entity);
-            transaction.commit();
+            if (isNewTransaction) {
+                transaction.commit();
+            }
         } catch (Exception e) {
-            if (transaction != null && transaction.isActive()) {
+            if (isNewTransaction) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);
@@ -71,14 +77,19 @@ public abstract class AbstractTransactionEntityManagerDao extends AbstractEntity
     @SuppressWarnings("unchecked")
     public <E> void findEntityAndDelete(Parameter... parameters) {
         EntityTransaction transaction = entityManager.getTransaction();
+        boolean isNewTransaction = !transaction.isActive();
         try {
-            transaction.begin();
+            if (isNewTransaction) {
+                transaction.begin();
+            }
             E entity = (E) queryService.getEntityByDefaultNamedQuery(entityManager, this.clazz, parameters);
             classTypeChecker(entity);
             entityManager.remove(entity);
-            transaction.commit();
+            if (isNewTransaction) {
+                transaction.commit();
+            }
         } catch (Exception e) {
-            if (transaction != null && transaction.isActive()) {
+            if (isNewTransaction) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);
@@ -107,4 +118,8 @@ public abstract class AbstractTransactionEntityManagerDao extends AbstractEntity
         transactionHandler.executeConsumer(consumer);
     }
 
+    @Override
+    public <T> T executeFunction(Function<EntityManager, T> function) {
+        return transactionHandler.executeFunction(function);
+    }
 }

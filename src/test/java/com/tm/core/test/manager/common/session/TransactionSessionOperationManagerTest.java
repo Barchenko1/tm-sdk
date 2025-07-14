@@ -14,7 +14,6 @@ import com.tm.core.finder.table.EntityTable;
 import com.tm.core.modal.relationship.Dependent;
 import com.tm.core.modal.relationship.Employee;
 import com.tm.core.modal.relationship.Item;
-import com.tm.core.process.dao.transaction.EntityManagerTransactionHandler;
 import com.tm.core.process.dao.transaction.ITransactionHandler;
 import com.tm.core.process.dao.transaction.SessionTransactionHandler;
 import com.tm.core.process.manager.common.ITransactionEntityOperationManager;
@@ -225,9 +224,10 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
 
         Supplier<Employee> supplier = this::prepareRelationshipRootTestEntityDbMock;
 
-        EntityManager entityManager = mock(EntityManager.class);
+        SessionFactory sessionFactory = mock(SessionFactory.class);
+        Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
-        ITransactionHandler transactionHandler = new EntityManagerTransactionHandler(entityManager);
+        ITransactionHandler transactionHandler = new SessionTransactionHandler(sessionFactory);
 
         try {
             Field sessionFactoryField = AbstractTransactionSessionFactoryDao.class.getDeclaredField("transactionHandler");
@@ -237,8 +237,9 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
             throw new RuntimeException(e);
         }
 
-        when(entityManager.getTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(entityManager).persist(any(Employee.class));
+        when(sessionFactory.openSession()).thenReturn(session);
+        when(session.beginTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(session).persist(any(Employee.class));
         when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
@@ -273,9 +274,10 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
             throw new RuntimeException();
         };
 
-        EntityManager entityManager = mock(EntityManager.class);
+        SessionFactory sessionFactory = mock(SessionFactory.class);
+        Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
-        ITransactionHandler transactionHandler = new EntityManagerTransactionHandler(entityManager);
+        ITransactionHandler transactionHandler = new SessionTransactionHandler(sessionFactory);
 
         try {
             Field sessionFactoryField = AbstractTransactionSessionFactoryDao.class.getDeclaredField("transactionHandler");
@@ -285,7 +287,9 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
             throw new RuntimeException(e);
         }
 
-        when(entityManager.getTransaction()).thenReturn(transaction);
+        when(sessionFactory.openSession()).thenReturn(session);
+        when(session.beginTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(session).persist(any(Employee.class));
         when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
@@ -353,9 +357,10 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
 
         Supplier<Employee> supplier = this::prepareRelationshipRootTestEntityDbMock;
 
-        EntityManager entityManager = mock(EntityManager.class);
+        SessionFactory sessionFactory = mock(SessionFactory.class);
+        Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
-        ITransactionHandler transactionHandler = new EntityManagerTransactionHandler(entityManager);
+        ITransactionHandler transactionHandler = new SessionTransactionHandler(sessionFactory);
 
         try {
             Field sessionFactoryField = AbstractTransactionSessionFactoryDao.class.getDeclaredField("transactionHandler");
@@ -365,8 +370,9 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
             throw new RuntimeException(e);
         }
 
-        when(entityManager.getTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(entityManager).merge(any(Employee.class));
+        when(sessionFactory.openSession()).thenReturn(session);
+        when(session.beginTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(session).merge(any(Employee.class));
         when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
@@ -401,9 +407,10 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
             throw new RuntimeException();
         };
 
-        EntityManager entityManager = mock(EntityManager.class);
+        SessionFactory sessionFactory = mock(SessionFactory.class);
+        Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
-        ITransactionHandler transactionHandler = new EntityManagerTransactionHandler(entityManager);
+        ITransactionHandler transactionHandler = new SessionTransactionHandler(sessionFactory);
 
         try {
             Field sessionFactoryField = AbstractTransactionSessionFactoryDao.class.getDeclaredField("transactionHandler");
@@ -413,7 +420,9 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
             throw new RuntimeException(e);
         }
 
-        when(entityManager.getTransaction()).thenReturn(transaction);
+        when(sessionFactory.openSession()).thenReturn(session);
+        when(session.beginTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(session).merge(any(Employee.class));
         when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
@@ -448,9 +457,10 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
 
         Supplier<Employee> supplier = this::prepareRelationshipRootTestEntityDbMock;
 
-        EntityManager entityManager = mock(EntityManager.class);
+        SessionFactory sessionFactory = mock(SessionFactory.class);
+        Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
-        ITransactionHandler transactionHandler = new EntityManagerTransactionHandler(entityManager);
+        ITransactionHandler transactionHandler = new SessionTransactionHandler(sessionFactory);
 
         try {
             Field sessionFactoryField = AbstractTransactionSessionFactoryDao.class.getDeclaredField("transactionHandler");
@@ -460,8 +470,9 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
             throw new RuntimeException(e);
         }
 
-        when(entityManager.getTransaction()).thenReturn(transaction);
-        doThrow(new RuntimeException()).when(entityManager).remove(any(Employee.class));
+        when(sessionFactory.openSession()).thenReturn(session);
+        when(session.beginTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(session).remove(any(Employee.class));
         when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 
@@ -488,12 +499,15 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
     void deleteRelationshipEntityByConsumer_transactionFailure() {
         loadDataSet("/datasets/relationship/testRelationshipTestEntityDataSet.yml");
         Consumer<EntityManager> consumer = (EntityManager em) -> {
-            throw new RuntimeException();
+            Employee employee = prepareToSaveRelationshipRootTestEntity();
+            employee.setId(1L);
+            em.remove(employee);
         };
 
-        EntityManager entityManager = mock(EntityManager.class);
+        SessionFactory sessionFactory = mock(SessionFactory.class);
+        Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
-        ITransactionHandler transactionHandler = new EntityManagerTransactionHandler(entityManager);
+        ITransactionHandler transactionHandler = new SessionTransactionHandler(sessionFactory);
 
         try {
             Field sessionFactoryField = AbstractTransactionSessionFactoryDao.class.getDeclaredField("transactionHandler");
@@ -503,7 +517,9 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
             throw new RuntimeException(e);
         }
 
-        when(entityManager.getTransaction()).thenReturn(transaction);
+        when(sessionFactory.openSession()).thenReturn(session);
+        when(session.beginTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(session).remove(any(Employee.class));
         when(transaction.isActive()).thenReturn(true);
         doNothing().when(transaction).rollback();
 

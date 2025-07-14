@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class EntityManagerTransactionHandler implements ITransactionHandler {
@@ -20,13 +21,42 @@ public class EntityManagerTransactionHandler implements ITransactionHandler {
     @Override
     public void executeConsumer(Consumer<EntityManager> consumer) {
         EntityTransaction transaction = entityManager.getTransaction();
+        boolean isNewTransaction = !transaction.isActive();
         try {
-            transaction.begin();
+            if (isNewTransaction) {
+                transaction.begin();
+            }
             consumer.accept(entityManager);
-            transaction.commit();
+            if (isNewTransaction) {
+                transaction.commit();
+            }
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction != null && transaction.isActive()) {
+            if (isNewTransaction) {
+                transaction.rollback();
+            }
+            throw new RuntimeException("Transaction failed", e);
+        } finally {
+            entityManager.clear();
+        }
+    }
+
+    @Override
+    public <T> T executeFunction(Function<EntityManager, T> function) {
+        EntityTransaction transaction = entityManager.getTransaction();
+        boolean isNewTransaction = !transaction.isActive();
+        try {
+            if (isNewTransaction) {
+                transaction.begin();
+            }
+            T result = function.apply(entityManager);
+            if (isNewTransaction) {
+                transaction.commit();
+            }
+            return result;
+        } catch (Exception e) {
+            LOGGER.error("transaction error", e);
+            if (isNewTransaction) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);
@@ -38,13 +68,18 @@ public class EntityManagerTransactionHandler implements ITransactionHandler {
     @Override
     public <E> void persistEntity(E entity) {
         EntityTransaction transaction = entityManager.getTransaction();
+        boolean isNewTransaction = !transaction.isActive();
         try {
-            transaction.begin();
+            if (isNewTransaction) {
+                transaction.begin();
+            }
             entityManager.persist(entity);
-            transaction.commit();
+            if (isNewTransaction) {
+                transaction.commit();
+            }
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction != null && transaction.isActive()) {
+            if (isNewTransaction) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);
@@ -56,13 +91,18 @@ public class EntityManagerTransactionHandler implements ITransactionHandler {
     @Override
     public <E> void mergeEntity(E entity) {
         EntityTransaction transaction = entityManager.getTransaction();
+        boolean isNewTransaction = !transaction.isActive();
         try {
-            transaction.begin();
+            if (isNewTransaction) {
+                transaction.begin();
+            }
             entityManager.merge(entity);
-            transaction.commit();
+            if (isNewTransaction) {
+                transaction.commit();
+            }
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction != null && transaction.isActive()) {
+            if (isNewTransaction) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);
@@ -74,13 +114,18 @@ public class EntityManagerTransactionHandler implements ITransactionHandler {
     @Override
     public <E> void deleteEntity(E entity) {
         EntityTransaction transaction = entityManager.getTransaction();
+        boolean isNewTransaction = !transaction.isActive();
         try {
-            transaction.begin();
+            if (isNewTransaction) {
+                transaction.begin();
+            }
             entityManager.remove(entity);
-            transaction.commit();
+            if (isNewTransaction) {
+                transaction.commit();
+            }
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction != null && transaction.isActive()) {
+            if (isNewTransaction) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);
@@ -92,14 +137,19 @@ public class EntityManagerTransactionHandler implements ITransactionHandler {
     @Override
     public <E> void persistSupplier(Supplier<E> supplier) {
         EntityTransaction transaction = entityManager.getTransaction();
+        boolean isNewTransaction = !transaction.isActive();
         try {
-            transaction.begin();
+            if (isNewTransaction) {
+                transaction.begin();
+            }
             E entity = supplier.get();
             entityManager.persist(entity);
-            transaction.commit();
+            if (isNewTransaction) {
+                transaction.commit();
+            }
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction != null && transaction.isActive()) {
+            if (isNewTransaction) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);
@@ -111,14 +161,19 @@ public class EntityManagerTransactionHandler implements ITransactionHandler {
     @Override
     public <E> void mergeSupplier(Supplier<E> supplier) {
         EntityTransaction transaction = entityManager.getTransaction();
+        boolean isNewTransaction = !transaction.isActive();
         try {
-            transaction.begin();
+            if (isNewTransaction) {
+                transaction.begin();
+            }
             E entity = supplier.get();
             entityManager.merge(entity);
-            transaction.commit();
+            if (isNewTransaction) {
+                transaction.commit();
+            }
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction != null && transaction.isActive()) {
+            if (isNewTransaction) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);
@@ -130,14 +185,19 @@ public class EntityManagerTransactionHandler implements ITransactionHandler {
     @Override
     public <E> void deleteSupplier(Supplier<E> supplier) {
         EntityTransaction transaction = entityManager.getTransaction();
+        boolean isNewTransaction = !transaction.isActive();
         try {
-            transaction.begin();
+            if (isNewTransaction) {
+                transaction.begin();
+            }
             E entity = supplier.get();
             entityManager.remove(entity);
-            transaction.commit();
+            if (isNewTransaction) {
+                transaction.commit();
+            }
         } catch (Exception e) {
             LOGGER.error("transaction error", e);
-            if (transaction != null && transaction.isActive()) {
+            if (isNewTransaction) {
                 transaction.rollback();
             }
             throw new RuntimeException("Transaction failed", e);

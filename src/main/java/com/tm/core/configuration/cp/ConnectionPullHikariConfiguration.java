@@ -60,7 +60,7 @@ public class ConnectionPullHikariConfiguration extends AbstractConnectionPullCon
                 properties.getOrDefault(HikariSetting.HIBERNATE_HIKARI_MINIMUM_IDLE, "10"));
         // Maximum number of actual connection in the pool
         settings.put(HikariSetting.HIBERNATE_HIKARI_MAXIMUM_PULL_SIZE,
-                properties.getOrDefault(HikariSetting.HIBERNATE_HIKARI_MAXIMUM_PULL_SIZE, "20"));
+                properties.getOrDefault(HikariSetting.HIBERNATE_HIKARI_MAXIMUM_PULL_SIZE, "50"));
         settings.put(Environment.CONNECTION_PROVIDER,
                 properties.getOrDefault(Environment.CONNECTION_PROVIDER, HikariCPConnectionProvider.class));
 

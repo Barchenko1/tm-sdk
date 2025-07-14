@@ -26,20 +26,20 @@ public class QueryService implements IQueryService {
     public <E> List<E> getGraphEntityList(EntityManager entityManager, Class<E> clazz, String namedQuery, Parameter... parameters) {
         LOGGER.info("getGraphEntityList func: {}, {}, {}", clazz, namedQuery, parameters);
         Query<E> query = getDynamicEntityGraphQuery(entityManager, clazz, namedQuery, parameters);
-        return query.list();
+        return query.getResultList();
     }
 
     @Override
     public <E> List<E> getNamedQueryEntityList(EntityManager entityManager, Class<E> clazz, String namedQuery, Parameter... parameters) {
         LOGGER.info("getNamedQueryEntityList func: {}, {}, {}", clazz, namedQuery, parameters);
         Query<E> query = getNamedQuery(entityManager, clazz, namedQuery, parameters);
-        return query.list();
+        return query.getResultList();
     }
 
     @Override
     public <E> List<E> getNamedQueryEntityMap(EntityManager entityManager, Class<E> clazz, String namedQuery, Map<String, List<?>> parameters) {
         LOGGER.info("getNamedQueryEntityMap func: {}, {}, {}", clazz, namedQuery, parameters);
-        TypedQuery<E> query = getNamedQueryMap(entityManager, clazz, namedQuery, parameters);
+        Query<E> query = (Query<E>) getNamedQueryMap(entityManager, clazz, namedQuery, parameters);
         return query.getResultList();
     }
 
@@ -60,21 +60,21 @@ public class QueryService implements IQueryService {
     @Override
     public <E> Optional<E> getGraphOptionalEntity(EntityManager entityManager, Class<E> clazz, String graph, Parameter... parameters) {
         LOGGER.info("getGraphOptionalEntity func: {}, {}, {}", clazz, graph, parameters);
-        TypedQuery<E> query = getDynamicEntityGraphQuery(entityManager, clazz, graph, parameters);
-        return Optional.of(query.getSingleResult());
+        Query<E> query = getDynamicEntityGraphQuery(entityManager, clazz, graph, parameters);
+        return Optional.ofNullable(query.getSingleResultOrNull());
     }
 
     @Override
     public <E> Optional<E> getNamedQueryOptionalEntity(EntityManager entityManager, Class<E> clazz, String namedQuery, Parameter... parameters) {
         LOGGER.info("getNamedQueryOptionalEntity func: {}, {}, {}", clazz, namedQuery, parameters);
-        TypedQuery<E> query = getNamedQuery(entityManager, clazz, namedQuery, parameters);
-        return Optional.of(query.getSingleResult());
+        Query<E> query = getNamedQuery(entityManager, clazz, namedQuery, parameters);
+        return Optional.ofNullable(query.getSingleResultOrNull());
     }
 
     @Override
     public <E> E getEntityByDefaultNamedQuery(EntityManager entityManager, Class<E> clazz, Parameter... parameters) {
         LOGGER.info("getEntityByDefaultNamedQuery func: {}, {}", clazz, parameters);
-        TypedQuery<E> query = getDefaultNamedQuery(entityManager, clazz, parameters);
+        Query<E> query = getDefaultNamedQuery(entityManager, clazz, parameters);
         return query.getSingleResult();
     }
 
@@ -138,13 +138,13 @@ public class QueryService implements IQueryService {
         return query;
     }
 
-    private <E> TypedQuery<E> getDefaultNamedQuery(EntityManager entityManager, Class<E> clazz, Parameter... params) {
+    private <E> Query<E> getDefaultNamedQuery(EntityManager entityManager, Class<E> clazz, Parameter... params) {
         LOGGER.info("getDefaultNamedQuery func: {}", clazz);
         EntityTable entityTable = entityMappingManager.getEntityTable(clazz);
         if (entityTable == null) {
             throw new RuntimeException("Invalid select class: " + clazz);
         }
-        TypedQuery<E> query = entityManager.createNamedQuery(entityTable.getDefaultNamedQuery(), clazz);
+        Query<E> query = (Query<E>) entityManager.createNamedQuery(entityTable.getDefaultNamedQuery(), clazz);
         if (params != null) {
             for (Parameter param : params) {
                 query.setParameter(param.getName(), param.getValue());

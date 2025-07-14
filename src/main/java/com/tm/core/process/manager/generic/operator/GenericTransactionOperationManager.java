@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class GenericTransactionOperationManager extends AbstractGenericTransactionOperationManager {
@@ -38,8 +39,14 @@ public class GenericTransactionOperationManager extends AbstractGenericTransacti
 
     @Override
     public void executeConsumer(Consumer<EntityManager> consumer) {
-        LOGGER.info("Saving entity");
+        LOGGER.info("Execute consumer");
         genericTransactionDao.executeConsumer(consumer);
+    }
+
+    @Override
+    public <T> T executeFunction(Function<EntityManager, T> function) {
+        LOGGER.info("Execute function");
+        return genericTransactionDao.executeFunction(function);
     }
 
     @Override

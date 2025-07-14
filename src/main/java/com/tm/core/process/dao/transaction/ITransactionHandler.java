@@ -3,6 +3,7 @@ package com.tm.core.process.dao.transaction;
 import jakarta.persistence.EntityManager;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface ITransactionHandler {
@@ -15,4 +16,5 @@ public interface ITransactionHandler {
     <E> void deleteSupplier(Supplier<E> supplier);
 
     void executeConsumer(Consumer<EntityManager> consumer);
+    <T> T executeFunction(Function<EntityManager, T> function);
 }
