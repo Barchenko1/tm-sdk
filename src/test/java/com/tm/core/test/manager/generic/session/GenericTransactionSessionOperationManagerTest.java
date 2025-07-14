@@ -8,7 +8,6 @@ import com.tm.core.process.dao.generic.IGenericTransactionDao;
 import com.tm.core.process.dao.generic.session.AbstractGenericSessionFactoryDao;
 import com.tm.core.process.dao.generic.session.AbstractGenericTransactionSessionDao;
 import com.tm.core.process.dao.generic.session.GenericTransactionSessionDao;
-import com.tm.core.process.dao.transaction.EntityManagerTransactionHandler;
 import com.tm.core.process.dao.transaction.ITransactionHandler;
 import com.tm.core.process.dao.transaction.SessionTransactionHandler;
 import com.tm.core.process.manager.generic.IGenericTransactionOperationManager;
@@ -578,6 +577,7 @@ class GenericTransactionSessionOperationManagerTest extends AbstractDaoTest {
         SessionFactory sessionFactory = mock(SessionFactory.class);
         Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
+        @SuppressWarnings("unchecked")
         Query<Employee> query = mock(Query.class);
 
         try {

@@ -15,4 +15,12 @@ public class ParameterManager {
     public Parameter[] getParameterArray(Class<?> clazz) {
         return parameterArrayMap.get(clazz);
     }
+
+    public Operator getOperator() {
+        return operator;
+    }
+
+    public void setOperator(Operator operator) {
+        this.operator = operator;
+    }
 }

@@ -388,6 +388,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
 
         EntityManager entityManager = mock(EntityManager.class);
         Transaction transaction = mock(Transaction.class);
+        @SuppressWarnings("unchecked")
         Query<Employee> query = mock(Query.class);
 
         try {
@@ -528,6 +529,7 @@ public class GenericTransactionEntityManagerDaoTest extends AbstractDaoTest {
 
         EntityManager entityManager = mock(EntityManager.class);
         Transaction transaction = mock(Transaction.class);
+        @SuppressWarnings("unchecked")
         Query<Employee> query = mock(Query.class);
 
         try {

@@ -580,6 +580,7 @@ class TransactionSessionOperationManagerTest extends AbstractDaoTest {
         SessionFactory sessionFactory = mock(SessionFactory.class);
         Session session = mock(Session.class);
         Transaction transaction = mock(Transaction.class);
+        @SuppressWarnings("unchecked")
         Query<Employee> query = mock(Query.class);
 
         try {

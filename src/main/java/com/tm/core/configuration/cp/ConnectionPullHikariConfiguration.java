@@ -43,10 +43,10 @@ public class ConnectionPullHikariConfiguration extends AbstractConnectionPullCon
 
     private Properties addParams(Properties properties) {
         Properties settings = new Properties();
-        settings.put(Environment.DRIVER, properties.getProperty(Environment.DRIVER));
-        settings.put(Environment.URL, properties.getProperty(Environment.URL));
-        settings.put(Environment.USER, properties.getProperty(Environment.USER));
-        settings.put(Environment.PASS, properties.getProperty(Environment.PASS));
+        settings.put(Environment.JAKARTA_JDBC_DRIVER, properties.getProperty(Environment.JAKARTA_JDBC_DRIVER));
+        settings.put(Environment.JAKARTA_JDBC_URL, properties.getProperty(Environment.JAKARTA_JDBC_URL));
+        settings.put(Environment.JAKARTA_JDBC_USER, properties.getProperty(Environment.JAKARTA_JDBC_USER));
+        settings.put(Environment.JAKARTA_JDBC_USER, properties.getProperty(Environment.JAKARTA_JDBC_USER));
         settings.put(Environment.DIALECT, properties.getProperty(Environment.DIALECT));
 
         settings.put(Environment.HBM2DDL_AUTO, properties.getProperty(Environment.HBM2DDL_AUTO));

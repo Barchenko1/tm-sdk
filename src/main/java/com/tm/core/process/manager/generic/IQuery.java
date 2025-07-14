@@ -4,7 +4,6 @@ import com.tm.core.finder.parameter.Parameter;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 public interface IQuery {
     <E> List<E> getGraphEntityList(Class<E> clazz, String graph, Parameter... parameters);
