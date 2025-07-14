@@ -46,7 +46,7 @@ public class ConnectionPullHikariConfiguration extends AbstractConnectionPullCon
         settings.put(Environment.JAKARTA_JDBC_DRIVER, properties.getProperty(Environment.JAKARTA_JDBC_DRIVER));
         settings.put(Environment.JAKARTA_JDBC_URL, properties.getProperty(Environment.JAKARTA_JDBC_URL));
         settings.put(Environment.JAKARTA_JDBC_USER, properties.getProperty(Environment.JAKARTA_JDBC_USER));
-        settings.put(Environment.JAKARTA_JDBC_USER, properties.getProperty(Environment.JAKARTA_JDBC_USER));
+        settings.put(Environment.JAKARTA_JDBC_PASSWORD, properties.getProperty(Environment.JAKARTA_JDBC_PASSWORD));
         settings.put(Environment.DIALECT, properties.getProperty(Environment.DIALECT));
 
         settings.put(Environment.HBM2DDL_AUTO, properties.getProperty(Environment.HBM2DDL_AUTO));

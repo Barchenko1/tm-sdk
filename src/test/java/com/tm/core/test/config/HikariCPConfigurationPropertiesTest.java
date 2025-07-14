@@ -33,10 +33,10 @@ public class HikariCPConfigurationPropertiesTest {
 
     @BeforeEach
     public void setUp() {
-        properties.setProperty("hibernate.connection.driver_class", "org.postgresql.Driver");
-        properties.setProperty("hibernate.connection.url", "jdbc:postgresql://127.0.0.1:5438/tm_sdk_db");
-        properties.setProperty("hibernate.connection.username", "admin");
-        properties.setProperty("hibernate.connection.password", "secret");
+        properties.setProperty("jakarta.persistence.jdbc.driver", "org.postgresql.Driver");
+        properties.setProperty("jakarta.persistence.jdbc.url", "jdbc:postgresql://127.0.0.1:5438/tm_sdk_db");
+        properties.setProperty("jakarta.persistence.jdbc.user", "admin");
+        properties.setProperty("jakarta.persistence.jdbc.password", "secret");
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
         properties.setProperty("hibernate.hbm2ddl.auto", "update");
 
